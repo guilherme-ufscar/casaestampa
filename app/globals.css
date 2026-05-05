@@ -1,27 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gold-primary: #C9A84C;
+  --gold-light: #E8C97A;
+  --gold-dark: #8B6914;
+  --bg-primary: #FAFAFA;
+  --bg-surface: #FFFFFF;
+  --bg-input: #F7F4EF;
+  --border-default: #F0EDE8;
+  --border-input: #E5E0D8;
+  --text-primary: #1C1C1C;
+  --text-secondary: #6B6B6B;
+  --text-muted: #9A9A9A;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, #C9A84C, #E8C97A, #8B6914);
+    color: #1C1C1C;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .btn-gold:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  .input-base {
+    background: #F7F4EF;
+    border: 1px solid #E5E0D8;
+    border-radius: 8px;
+    height: 48px;
+    padding: 0 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    color: #1C1C1C;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    outline: none;
+  }
+
+  .input-base:focus {
+    border-color: #C9A84C;
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+  }
+
+  .card-base {
+    background: #FFFFFF;
+    border: 1px solid #F0EDE8;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .sidebar-item-active {
+    background: rgba(201, 168, 76, 0.10);
+    border-left: 3px solid #C9A84C;
+    border-radius: 0 8px 8px 0;
+    color: #C9A84C;
+  }
+
+  .sidebar-item-inactive {
+    color: #6B6B6B;
+    border-left: 3px solid transparent;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .sidebar-item-inactive:hover {
+    background: #F7F4EF;
   }
 }

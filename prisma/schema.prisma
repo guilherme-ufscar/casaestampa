@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  VENDEDOR
+  ADMIN
+}
+
+enum StatusOrcamento {
+  orcamento_enviado
+  aguardando_aprovacao
+  aprovado
+  em_producao
+  pronto
+  instalado
+  finalizado
+}
+
+enum ModeloCortina {
+  prega_macho
+  prega_femea
+  prega_americana
+  prega_franzida
+  prega_reta
+  wave
+  soft_wave
+  varao
+}
+
+enum TipoAbertura {
+  INTEIRA
+  CENTRAL
+}
+
+enum TipoTrilho {
+  trilho_suico
+  varao
+}
+
+enum TipoTecido {
+  PRINCIPAL
+  BLACKOUT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  role      Role     @default(VENDEDOR)
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  orcamentos    Orcamento[]
+  logsHistorico LogHistorico[]
+}
+
+model Cliente {
+  id        String   @id @default(cuid())
+  nome      String
+  endereco  String?
+  telefone  String?
+  email     String?
+  arquiteto String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orcamentos Orcamento[]
+}
+
+model Tecido {
+  id            String     @id @default(cuid())
+  nome          String
+  larguraMaxima Decimal    @db.Decimal(5, 2)
+  valorMetro    Decimal    @db.Decimal(10, 2)
+  tipo          TipoTecido
+  ativo         Boolean    @default(true)
+
+  ambientes AmbienteOrcamento[] @relation("TecidoPrincipal")
+  blackouts AmbienteOrcamento[] @relation("TecidoBlackout")
+}
+
+model TrilhoVarao {
+  id            String  @id @default(cuid())
+  nome          String
+  valorUnitario Decimal @db.Decimal(10, 2)
+  ativo         Boolean @default(true)
+
+  ambientes AmbienteOrcamento[]
+}
+
+model ConfiguracaoCalculo {
+  id    String @id @default(cuid())
+  chave String @unique
+  valor String
+}
+
+model Orcamento {
+  id              String          @id @default(cuid())
+  numero          Int             @default(autoincrement())
+  clienteId       String?
+  vendedorId      String
+  status          StatusOrcamento @default(orcamento_enviado)
+  precoFinalTotal Decimal?        @db.Decimal(10, 2)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  cliente  Cliente? @relation(fields: [clienteId], references: [id])
+  vendedor User     @relation(fields: [vendedorId], references: [id])
+
+  ambientes     AmbienteOrcamento[]
+  logsHistorico LogHistorico[]
+}
+
+model AmbienteOrcamento {
+  id                    String        @id @default(cuid())
+  orcamentoId           String
+  nomeAmbiente          String
+  largura               Decimal       @db.Decimal(8, 2)
+  altura                Decimal       @db.Decimal(8, 2)
+  modeloCortina         ModeloCortina
+  tipoAbertura          TipoAbertura  @default(INTEIRA)
+  trilhoTipo            TipoTrilho    @default(trilho_suico)
+  trilhoVaraoId         String?
+  tecidoId              String
+  blackoutId            String?
+  bainhaDesejada        Decimal?      @db.Decimal(5, 2)
+  instalacao            Boolean       @default(false)
+  trilhoAcessoriosValor Decimal?      @db.Decimal(10, 2)
+  outrosValor           Decimal?      @db.Decimal(10, 2)
+  observacoes           String?
+  quantidadeTecido      Decimal?      @db.Decimal(8, 2)
+  quantidadeBlackout    Decimal?      @db.Decimal(8, 2)
+  custoTotal            Decimal?      @db.Decimal(10, 2)
+  precoFinalVenda       Decimal?      @db.Decimal(10, 2)
+
+  orcamento   Orcamento    @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  tecido      Tecido       @relation("TecidoPrincipal", fields: [tecidoId], references: [id])
+  blackout    Tecido?      @relation("TecidoBlackout", fields: [blackoutId], references: [id])
+  trilhoVarao TrilhoVarao? @relation(fields: [trilhoVaraoId], references: [id])
+}
+
+model LogHistorico {
+  id          String   @id @default(cuid())
+  orcamentoId String
+  usuarioId   String
+  acao        String
+  detalhes    Json?
+  createdAt   DateTime @default(now())
+
+  orcamento Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  usuario   User      @relation(fields: [usuarioId], references: [id])
+}
