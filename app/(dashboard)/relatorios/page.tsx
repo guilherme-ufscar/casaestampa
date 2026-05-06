@@ -1,9 +1,9 @@
 ﻿"use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { ChevronDown, FileDown, FileSpreadsheet, TrendingUp, TrendingDown, Trophy, FileBarChart, DollarSign, Users, Package, Table, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, BarChart as HBarChart } from "recharts"
-import { StatusBadge, STATUS_CONFIG, StatusOrcamento } from "@/components/ui/StatusBadge"
+import { ChevronDown, FileDown, FileSpreadsheet, TrendingUp, Trophy, FileBarChart, DollarSign, Users, Package, Table, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { STATUS_CONFIG, StatusOrcamento } from "@/components/ui/StatusBadge"
 import { Toaster, toast } from "sonner"
 
 type KPIs = {

@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
-  FileText,
   Users,
   Settings,
   LogOut,

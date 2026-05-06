@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { FileText, CheckCircle, Package, TrendingUp, DollarSign, Percent, PlusCircle, Settings, Users, BarChart2, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { getServerSession } from 'next-auth'
 
 type DashData = {
   byStatus: Record<string, number>
