@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { LayoutDashboard, FileText, Users, Settings } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, ShoppingBag, Settings } from 'lucide-react'
 
 export default function BottomNav() {
   const pathname = usePathname()
@@ -12,8 +12,9 @@ export default function BottomNav() {
 
   const items = [
     { href: isAdmin ? '/dashboard-admin' : '/dashboard-vendedor', label: 'Início', icon: LayoutDashboard },
-    { href: '/orcamentos', label: 'Orçamentos', icon: FileText },
+    { href: '/orcamentos/novo', label: 'Orçamento', icon: FileText },
     { href: '/clientes', label: 'Clientes', icon: Users },
+    { href: '/painel-pedidos', label: 'Pedidos', icon: ShoppingBag },
     ...(isAdmin ? [{ href: '/configuracoes', label: 'Config', icon: Settings }] : []),
   ]
 
@@ -23,13 +24,8 @@ export default function BottomNav() {
         {items.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex flex-col items-center gap-1 px-4 py-2 text-[10px] font-medium transition-colors ${
-                active ? 'text-gold-primary' : 'text-text-secondary'
-              }`}
-            >
+            <Link key={href} href={href}
+              className={`flex flex-col items-center gap-1 px-3 py-2 text-[10px] font-medium transition-colors ${active ? 'text-gold-primary' : 'text-text-secondary'}`}>
               <Icon size={20} strokeWidth={active ? 2 : 1.75} />
               {label}
             </Link>
