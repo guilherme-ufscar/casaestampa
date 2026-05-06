@@ -18,7 +18,7 @@ export async function GET() {
     where: vendedorFilter,
     _count: { status: true },
   })
-  const byStatus = statusCounts.reduce((acc, s) => ({ ...acc, [s.status]: s._count.status }), {} as Record<string, number>)
+  const byStatus = statusCounts.reduce((acc: Record<string, number>, s) => ({ ...acc, [s.status]: s._count.status }), {} as Record<string, number>)
 
   // Métricas do mês
   const mesFiltro = { ...vendedorFilter, createdAt: { gte: inicioMes } }
