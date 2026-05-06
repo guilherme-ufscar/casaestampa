@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Info, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react'
+import { ChevronLeft, Info, ToggleLeft, ToggleRight, AlertTriangle, Ruler, Layers, Wrench, FileText, ChevronDown } from 'lucide-react'
 import { useOrcamento, AmbienteForm, ambienteVazio } from '@/context/OrcamentoContext'
 import { calcularAmbiente, Configuracoes, ModeloCortina, TipoAbertura } from '@/lib/calculoCortina'
 
@@ -18,11 +18,66 @@ const MODELOS: { value: ModeloCortina; label: string }[] = [
   { value: 'varao', label: 'Varão' },
 ]
 
-function SectionLabel({ label }: { label: string }) {
+function nomeLimpo(nome: string) {
+  return nome.replace(/\s+\d+%[A-Z]+(\s+\d+%[A-Z]+)*/g, '').replace(/\s{2,}/g, ' ').trim()
+}
+
+function composicao(nome: string) {
+  const match = nome.match(/(\d+%[A-Z]+(\s+\d+%[A-Z]+)*)/)
+  return match ? match[0] : null
+}
+
+function SectionLabel({ label, icon }: { label: string; icon?: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 mt-6 mb-3">
+    <div className="flex items-center gap-2.5 mt-7 mb-4">
+      {icon && <span className="text-gold-primary">{icon}</span>}
       <span className="text-[11px] font-semibold text-gold-primary uppercase tracking-widest whitespace-nowrap">{label}</span>
       <div className="flex-1 h-px bg-gradient-to-r from-gold-primary/30 to-transparent" />
+    </div>
+  )
+}
+
+function TecidoSelect({
+  label, tecidos, value, onChange,
+}: {
+  label: string
+  tecidos: Tecido[]
+  value: string
+  onChange: (id: string, t: Tecido | undefined) => void
+}) {
+  const selecionado = tecidos.find(t => t.id === value)
+  return (
+    <div className="space-y-2">
+      <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={e => onChange(e.target.value, tecidos.find(t => t.id === e.target.value))}
+          className="input-base appearance-none pr-8"
+        >
+          <option value="">Selecione o tecido...</option>
+          {tecidos.map(t => (
+            <option key={t.id} value={t.id}>{nomeLimpo(t.nome)}</option>
+          ))}
+        </select>
+        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+      </div>
+      {selecionado && (
+        <div className="flex flex-wrap gap-2 mt-1">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gold-primary/8 border border-gold-primary/20 rounded-full text-[11px] font-medium text-gold-dark">
+            <Ruler size={10} />
+            {Number(selecionado.larguraMaxima).toFixed(2)}m largura
+          </span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-input border border-brand-border rounded-full text-[11px] font-medium text-text-secondary">
+            R$ {Number(selecionado.valorMetro).toFixed(2)}/m
+          </span>
+          {composicao(selecionado.nome) && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-brand-input border border-brand-border rounded-full text-[11px] text-text-muted">
+              {composicao(selecionado.nome)}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -115,31 +170,34 @@ export default function Etapa3Cortina() {
 
   return (
     <div className="flex gap-6">
-      {/* Formulário principal */}
       <div className="flex-1 min-w-0">
         {/* Resumo cliente */}
         {cliente && (
-          <div className="flex items-center justify-between px-4 py-3 bg-white border border-brand-border rounded-xl mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gold-primary to-gold-light flex items-center justify-center">
-                <span className="text-xs font-semibold text-white">{cliente.nome.charAt(0).toUpperCase()}</span>
+          <div className="flex items-center justify-between px-4 py-3 bg-white border border-brand-border rounded-xl mb-4 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold-primary to-gold-light flex items-center justify-center shadow-sm">
+                <span className="text-xs font-bold text-white">{cliente.nome.charAt(0).toUpperCase()}</span>
               </div>
-              <span className="text-sm font-medium text-text-primary">{cliente.nome}</span>
-              {cliente.telefone && <span className="text-sm text-text-muted">· {cliente.telefone}</span>}
+              <div>
+                <p className="text-sm font-semibold text-text-primary leading-tight">{cliente.nome}</p>
+                {cliente.telefone && <p className="text-xs text-text-muted">{cliente.telefone}</p>}
+              </div>
             </div>
-            <button onClick={() => setEtapa(1)} className="text-xs font-medium text-gold-primary hover:text-gold-dark transition-colors">Editar</button>
+            <button onClick={() => setEtapa(1)} className="text-xs font-medium text-gold-primary hover:text-gold-dark transition-colors px-2 py-1 rounded hover:bg-gold-primary/5">Editar</button>
           </div>
         )}
 
         {/* Tabs de ambientes */}
         {ambientes.length > 1 && (
-          <div className="flex gap-1 mb-4 overflow-x-auto">
+          <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
             {ambientes.map((a, i) => (
               <button
                 key={i}
                 onClick={() => setAmbienteAtual(i)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                  i === ambienteAtual ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary hover:bg-brand-border'
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  i === ambienteAtual
+                    ? 'bg-gold-primary text-white shadow-sm'
+                    : 'bg-brand-input text-text-secondary hover:bg-brand-border border border-brand-border'
                 }`}
               >
                 {a.nomeAmbiente || `Ambiente ${i + 1}`}
@@ -149,13 +207,17 @@ export default function Etapa3Cortina() {
         )}
 
         <div className="card-base p-6">
-          <h3 className="text-base font-semibold text-text-primary">
-            Etapa 3 — Detalhes da Cortina
-            {ambientes.length > 1 && <span className="text-text-muted font-normal ml-2">· Ambiente {ambienteAtual + 1}</span>}
-          </h3>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-base font-semibold text-text-primary">Detalhes da Cortina</h3>
+            {ambientes.length > 1 && (
+              <span className="text-xs font-medium text-text-muted bg-brand-input px-2.5 py-1 rounded-full border border-brand-border">
+                Ambiente {ambienteAtual + 1} de {ambientes.length}
+              </span>
+            )}
+          </div>
 
           {/* IDENTIFICAÇÃO */}
-          <SectionLabel label="Identificação" />
+          <SectionLabel label="Identificação" icon={<FileText size={13} />} />
           <input
             type="text"
             value={form.nomeAmbiente}
@@ -165,7 +227,7 @@ export default function Etapa3Cortina() {
           />
 
           {/* MEDIDAS */}
-          <SectionLabel label="Medidas" />
+          <SectionLabel label="Medidas" icon={<Ruler size={13} />} />
           <div className="grid grid-cols-3 gap-3">
             {[
               { key: 'largura', label: 'Largura (m)' },
@@ -198,110 +260,86 @@ export default function Etapa3Cortina() {
           </div>
 
           {/* SUPORTE E MODELO */}
-          <SectionLabel label="Suporte e Modelo" />
+          <SectionLabel label="Suporte e Modelo" icon={<Layers size={13} />} />
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Tipo de suporte</label>
-              <select value={form.trilhoTipo} onChange={e => setForm(p => ({ ...p, trilhoTipo: e.target.value as 'trilho_suico' | 'varao' }))} className="input-base">
-                <option value="trilho_suico">Trilho Suíço</option>
-                <option value="varao">Varão</option>
-              </select>
+              <div className="relative">
+                <select value={form.trilhoTipo} onChange={e => setForm(p => ({ ...p, trilhoTipo: e.target.value as 'trilho_suico' | 'varao' }))} className="input-base appearance-none pr-8">
+                  <option value="trilho_suico">Trilho Suíço</option>
+                  <option value="varao">Varão</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+              </div>
             </div>
             <div className="space-y-1.5">
               <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Modelo da cortina</label>
-              <select value={form.modeloCortina} onChange={e => setForm(p => ({ ...p, modeloCortina: e.target.value as ModeloCortina }))} className="input-base">
-                {MODELOS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-              </select>
+              <div className="relative">
+                <select value={form.modeloCortina} onChange={e => setForm(p => ({ ...p, modeloCortina: e.target.value as ModeloCortina }))} className="input-base appearance-none pr-8">
+                  {MODELOS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+              </div>
             </div>
           </div>
 
           {/* TECIDOS */}
-          <SectionLabel label="Tecidos" />
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Tecido principal</label>
-              <select
-                value={form.tecidoId}
-                onChange={e => {
-                  const t = tecidosPrincipais.find(x => x.id === e.target.value)
-                  setForm(p => ({ ...p, tecidoId: e.target.value, tecidoNome: t?.nome ?? '', tecidoLargura: t?.larguraMaxima ?? 0, tecidoValor: t?.valorMetro ?? 0 }))
-                }}
-                className="input-base"
-              >
-                <option value="">Selecione o tecido...</option>
-                {tecidosPrincipais.map(t => <option key={t.id} value={t.id}>{t.nome}</option>)}
-              </select>
-              {form.tecidoId && (
-                <div className="flex gap-2 mt-1">
-                  <span className="px-2.5 py-1 bg-brand-input border border-brand-border rounded-full text-[11px] font-medium text-text-secondary">
-                    Largura: {form.tecidoLargura.toFixed(2)}m
-                  </span>
-                  <span className="px-2.5 py-1 bg-brand-input border border-brand-border rounded-full text-[11px] font-medium text-text-secondary">
-                    R$ {form.tecidoValor.toFixed(2)}/m
-                  </span>
-                </div>
-              )}
-            </div>
+          <SectionLabel label="Tecidos" icon={<Layers size={13} />} />
+          <div className="space-y-4">
+            <TecidoSelect
+              label="Tecido principal"
+              tecidos={tecidosPrincipais}
+              value={form.tecidoId}
+              onChange={(id, t) => setForm(p => ({ ...p, tecidoId: id, tecidoNome: t?.nome ?? '', tecidoLargura: Number(t?.larguraMaxima ?? 0), tecidoValor: Number(t?.valorMetro ?? 0) }))}
+            />
 
-            <div className="flex items-center justify-between py-2">
-              <span className="text-sm font-medium text-text-primary">Forro / Blackout</span>
+            <div className="flex items-center justify-between py-2 px-3 bg-brand-input rounded-xl border border-brand-border">
+              <div>
+                <p className="text-sm font-medium text-text-primary">Forro / Blackout</p>
+                <p className="text-xs text-text-muted">Adicionar tecido de forro</p>
+              </div>
               <button onClick={() => setForm(p => ({ ...p, blackoutAtivo: !p.blackoutAtivo }))} className="text-gold-primary">
-                {form.blackoutAtivo ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-text-muted" />}
+                {form.blackoutAtivo ? <ToggleRight size={30} /> : <ToggleLeft size={30} className="text-text-muted" />}
               </button>
             </div>
 
             {form.blackoutAtivo && (
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Tecido blackout</label>
-                <select
-                  value={form.blackoutId}
-                  onChange={e => {
-                    const t = tecidosBlackout.find(x => x.id === e.target.value)
-                    setForm(p => ({ ...p, blackoutId: e.target.value, blackoutNome: t?.nome ?? '', blackoutLargura: t?.larguraMaxima ?? 0, blackoutValor: t?.valorMetro ?? 0 }))
-                  }}
-                  className="input-base"
-                >
-                  <option value="">Selecione o blackout...</option>
-                  {tecidosBlackout.map(t => <option key={t.id} value={t.id}>{t.nome}</option>)}
-                </select>
-                {form.blackoutId && (
-                  <div className="flex gap-2 mt-1">
-                    <span className="px-2.5 py-1 bg-brand-input border border-brand-border rounded-full text-[11px] font-medium text-text-secondary">
-                      Largura: {form.blackoutLargura.toFixed(2)}m
-                    </span>
-                    <span className="px-2.5 py-1 bg-brand-input border border-brand-border rounded-full text-[11px] font-medium text-text-secondary">
-                      R$ {form.blackoutValor.toFixed(2)}/m
-                    </span>
-                  </div>
-                )}
-              </div>
+              <TecidoSelect
+                label="Tecido blackout"
+                tecidos={tecidosBlackout}
+                value={form.blackoutId}
+                onChange={(id, t) => setForm(p => ({ ...p, blackoutId: id, blackoutNome: t?.nome ?? '', blackoutLargura: Number(t?.larguraMaxima ?? 0), blackoutValor: Number(t?.valorMetro ?? 0) }))}
+              />
             )}
           </div>
 
           {/* INSTALAÇÃO E ACABAMENTO */}
-          <SectionLabel label="Instalação e Acabamento" />
+          <SectionLabel label="Instalação e Acabamento" icon={<Wrench size={13} />} />
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-text-primary">Instalação</span>
+            <div className="flex items-center justify-between py-2 px-3 bg-brand-input rounded-xl border border-brand-border">
+              <div>
+                <p className="text-sm font-medium text-text-primary">Instalação</p>
+                <p className="text-xs text-text-muted">Incluir mão de obra</p>
+              </div>
               <button onClick={() => setForm(p => ({ ...p, instalacao: !p.instalacao }))} className="text-gold-primary">
-                {form.instalacao ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-text-muted" />}
+                {form.instalacao ? <ToggleRight size={30} /> : <ToggleLeft size={30} className="text-text-muted" />}
               </button>
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Abertura</label>
-              <div className="flex rounded-lg overflow-hidden border border-brand-border">
+              <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Abertura da cortina</label>
+              <div className="flex rounded-xl overflow-hidden border border-brand-border">
                 {(['INTEIRA', 'CENTRAL'] as TipoAbertura[]).map(op => (
                   <button
                     key={op}
                     onClick={() => setForm(p => ({ ...p, tipoAbertura: op }))}
-                    className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
+                    className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
                       form.tipoAbertura === op
                         ? 'bg-gold-primary text-white'
                         : 'bg-brand-input text-text-secondary hover:bg-brand-border'
                     }`}
                   >
-                    {op === 'INTEIRA' ? 'Inteira' : 'Central'}
+                    {op === 'INTEIRA' ? 'Inteira' : 'Central (2 folhas)'}
                   </button>
                 ))}
               </div>
@@ -320,7 +358,7 @@ export default function Etapa3Cortina() {
           </div>
 
           {/* OBSERVAÇÕES */}
-          <SectionLabel label="Observações" />
+          <SectionLabel label="Observações" icon={<FileText size={13} />} />
           <textarea
             value={form.observacoes}
             onChange={e => setForm(p => ({ ...p, observacoes: e.target.value }))}
@@ -337,18 +375,18 @@ export default function Etapa3Cortina() {
             </div>
           )}
 
-          {/* Ações sticky */}
+          {/* Ações */}
           <div className="flex items-center justify-between pt-6 mt-4 border-t border-brand-border">
-            <button onClick={() => setEtapa(2)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-50 transition-colors">
+            <button onClick={() => setEtapa(2)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:text-red-400 hover:bg-red-50 transition-colors">
               <ChevronLeft size={16} />
-              Cancelar
+              Voltar
             </button>
             <div className="flex items-center gap-3">
               <button
                 onClick={adicionarAmbiente}
                 className="px-4 py-2.5 rounded-[10px] text-sm font-semibold border border-gold-primary text-gold-primary hover:bg-gold-primary/5 transition-colors"
               >
-                + Adicionar outro ambiente
+                + Outro ambiente
               </button>
               <button
                 onClick={irParaRevisao}
@@ -362,30 +400,37 @@ export default function Etapa3Cortina() {
         </div>
       </div>
 
-      {/* Painel de prévia */}
-      {previa && (
-        <div className="hidden lg:block w-64 shrink-0">
-          <div className="sticky top-6 card-base border-l-[3px] border-l-gold-primary p-5 space-y-3">
-            <p className="text-[11px] font-semibold text-gold-primary uppercase tracking-wider">Estimativa</p>
-            <div>
-              <p className="text-xs text-text-muted">Metros de tecido</p>
-              <p className="text-2xl font-bold text-text-primary">{previa.metros.toFixed(2)}m</p>
+      {/* Painel de prévia lateral */}
+      <div className="hidden lg:block w-60 shrink-0">
+        <div className="sticky top-6 space-y-3">
+          {previa ? (
+            <div className="card-base border-l-[3px] border-l-gold-primary p-5 space-y-4">
+              <p className="text-[11px] font-semibold text-gold-primary uppercase tracking-wider">Estimativa em tempo real</p>
+              <div className="space-y-1">
+                <p className="text-xs text-text-muted">Metros de tecido</p>
+                <p className="text-3xl font-extrabold text-text-primary">{previa.metros.toFixed(2)}<span className="text-base font-medium text-text-muted ml-1">m</span></p>
+              </div>
+              {form.blackoutAtivo && form.blackoutId && (
+                <div className="space-y-1 pt-2 border-t border-brand-border">
+                  <p className="text-xs text-text-muted">Metros de blackout</p>
+                  <p className="text-xl font-bold text-text-primary">—</p>
+                </div>
+              )}
+              {previa.bainhaNaoCabe && (
+                <div className="flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                  <AlertTriangle size={13} className="text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-amber-700 leading-snug">Bainha requer tecido extra</p>
+                </div>
+              )}
             </div>
-            {form.blackoutAtivo && (
-              <div>
-                <p className="text-xs text-text-muted">Metros de blackout</p>
-                <p className="text-lg font-semibold text-text-primary">—</p>
-              </div>
-            )}
-            {previa.bainhaNaoCabe && (
-              <div className="flex items-start gap-2 p-2.5 bg-amber-50 rounded-lg">
-                <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-amber-700">Bainha requer tecido extra</p>
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="card-base p-5 text-center space-y-2 opacity-50">
+              <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Estimativa</p>
+              <p className="text-xs text-text-muted">Preencha tecido, largura e altura para ver a prévia</p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

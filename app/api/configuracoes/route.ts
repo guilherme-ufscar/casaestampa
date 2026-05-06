@@ -4,10 +4,15 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
 export async function GET() {
-  const configs = await prisma.configuracaoCalculo.findMany()
-  const map: Record<string, string> = {}
-  for (const c of configs) map[c.chave] = c.valor
-  return NextResponse.json(map)
+  try {
+    const configs = await prisma.configuracaoCalculo.findMany()
+    const map: Record<string, string> = {}
+    for (const c of configs) map[c.chave] = c.valor
+    return NextResponse.json(map)
+  } catch (error) {
+    console.error('[GET /api/configuracoes] erro:', error)
+    return NextResponse.json({ error: 'Erro ao buscar configurações' }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {

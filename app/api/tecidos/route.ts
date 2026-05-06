@@ -6,7 +6,8 @@ import { authOptions } from '@/lib/auth'
 export async function GET() {
   try {
     const tecidos = await prisma.tecido.findMany({ orderBy: { nome: 'asc' } })
-    return NextResponse.json(tecidos)
+    const normalized = tecidos.map(t => ({ ...t, larguraMaxima: Number(t.larguraMaxima), valorMetro: Number(t.valorMetro) }))
+    return NextResponse.json(normalized)
   } catch (e) {
     console.error('[GET /api/tecidos]', e)
     return NextResponse.json({ error: String(e) }, { status: 500 })
