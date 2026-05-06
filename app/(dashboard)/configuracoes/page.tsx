@@ -37,7 +37,7 @@ const FATORES_LABELS: Record<string, string> = {
 }
 
 export default function ConfiguracoesPage() {
-  const [aba, setAba] = useState<'tecidos' | 'blackouts' | 'trilhos' | 'fatores' | 'markup' | 'confeccao'>('tecidos')
+  const [aba, setAba] = useState<'tecidos' | 'blackouts' | 'trilhos' | 'fatores' | 'markup' | 'confeccao' | 'pdf'>('tecidos')
   const [tecidos, setTecidos] = useState<Tecido[]>([])
   const [trilhos, setTrilhos] = useState<Trilho[]>([])
   const [configs, setConfigs] = useState<Configs>({})
@@ -154,6 +154,7 @@ export default function ConfiguracoesPage() {
     { key: 'fatores', label: 'Fatores de Prega' },
     { key: 'markup', label: 'Markup e Comissões' },
     { key: 'confeccao', label: 'Confecção e Instalação' },
+    { key: 'pdf', label: 'PDF e WhatsApp' },
   ] as const
 
   return (
@@ -384,6 +385,60 @@ export default function ConfiguracoesPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className="flex justify-end">
+                <button onClick={saveConfigs} disabled={saving} className="btn-gold flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold disabled:opacity-70">
+                  {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                  Salvar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* PDF e WhatsApp */}
+          {aba === 'pdf' && (
+            <div className="space-y-4 max-w-2xl">
+              <div className="card-base p-6 space-y-5">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Condições Comerciais</label>
+                  <textarea
+                    rows={5}
+                    value={configs.condicoes_comerciais ?? ''}
+                    onChange={e => setConfigs(prev => ({ ...prev, condicoes_comerciais: e.target.value }))}
+                    placeholder="Ex: Este orçamento tem validade de 15 dias..."
+                    className="input-base h-auto py-3 resize-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Validade padrão do orçamento (dias)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={configs.validade_orcamento_dias ?? '15'}
+                    onChange={e => setConfigs(prev => ({ ...prev, validade_orcamento_dias: e.target.value }))}
+                    className="input-base"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Texto de encerramento WhatsApp</label>
+                  <textarea
+                    rows={3}
+                    value={configs.whatsapp_encerramento ?? ''}
+                    onChange={e => setConfigs(prev => ({ ...prev, whatsapp_encerramento: e.target.value }))}
+                    placeholder="Ex: Qualquer dúvida estou à disposição! Att, Equipe Casa Estampa"
+                    className="input-base h-auto py-3 resize-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Telefone da empresa (para o PDF)</label>
+                  <input
+                    type="tel"
+                    value={configs.telefone_empresa ?? ''}
+                    onChange={e => setConfigs(prev => ({ ...prev, telefone_empresa: e.target.value }))}
+                    placeholder="(11) 99999-9999"
+                    className="input-base"
+                  />
+                </div>
               </div>
               <div className="flex justify-end">
                 <button onClick={saveConfigs} disabled={saving} className="btn-gold flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold disabled:opacity-70">

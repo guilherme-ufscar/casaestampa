@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { calcularOrcamento, AmbienteInput, Configuracoes } from '@/lib/calculoCortina'
+import { gerarToken, tokenExpiracao } from '@/lib/token'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -60,6 +61,8 @@ export async function POST(req: NextRequest) {
   }
 
   const resultado = calcularOrcamento(ambientes, configs)
+  const token = gerarToken()
+  const tokenExpiresAt = tokenExpiracao()
 
   const orcamento = await prisma.orcamento.create({
     data: {
@@ -67,6 +70,8 @@ export async function POST(req: NextRequest) {
       vendedorId: session.user.id,
       status: 'orcamento_enviado',
       precoFinalTotal: resultado.totalPrecoFinalVenda,
+      token,
+      tokenExpiresAt,
       ambientes: {
         create: ambientes.map((a, i) => {
           const r = resultado.ambientes[i]

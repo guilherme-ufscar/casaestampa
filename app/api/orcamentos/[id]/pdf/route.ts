@@ -1,0 +1,74 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { renderToBuffer } from '@react-pdf/renderer'
+import OrcamentoPDFDoc, { OrcamentoPDF, AmbientePDF } from '@/lib/OrcamentoPDFDoc'
+import React from 'react'
+
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const orc = await prisma.orcamento.findUnique({
+    where: { id: params.id },
+    include: {
+      cliente: true,
+      vendedor: { select: { nome: true } },
+      ambientes: {
+        include: {
+          tecido: true,
+          blackout: true,
+        },
+      },
+    },
+  })
+
+  if (!orc) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
+
+  // Buscar configurações
+  const configsRaw = await prisma.configuracaoCalculo.findMany()
+  const cfg: Record<string, string> = {}
+  for (const c of configsRaw) cfg[c.chave] = c.valor
+
+  const ambientesPDF: AmbientePDF[] = orc.ambientes.map(a => ({
+    nomeAmbiente: a.nomeAmbiente,
+    tecidoNome: a.tecido.nome,
+    quantidadeTecido: Number(a.quantidadeTecido ?? 0),
+    blackoutNome: a.blackout?.nome ?? null,
+    quantidadeBlackout: a.quantidadeBlackout ? Number(a.quantidadeBlackout) : null,
+    trilhoAcessoriosValor: a.trilhoAcessoriosValor ? Number(a.trilhoAcessoriosValor) : null,
+    instalacao: a.instalacao,
+    outrosValor: a.outrosValor ? Number(a.outrosValor) : null,
+    precoFinalVenda: Number(a.precoFinalVenda ?? 0),
+  }))
+
+  const orcPDF: OrcamentoPDF = {
+    numero: orc.numero,
+    createdAt: orc.createdAt,
+    vendedorNome: orc.vendedor.nome,
+    clienteNome: orc.cliente?.nome ?? null,
+    clienteTelefone: orc.cliente?.telefone ?? null,
+    clienteEmail: orc.cliente?.email ?? null,
+    clienteEndereco: orc.cliente?.endereco ?? null,
+    clienteArquiteto: orc.cliente?.arquiteto ?? null,
+    ambientes: ambientesPDF,
+    precoFinalTotal: Number(orc.precoFinalTotal ?? 0),
+    condicoesComerciais: cfg.condicoes_comerciais,
+    telefoneEmpresa: cfg.telefone_empresa,
+  }
+
+  const doc = React.createElement(OrcamentoPDFDoc, { orc: orcPDF })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buffer = await renderToBuffer(doc as any)
+  const uint8 = new Uint8Array(buffer)
+
+  const numero = String(orc.numero).padStart(4, '0')
+  return new NextResponse(uint8, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="Casa-Estampa-Orcamento-${numero}.pdf"`,
+    },
+  })
+}

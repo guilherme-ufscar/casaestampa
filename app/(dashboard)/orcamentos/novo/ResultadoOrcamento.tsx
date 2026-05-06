@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, FileDown, MessageCircle, Plus, Save, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
+import { CheckCircle, FileDown, MessageCircle, Plus, Save, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react'
 import { useOrcamento, ambienteVazio } from '@/context/OrcamentoContext'
 import { useSession } from 'next-auth/react'
 
@@ -24,7 +24,7 @@ type ResultadoAdminAmbiente = ResultadoAmbientePublico & {
 }
 
 type ResultadoAPI = {
-  orcamento: { id: string; numero: number }
+  orcamento: { id: string; numero: number; token?: string }
   resultado: {
     ambientes: ResultadoAmbientePublico[] | ResultadoAdminAmbiente[]
     totalPrecoFinalVenda: number
@@ -39,6 +39,19 @@ function fmt(v: number) {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
+function Toast({ msg, onClose }: { msg: string; onClose: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 4000)
+    return () => clearTimeout(t)
+  }, [onClose])
+  return (
+    <div className="fixed top-4 right-4 z-50 flex items-center gap-3 bg-red-500 text-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium">
+      {msg}
+      <button onClick={onClose}><X size={15} /></button>
+    </div>
+  )
+}
+
 export default function ResultadoOrcamento() {
   const { data: session } = useSession()
   const { cliente, ambientes, setAmbientes, setAmbienteAtual, setEtapa, resetOrcamento } = useOrcamento()
@@ -46,6 +59,8 @@ export default function ResultadoOrcamento() {
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
   const [adminExpanded, setAdminExpanded] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState(false)
+  const [toast, setToast] = useState('')
   const isAdmin = session?.user?.role === 'ADMIN'
 
   useEffect(() => {
@@ -93,20 +108,52 @@ export default function ResultadoOrcamento() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function adicionarAmbiente() {
-    const novos = [...ambientes, { ...ambienteVazio, nomeAmbiente: `Ambiente ${ambientes.length + 1}` }]
-    setAmbientes(novos)
-    setAmbienteAtual(novos.length - 1)
-    setEtapa(3)
+  async function gerarPDF() {
+    if (!resultado) return
+    setPdfLoading(true)
+    try {
+      const res = await fetch(`/api/orcamentos/${resultado.orcamento.id}/pdf`)
+      if (!res.ok) throw new Error('Erro ao gerar PDF')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `Casa-Estampa-Orcamento-${String(resultado.orcamento.numero).padStart(4, '0')}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      setToast('Erro ao gerar o PDF. Tente novamente.')
+    } finally {
+      setPdfLoading(false)
+    }
   }
 
   function whatsapp() {
     if (!resultado) return
     const nome = cliente?.nome ?? 'Cliente'
     const total = fmt(resultado.resultado.totalPrecoFinalVenda)
-    const resumo = resultado.resultado.ambientes.map(a => `• ${a.nomeAmbiente}: ${fmt(a.precoFinalVenda)}`).join('\n')
-    const msg = encodeURIComponent(`Olá ${nome}! Segue o orçamento Casa Estampa Interiores:\n\n${resumo}\n\n*Total: ${total}*\n\nOrçamento nº ${resultado.orcamento.numero}`)
-    window.open(`https://wa.me/?text=${msg}`, '_blank')
+    const resumo = resultado.resultado.ambientes
+      .map(a => `• ${a.nomeAmbiente}: ${fmt(a.precoFinalVenda)}`)
+      .join('\n')
+    const vendedor = session?.user?.name ?? 'Equipe Casa Estampa'
+    const linkPublico = resultado.orcamento.token
+      ? `\n\nVisualize seu orçamento: ${window.location.origin}/orcamento/${resultado.orcamento.token}`
+      : ''
+
+    const msg = encodeURIComponent(
+      `Olá, ${nome}! 👋\n\nSegue o orçamento da *Casa Estampa Interiores*:\n\n${resumo}\n\n*Total: ${total}*\nem até 10x sem juros${linkPublico}\n\nQualquer dúvida estou à disposição!\n${vendedor}`
+    )
+
+    const telefone = cliente?.telefone?.replace(/\D/g, '') ?? ''
+    const numero = telefone.length >= 10 ? `55${telefone}` : ''
+    window.open(`https://wa.me/${numero}?text=${msg}`, '_blank')
+  }
+
+  function adicionarAmbiente() {
+    const novos = [...ambientes, { ...ambienteVazio, nomeAmbiente: `Ambiente ${ambientes.length + 1}` }]
+    setAmbientes(novos)
+    setAmbienteAtual(novos.length - 1)
+    setEtapa(3)
   }
 
   if (loading) {
@@ -133,12 +180,14 @@ export default function ResultadoOrcamento() {
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
+      {toast && <Toast msg={toast} onClose={() => setToast('')} />}
+
       {/* Header sucesso */}
       <div className="card-base p-6 text-center space-y-2">
         <CheckCircle size={48} className="text-gold-primary mx-auto" />
         <h3 className="text-xl font-semibold text-text-primary">Orçamento Calculado</h3>
         <span className="inline-block px-3 py-1 bg-gold-primary/10 text-gold-dark text-sm font-semibold rounded-full">
-          Orçamento #{orcamento.numero}
+          Orçamento #{String(orcamento.numero).padStart(4, '0')}
         </span>
         {cliente && <p className="text-sm text-text-muted">{cliente.nome}</p>}
       </div>
@@ -152,7 +201,9 @@ export default function ResultadoOrcamento() {
           </div>
           <div className="flex gap-4 text-sm text-text-secondary">
             <span>Tecido: <strong className="text-text-primary">{a.quantidadeTecido.toFixed(2)}m</strong></span>
-            {a.quantidadeBlackout && <span>Blackout: <strong className="text-text-primary">{a.quantidadeBlackout.toFixed(2)}m</strong></span>}
+            {a.quantidadeBlackout && (
+              <span>Blackout: <strong className="text-text-primary">{a.quantidadeBlackout.toFixed(2)}m</strong></span>
+            )}
           </div>
         </div>
       ))}
@@ -166,9 +217,13 @@ export default function ResultadoOrcamento() {
 
       {/* Botões primários */}
       <div className="grid grid-cols-2 gap-3">
-        <button className="btn-gold flex items-center justify-center gap-2 py-3 rounded-[10px] text-sm font-semibold">
-          <FileDown size={16} />
-          Gerar PDF
+        <button
+          onClick={gerarPDF}
+          disabled={pdfLoading}
+          className="btn-gold flex items-center justify-center gap-2 py-3 rounded-[10px] text-sm font-semibold disabled:opacity-70"
+        >
+          {pdfLoading ? <Loader2 size={16} className="animate-spin" /> : <FileDown size={16} />}
+          {pdfLoading ? 'Gerando...' : 'Gerar PDF'}
         </button>
         <button
           onClick={whatsapp}

@@ -107,6 +107,8 @@ model Orcamento {
   vendedorId      String
   status          StatusOrcamento @default(orcamento_enviado)
   precoFinalTotal Decimal?        @db.Decimal(10, 2)
+  token           String?         @unique
+  tokenExpiresAt  DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
