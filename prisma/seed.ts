@@ -34,10 +34,6 @@ async function main() {
     },
   })
 
-  // Limpar tecidos e trilhos existentes para re-seed limpo
-  await prisma.tecido.deleteMany()
-  await prisma.trilhoVarao.deleteMany()
-
   // ─── TECIDOS — Tabela Deccor Casa 21/01/2026 ───────────────────────────────
   // Fonte: "Tabela de Preço - DECCOR CASA (( Completa )) - 21.01.2026.xlsx"
   // Tipo BLACKOUT detectado pelo nome do produto
@@ -97,32 +93,43 @@ async function main() {
   ]
 
   for (const t of tecidos) {
-    await prisma.tecido.create({ data: { ...t, ativo: true } })
+    const existe = await prisma.tecido.findFirst({ where: { nome: t.nome } })
+    if (!existe) {
+      await prisma.tecido.create({ data: { ...t, ativo: true } })
+    } else {
+      await prisma.tecido.update({ where: { id: existe.id }, data: { larguraMaxima: t.larguraMaxima, valorMetro: t.valorMetro, tipo: t.tipo, ativo: true } })
+    }
   }
 
   // ─── TRILHOS E VARÕES — Fornecedor Venetillo ───────────────────────────────
   // Fonte: "TABELA DE TRILHO.xlsx" — preços por metro linear
-  await prisma.trilhoVarao.createMany({
-    data: [
-      { nome: 'Trilho Max 1 Via (Venetillo)', valorUnitario: 11.88, ativo: true },
-      { nome: 'Trilho Max 2 Vias (Venetillo)', valorUnitario: 24.51, ativo: true },
-      { nome: 'Trilho Max 2 Vias Largo (Venetillo)', valorUnitario: 27.00, ativo: true },
-      { nome: 'Trilho Max 3 Vias (Venetillo)', valorUnitario: 41.75, ativo: true },
-      { nome: 'Trilho Mini Luxo Curvo (Venetillo)', valorUnitario: 18.80, ativo: true },
-      { nome: 'Varão Tubo Simples 19mm (Venetillo)', valorUnitario: 15.90, ativo: true },
-      { nome: 'Varão Tubo Grosso 29mm (Venetillo)', valorUnitario: 18.50, ativo: true },
-      { nome: 'Tubo Wave (Venetillo)', valorUnitario: 28.00, ativo: true },
-      { nome: 'Suporte Trilho Curvo (Venetillo)', valorUnitario: 10.00, ativo: true },
-      { nome: 'Ilhões Varão Branco (Venetillo)', valorUnitario: 0.40, ativo: true },
-      { nome: 'Ilhões Varão Cromado (Venetillo)', valorUnitario: 1.50, ativo: true },
-      { nome: 'Ponteira do Varão Branco (Venetillo)', valorUnitario: 10.00, ativo: true },
-      { nome: 'Suporte Varão (Venetillo)', valorUnitario: 17.00, ativo: true },
-      // Rio Flex Persianas
-      { nome: 'Trilho Max 1 Via (Rio Flex)', valorUnitario: 10.00, ativo: true },
-      { nome: 'Trilho Max 2 Vias (Rio Flex)', valorUnitario: 20.00, ativo: true },
-      { nome: 'Trilho Max 2 Vias Largo (Rio Flex)', valorUnitario: 25.00, ativo: true },
-    ],
-  })
+  const trilhos = [
+    { nome: 'Trilho Max 1 Via (Venetillo)', valorUnitario: 11.88 },
+    { nome: 'Trilho Max 2 Vias (Venetillo)', valorUnitario: 24.51 },
+    { nome: 'Trilho Max 2 Vias Largo (Venetillo)', valorUnitario: 27.00 },
+    { nome: 'Trilho Max 3 Vias (Venetillo)', valorUnitario: 41.75 },
+    { nome: 'Trilho Mini Luxo Curvo (Venetillo)', valorUnitario: 18.80 },
+    { nome: 'Varão Tubo Simples 19mm (Venetillo)', valorUnitario: 15.90 },
+    { nome: 'Varão Tubo Grosso 29mm (Venetillo)', valorUnitario: 18.50 },
+    { nome: 'Tubo Wave (Venetillo)', valorUnitario: 28.00 },
+    { nome: 'Suporte Trilho Curvo (Venetillo)', valorUnitario: 10.00 },
+    { nome: 'Ilhões Varão Branco (Venetillo)', valorUnitario: 0.40 },
+    { nome: 'Ilhões Varão Cromado (Venetillo)', valorUnitario: 1.50 },
+    { nome: 'Ponteira do Varão Branco (Venetillo)', valorUnitario: 10.00 },
+    { nome: 'Suporte Varão (Venetillo)', valorUnitario: 17.00 },
+    { nome: 'Trilho Max 1 Via (Rio Flex)', valorUnitario: 10.00 },
+    { nome: 'Trilho Max 2 Vias (Rio Flex)', valorUnitario: 20.00 },
+    { nome: 'Trilho Max 2 Vias Largo (Rio Flex)', valorUnitario: 25.00 },
+  ]
+
+  for (const tr of trilhos) {
+    const existe = await prisma.trilhoVarao.findFirst({ where: { nome: tr.nome } })
+    if (!existe) {
+      await prisma.trilhoVarao.create({ data: { ...tr, ativo: true } })
+    } else {
+      await prisma.trilhoVarao.update({ where: { id: existe.id }, data: { valorUnitario: tr.valorUnitario, ativo: true } })
+    }
+  }
 
   // ─── CONFIGURAÇÕES DE CÁLCULO ──────────────────────────────────────────────
   // Confecção por m² por modelo — Costureira Cici
