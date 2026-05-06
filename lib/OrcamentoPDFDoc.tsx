@@ -4,17 +4,7 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
 } from '@react-pdf/renderer'
-
-Font.register({
-  family: 'Poppins',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLGT9Z1xlFQ.woff2', fontWeight: 600 },
-    { src: 'https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2', fontWeight: 700 },
-  ],
-})
 
 const GOLD = '#C9A84C'
 const DARK = '#1C1C1C'
@@ -23,7 +13,7 @@ const LIGHT_BG = '#F8F8F8'
 const BORDER = '#F0EDE8'
 
 const s = StyleSheet.create({
-  page: { fontFamily: 'Poppins', fontSize: 9, color: DARK, padding: 40, backgroundColor: '#FFFFFF' },
+  page: { fontSize: 9, color: DARK, padding: 40, backgroundColor: '#FFFFFF' },
   // Header
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: BORDER },
   logoArea: { flexDirection: 'column' },
@@ -76,7 +66,10 @@ const s = StyleSheet.create({
 })
 
 function fmt(v: number) {
-  return `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const fixed = v.toFixed(2)
+  const [intPart, decPart] = fixed.split('.')
+  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return `R$ ${intFormatted},${decPart}`
 }
 
 export type AmbientePDF = {

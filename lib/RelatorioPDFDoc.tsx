@@ -1,14 +1,5 @@
-﻿import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer"
+﻿import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer"
 import React from "react"
-
-Font.register({
-  family: "Poppins",
-  fonts: [
-    { src: "https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2", fontWeight: 400 },
-    { src: "https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLGT9Z1xlFQ.woff2", fontWeight: 600 },
-    { src: "https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2", fontWeight: 700 },
-  ],
-})
 
 const GOLD = "#C9A84C"
 const DARK = "#1C1C1C"
@@ -17,7 +8,7 @@ const LIGHT = "#F8F8F8"
 const BORDER = "#F0EDE8"
 
 const s = StyleSheet.create({
-  page: { fontFamily: "Poppins", fontSize: 9, color: DARK, padding: 40, backgroundColor: "#FFFFFF" },
+  page: { fontSize: 9, color: DARK, padding: 40, backgroundColor: "#FFFFFF" },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: BORDER },
   logoNome: { fontSize: 18, fontWeight: 700, color: GOLD },
   logoSub: { fontSize: 8, color: MUTED, letterSpacing: 3, marginTop: 2 },
@@ -37,7 +28,10 @@ const s = StyleSheet.create({
 })
 
 function fmt(v: number) {
-  return "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const fixed = v.toFixed(2)
+  const [intPart, decPart] = fixed.split('.')
+  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return `R$ ${intFormatted},${decPart}`
 }
 
 type Props = {

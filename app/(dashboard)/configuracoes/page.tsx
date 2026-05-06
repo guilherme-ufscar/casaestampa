@@ -366,14 +366,21 @@ export default function ConfiguracoesPage() {
           {aba === 'confeccao' && (
             <div className="space-y-4 max-w-md">
               <div className="card-base p-6 space-y-5">
+                <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest">Confecção por m² — Costureira Cici</p>
                 {[
-                  { chave: 'confeccao_valor_metro', label: 'Confecção (por metro)', prefix: 'R$' },
-                  { chave: 'instalacao_valor_fixo', label: 'Instalação (valor fixo)', prefix: 'R$' },
-                ].map(({ chave, label, prefix }) => (
+                  { chave: 'confeccao_prega_macho', label: 'Prega Macho (R$/m²)' },
+                  { chave: 'confeccao_prega_femea', label: 'Prega Fêmea (R$/m²)' },
+                  { chave: 'confeccao_prega_americana', label: 'Prega Americana (R$/m²)' },
+                  { chave: 'confeccao_prega_franzida', label: 'Prega Franzida (R$/m²)' },
+                  { chave: 'confeccao_prega_reta', label: 'Prega Reta / Blackout (R$/m²)' },
+                  { chave: 'confeccao_wave', label: 'Wave (R$/m²)' },
+                  { chave: 'confeccao_soft_wave', label: 'Soft Wave (R$/m²)' },
+                  { chave: 'confeccao_varao', label: 'Varão / Ilhões (R$/m²)' },
+                ].map(({ chave, label }) => (
                   <div key={chave} className="space-y-1.5">
                     <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">{prefix}</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">R$</span>
                       <input
                         type="number"
                         step="0.01"
@@ -385,6 +392,23 @@ export default function ConfiguracoesPage() {
                     </div>
                   </div>
                 ))}
+                <div className="pt-2 border-t border-brand-border">
+                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest mb-4">Instalação</p>
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Instalação (R$/m²)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">R$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={configs['instalacao_valor_m2'] ?? ''}
+                        onChange={e => setConfigs(prev => ({ ...prev, instalacao_valor_m2: e.target.value }))}
+                        className="input-base pl-10"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="flex justify-end">
                 <button onClick={saveConfigs} disabled={saving} className="btn-gold flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold disabled:opacity-70">

@@ -34,8 +34,17 @@ export interface Configuracoes {
   markup_padrao: number
   comissao_padrao: number
   rt_padrao: number
-  confeccao_valor_metro: number
-  instalacao_valor_fixo: number
+  // Confecção por m² por modelo (Costureira Cici)
+  confeccao_prega_macho: number
+  confeccao_prega_femea: number
+  confeccao_prega_americana: number
+  confeccao_prega_franzida: number
+  confeccao_prega_reta: number
+  confeccao_wave: number
+  confeccao_soft_wave: number
+  confeccao_varao: number
+  // Instalação por m²
+  instalacao_valor_m2: number
   fator_prega_macho: number
   fator_prega_femea: number
   fator_prega_americana: number
@@ -160,8 +169,23 @@ export function calcularAmbiente(
     : 0
   const custoTrilho = ambiente.trilhoAcessoriosValor ?? 0
   const custoMaterial = custoTecido + custoBlackout + custoTrilho
-  const custoConfeccao = tecidoCalc.quantidade * configs.confeccao_valor_metro
-  const custoInstalacao = ambiente.instalacao ? configs.instalacao_valor_fixo : 0
+
+  // Confecção por m² (largura × altura) com valor por modelo
+  const confeccaoMap: Record<ModeloCortina, number> = {
+    prega_macho: configs.confeccao_prega_macho,
+    prega_femea: configs.confeccao_prega_femea,
+    prega_americana: configs.confeccao_prega_americana,
+    prega_franzida: configs.confeccao_prega_franzida,
+    prega_reta: configs.confeccao_prega_reta,
+    wave: configs.confeccao_wave,
+    soft_wave: configs.confeccao_soft_wave,
+    varao: configs.confeccao_varao,
+  }
+  const m2 = ambiente.largura * ambiente.altura
+  const custoConfeccao = m2 * confeccaoMap[ambiente.modeloCortina]
+
+  // Instalação por m²
+  const custoInstalacao = ambiente.instalacao ? m2 * configs.instalacao_valor_m2 : 0
   const outros = ambiente.outrosValor ?? 0
   const custoTotal = custoMaterial + custoConfeccao + custoInstalacao + outros
 
