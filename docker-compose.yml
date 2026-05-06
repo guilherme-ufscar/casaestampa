@@ -1,18 +1,35 @@
-version: '3.8'
+﻿version: "3.8"
 
 services:
   postgres:
-    image: postgres:16-alpine
-    container_name: casaestampa_db
+    image: postgres:15-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: casaestampa
-      POSTGRES_PASSWORD: casaestampa123
+      POSTGRES_PASSWORD: casaestampa
       POSTGRES_DB: casaestampa
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U casaestampa"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nextjs:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://casaestampa:casaestampa@postgres:5432/casaestampa
+      NEXTAUTH_SECRET: change-this-secret-in-production
+      NEXTAUTH_URL: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:

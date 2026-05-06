@@ -1,5 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
+#nprogress .bar {
+  background: #C9A84C !important;
+  height: 3px !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+#nprogress .peg {
+  box-shadow: 0 0 10px #C9A84C, 0 0 5px #C9A84C !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# Casa Estampa Interiores — Sistema de Orçamentos
 
-## Getting Started
+Sistema completo de gestão de orçamentos de cortinas para a Casa Estampa Interiores.
 
-First, run the development server:
+## Requisitos
+
+- Node.js 18+
+- Docker e Docker Compose (para o banco de dados)
+
+## Como rodar localmente
 
 ```bash
+# 1. Instalar dependências
+npm install
+
+# 2. Copiar variáveis de ambiente
+cp .env.example .env
+
+# 3. Subir o banco de dados
+docker-compose up -d
+
+# 4. Rodar as migrations
+npx prisma migrate dev
+
+# 5. Popular o banco com dados de teste
+npx prisma db seed
+
+# 6. Iniciar o servidor de desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse em: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Credenciais de teste
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Perfil   | Email                          | Senha        |
+|----------|-------------------------------|--------------|
+| Admin    | admin@casaestampa.com.br      | admin123     |
+| Vendedor | vendedor@casaestampa.com.br   | vendedor123  |
 
-## Learn More
+## Páginas do sistema
 
-To learn more about Next.js, take a look at the following resources:
+| URL                          | Acesso    | Descrição                        |
+|------------------------------|-----------|----------------------------------|
+| /login                       | Público   | Tela de login                    |
+| /dashboard-vendedor          | Vendedor  | Dashboard do vendedor            |
+| /dashboard-admin             | Admin     | Dashboard administrativo         |
+| /orcamentos/novo             | Ambos     | Criar novo orçamento             |
+| /clientes                    | Ambos     | Gestão de clientes               |
+| /painel-pedidos              | Ambos     | Painel de pedidos e status       |
+| /relatorios                  | Admin     | Relatórios e exportações         |
+| /configuracoes               | Admin     | Configurações do sistema         |
+| /configuracoes/usuarios      | Admin     | Gestão de usuários               |
+| /orcamento/[token]           | Público   | Link público do orçamento        |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estrutura de pastas
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/
+  (auth)/          # Páginas de autenticação
+  (dashboard)/     # Páginas protegidas com sidebar
+  api/             # API Routes
+  orcamento/       # Link público de orçamento
+components/
+  layout/          # Sidebar, Header, BottomNav
+  ui/              # Componentes reutilizáveis
+lib/               # Prisma, auth, PDF, cálculos
+prisma/            # Schema e seed
+```
 
-## Deploy on Vercel
+## Variáveis de ambiente
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variável          | Descrição                              |
+|-------------------|----------------------------------------|
+| DATABASE_URL      | URL de conexão PostgreSQL              |
+| NEXTAUTH_SECRET   | Chave secreta para JWT (mín. 32 chars) |
+| NEXTAUTH_URL      | URL base da aplicação                  |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Produção com Docker
+
+```bash
+docker-compose -f docker-compose.yml up -d
+```

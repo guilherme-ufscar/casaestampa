@@ -10,6 +10,14 @@ export default withAuth(
       return NextResponse.redirect(new URL('/dashboard-vendedor', req.url))
     }
 
+    if (pathname.startsWith('/relatorios') && token?.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/dashboard-vendedor', req.url))
+    }
+
+    if (pathname.startsWith('/configuracoes/usuarios') && token?.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/dashboard-vendedor', req.url))
+    }
+
     return NextResponse.next()
   },
   {

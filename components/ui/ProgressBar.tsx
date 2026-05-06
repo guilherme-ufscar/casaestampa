@@ -1,6 +1,6 @@
-'use client'
+﻿"use client"
 
-import { Check } from 'lucide-react'
+import { Check } from "lucide-react"
 
 interface Step {
   numero: number
@@ -8,9 +8,9 @@ interface Step {
 }
 
 const steps: Step[] = [
-  { numero: 1, label: 'Cliente' },
-  { numero: 2, label: 'Produto' },
-  { numero: 3, label: 'Detalhes' },
+  { numero: 1, label: "Cliente" },
+  { numero: 2, label: "Produto" },
+  { numero: 3, label: "Detalhes" },
 ]
 
 export default function ProgressBar({ etapaAtual }: { etapaAtual: number }) {
@@ -25,17 +25,17 @@ export default function ProgressBar({ etapaAtual }: { etapaAtual: number }) {
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                   concluida
-                    ? 'bg-green-500 text-white'
+                    ? "bg-green-500 text-white"
                     : ativa
-                    ? 'bg-gold-primary text-white'
-                    : 'bg-brand-border text-text-muted'
+                    ? "bg-gold-primary text-white"
+                    : "bg-brand-border text-text-muted"
                 }`}
               >
                 {concluida ? <Check size={16} strokeWidth={2.5} /> : step.numero}
               </div>
               <span
                 className={`text-[11px] font-medium whitespace-nowrap ${
-                  ativa ? 'text-gold-primary' : concluida ? 'text-green-500' : 'text-text-muted'
+                  ativa ? "text-gold-primary" : concluida ? "text-green-500" : "text-text-muted"
                 }`}
               >
                 {step.label}
@@ -45,7 +45,7 @@ export default function ProgressBar({ etapaAtual }: { etapaAtual: number }) {
               <div className="w-20 h-0.5 mx-2 mb-5 rounded-full overflow-hidden bg-brand-border">
                 <div
                   className="h-full bg-gold-primary transition-all duration-500"
-                  style={{ width: etapaAtual > step.numero ? '100%' : '0%' }}
+                  style={{ width: etapaAtual > step.numero ? "100%" : "0%" }}
                 />
               </div>
             )}

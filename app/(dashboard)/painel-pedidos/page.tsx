@@ -10,7 +10,7 @@ type Pedido = {
   createdAt: string
   cliente: { nome: string; telefone?: string } | null
   vendedor: { id: string; nome: string }
-  ambientes: { id: string }[]
+  ambientes: { id: string; nomeAmbiente?: string; tecido?: { nome: string }; quantidadeTecido?: number | null; precoFinalVenda?: number | null }[]
 }
 
 type PaginaData = {
