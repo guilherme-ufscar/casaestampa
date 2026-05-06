@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Search, ChevronRight, SkipForward } from 'lucide-react'
+import { Search, ChevronRight, SkipForward, X } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useOrcamento, ClienteOrcamento } from '@/context/OrcamentoContext'
 
 type ClienteAPI = {
@@ -13,16 +14,38 @@ type ClienteAPI = {
   arquiteto?: string
 }
 
+function mascaraTelefone(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+  return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+}
+
 export default function Etapa1Cliente() {
   const { setCliente, setEtapa } = useOrcamento()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [busca, setBusca] = useState('')
   const [resultados, setResultados] = useState<ClienteAPI[]>([])
   const [clienteSelecionado, setClienteSelecionado] = useState<ClienteAPI | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [ignorarBusca, setIgnorarBusca] = useState(false)
   const [form, setForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquiteto: '' })
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  // Preencher cliente vindo da página de clientes via query param
   useEffect(() => {
+    const clienteParam = searchParams.get('cliente')
+    if (!clienteParam) return
+    try {
+      const c: ClienteAPI = JSON.parse(decodeURIComponent(clienteParam))
+      setClienteSelecionado(c)
+      setBusca(c.nome)
+      setIgnorarBusca(true)
+    } catch {}
+  }, [searchParams])
+
+  useEffect(() => {
+    if (ignorarBusca) { setIgnorarBusca(false); return }
     if (busca.length < 2) { setResultados([]); setShowDropdown(false); return }
     const t = setTimeout(async () => {
       const res = await fetch(`/api/clientes?q=${encodeURIComponent(busca)}`)
@@ -46,6 +69,13 @@ export default function Etapa1Cliente() {
   function selecionarCliente(c: ClienteAPI) {
     setClienteSelecionado(c)
     setBusca(c.nome)
+    setIgnorarBusca(true)
+    setShowDropdown(false)
+  }
+
+  function limparSelecao() {
+    setClienteSelecionado(null)
+    setBusca('')
     setShowDropdown(false)
   }
 
@@ -81,20 +111,25 @@ export default function Etapa1Cliente() {
       <div className="space-y-2">
         <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Buscar cliente existente</label>
         <div className="relative" ref={dropdownRef}>
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none z-10" />
           <input
             type="text"
             value={busca}
             onChange={e => { setBusca(e.target.value); setClienteSelecionado(null) }}
             placeholder="Nome, telefone ou email..."
-            className="input-base pl-9"
+            className="input-base pl-9 pr-9"
           />
+          {busca && (
+            <button onClick={limparSelecao} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors">
+              <X size={15} />
+            </button>
+          )}
           {showDropdown && resultados.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-brand-border rounded-xl shadow-card-hover z-20 overflow-hidden">
               {resultados.map(c => (
                 <button
                   key={c.id}
-                  onClick={() => selecionarCliente(c)}
+                  onMouseDown={e => { e.preventDefault(); selecionarCliente(c) }}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brand-bg text-left transition-colors border-b border-brand-border last:border-0"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold-primary to-gold-light flex items-center justify-center shrink-0">
@@ -113,7 +148,7 @@ export default function Etapa1Cliente() {
         {clienteSelecionado && (
           <div className="flex items-center justify-between p-4 bg-brand-bg border border-brand-border rounded-xl mt-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold-primary to-gold-light flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold-primary to-gold-light flex items-center justify-center shrink-0">
                 <span className="text-sm font-semibold text-white">{clienteSelecionado.nome.charAt(0).toUpperCase()}</span>
               </div>
               <div>
@@ -144,7 +179,13 @@ export default function Etapa1Cliente() {
         </div>
         <div className="space-y-1.5">
           <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Telefone *</label>
-          <input type="tel" value={form.telefone} onChange={e => setForm(p => ({ ...p, telefone: e.target.value }))} placeholder="(11) 99999-9999" className="input-base" />
+          <input
+            type="tel"
+            value={form.telefone}
+            onChange={e => setForm(p => ({ ...p, telefone: mascaraTelefone(e.target.value) }))}
+            placeholder="(11) 99999-9999"
+            className="input-base"
+          />
         </div>
         <div className="space-y-1.5">
           <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Email</label>

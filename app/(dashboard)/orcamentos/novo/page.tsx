@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useOrcamento } from '@/context/OrcamentoContext'
 import ProgressBar from '@/components/ui/ProgressBar'
 import Etapa1Cliente from './Etapa1Cliente'
@@ -20,7 +21,7 @@ export default function NovoOrcamentoPage() {
 
       {etapa <= 3 && <ProgressBar etapaAtual={etapa} />}
 
-      {etapa === 1 && <Etapa1Cliente />}
+      {etapa === 1 && <Suspense fallback={null}><Etapa1Cliente /></Suspense>}
       {etapa === 2 && <Etapa2Produto />}
       {etapa === 3 && <Etapa3Cortina />}
       {etapa === 4 && <RevisaoOrcamento />}
