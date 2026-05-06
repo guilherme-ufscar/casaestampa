@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
+  try {
   const body = await req.json()
   const { clienteId, ambientes } = body as {
     clienteId?: string
@@ -133,4 +134,8 @@ export async function POST(req: NextRequest) {
       totalPrecoFinalVenda: resultado.totalPrecoFinalVenda,
     },
   }, { status: 201 })
+  } catch (error) {
+    console.error('[POST /api/orcamentos] erro:', error)
+    return NextResponse.json({ error: String(error) }, { status: 500 })
+  }
 }
