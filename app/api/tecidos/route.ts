@@ -4,8 +4,13 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
 export async function GET() {
-  const tecidos = await prisma.tecido.findMany({ orderBy: { nome: 'asc' } })
-  return NextResponse.json(tecidos)
+  try {
+    const tecidos = await prisma.tecido.findMany({ orderBy: { nome: 'asc' } })
+    return NextResponse.json(tecidos)
+  } catch (e) {
+    console.error('[GET /api/tecidos]', e)
+    return NextResponse.json({ error: String(e) }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {
