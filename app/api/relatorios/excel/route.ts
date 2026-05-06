@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
   const vendData = vendedores.map(v => {
     const total = orcamentos.filter(o => o.vendedor.id === v.id).length
     const fechados = orcamentos.filter(o => o.vendedor.id === v.id && APROVADOS.includes(o.status)).length
-    const fat = orcamentos.filter(o => o.vendedor.id === v.id && APROVADOS.includes(o.status)).reduce((s, o) => s + Number(o.precoFinalTotal ?? 0), 0)
+    const fat = orcamentos.filter(o => o.vendedor.id === v.id && APROVADOS.includes(o.status)).reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0)
     return { "Vendedor": v.nome, "Total Orcamentos": total, "Fechados": fechados, "Taxa Aprovacao %": total > 0 ? Math.round(fechados / total * 100) : 0, "Faturamento": fat, "Comissao": fat * comPct }
   })
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(vendData), "Vendedores")

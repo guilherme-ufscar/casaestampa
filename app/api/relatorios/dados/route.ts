@@ -25,9 +25,9 @@ function getPrevRange(periodo: string, ini?: string, fim?: string) {
 }
 
 function pct(a: number, b: number) { if (b === 0) return a > 0 ? 100 : 0; return Math.round(((a - b) / b) * 100 * 10) / 10 }
-const fatFn = (orcs: { precoFinalTotal: unknown }[]) => orcs.reduce((s, o) => s + Number(o.precoFinalTotal ?? 0), 0)
-const custoFn = (ambs: { custoTotal: unknown }[]) => ambs.reduce((s, a) => s + Number(a.custoTotal ?? 0), 0)
-const margemFn = (ambs: { custoTotal: unknown; precoFinalVenda: unknown }[]) => ambs.length === 0 ? 0 : ambs.reduce((s, a) => { const p = Number(a.precoFinalVenda ?? 0); const c = Number(a.custoTotal ?? 0); return s + (p > 0 ? (p - c) / p * 100 : 0) }, 0) / ambs.length
+const fatFn = (orcs: { precoFinalTotal: unknown }[]) => orcs.reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0)
+const custoFn = (ambs: { custoTotal: unknown }[]) => ambs.reduce((s: number, a) => s + Number(a.custoTotal ?? 0), 0)
+const margemFn = (ambs: { custoTotal: unknown; precoFinalVenda: unknown }[]) => ambs.length === 0 ? 0 : ambs.reduce((s: number, a) => { const p = Number(a.precoFinalVenda ?? 0); const c = Number(a.custoTotal ?? 0); return s + (p > 0 ? (p - c) / p * 100 : 0) }, 0) / ambs.length
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -65,11 +65,11 @@ export async function GET(req: NextRequest) {
   const ambsProd = await prisma.ambienteOrcamento.findMany({ where: { orcamento: { createdAt: range } }, select: { tecido: { select: { tipo: true } } } })
   const prodMap: Record<string, number> = {}
   for (const a of ambsProd) { const n = a.tecido.tipo === "PRINCIPAL" ? "Cortina" : "Blackout"; prodMap[n] = (prodMap[n] ?? 0) + 1 }
-  const totalProd = Object.values(prodMap).reduce((s, v) => s + v, 0)
+  const totalProd = Object.values(prodMap).reduce((s: number, v) => s + v, 0)
   const produtosMaisOrcados = Object.entries(prodMap).map(([nome, count]) => ({ nome, count, percentual: totalProd > 0 ? Math.round(count / totalProd * 100) : 0 }))
 
   const sc = await prisma.orcamento.groupBy({ by: ["status"], where: { createdAt: range }, _count: { status: true } })
-  const totalSt = sc.reduce((s, x) => s + x._count.status, 0)
+  const totalSt = sc.reduce((s: number, x) => s + x._count.status, 0)
   const orcamentosPorStatus = sc.map(x => ({ status: x.status, count: x._count.status, percentual: totalSt > 0 ? Math.round(x._count.status / totalSt * 100) : 0 }))
 
   const vendedores = await prisma.user.findMany({ where: { role: "VENDEDOR", ativo: true }, select: { id: true, nome: true } })

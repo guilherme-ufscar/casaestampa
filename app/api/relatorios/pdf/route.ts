@@ -41,13 +41,13 @@ export async function GET(req: NextRequest) {
   ])
 
   const comPct = parseFloat(cfg?.valor ?? "8") / 100
-  const fat = orcamentos.filter(o => APROVADOS.includes(o.status)).reduce((s, o) => s + Number(o.precoFinalTotal ?? 0), 0)
+  const fat = orcamentos.filter(o => APROVADOS.includes(o.status)).reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0)
   const fechados = orcamentos.filter(o => APROVADOS.includes(o.status)).length
 
   const rankingVendedores = vendedores.map(v => {
     const orcs = orcamentos.filter(o => o.vendedor.id === v.id && APROVADOS.includes(o.status))
     const total = orcamentos.filter(o => o.vendedor.id === v.id).length
-    const f = orcs.reduce((s, o) => s + Number(o.precoFinalTotal ?? 0), 0)
+    const f = orcs.reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0)
     return { nome: v.nome, orcamentos: total, fechados: orcs.length, faturamento: f, comissao: f * comPct, taxaAprovacao: total > 0 ? Math.round(orcs.length / total * 100) : 0 }
   }).sort((a, b) => b.faturamento - a.faturamento)
 

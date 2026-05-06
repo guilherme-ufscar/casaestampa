@@ -57,15 +57,15 @@ export async function GET() {
     where: { createdAt: { gte: inicioMes }, status: { in: ['aprovado', 'em_producao', 'pronto', 'instalado', 'finalizado'] } },
     select: { precoFinalTotal: true },
   })
-  const faturamentoMes = orcamentosMes.reduce((s, o) => s + Number(o.precoFinalTotal ?? 0), 0)
+  const faturamentoMes = orcamentosMes.reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0)
 
   const ambientesMes = await prisma.ambienteOrcamento.findMany({
     where: { orcamento: { createdAt: { gte: inicioMes } } },
     select: { custoTotal: true, precoFinalVenda: true },
   })
-  const custoTotal = ambientesMes.reduce((s, a) => s + Number(a.custoTotal ?? 0), 0)
+  const custoTotal = ambientesMes.reduce((s: number, a) => s + Number(a.custoTotal ?? 0), 0)
   const margemMedia = ambientesMes.length > 0
-    ? ambientesMes.reduce((s, a) => {
+    ? ambientesMes.reduce((s: number, a) => {
         const preco = Number(a.precoFinalVenda ?? 0)
         const custo = Number(a.custoTotal ?? 0)
         return s + (preco > 0 ? (preco - custo) / preco * 100 : 0)
@@ -82,7 +82,7 @@ export async function GET() {
         select: { precoFinalTotal: true },
       }).then(orcs => ({
         mes: d.toLocaleDateString('pt-BR', { month: 'short' }),
-        faturamento: orcs.reduce((s, o) => s + Number(o.precoFinalTotal ?? 0), 0),
+        faturamento: orcs.reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0),
       }))
     })
   )
@@ -98,7 +98,7 @@ export async function GET() {
         where: { vendedorId: v.id, createdAt: { gte: inicioMes } },
         select: { precoFinalTotal: true },
       })
-      const fat = orcs.reduce((s, o) => s + Number(o.precoFinalTotal ?? 0), 0)
+      const fat = orcs.reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0)
       const configs = await prisma.configuracaoCalculo.findUnique({ where: { chave: 'comissao_padrao' } })
       const comissao = fat * (parseFloat(configs?.valor ?? '8') / 100)
       return { id: v.id, nome: v.nome, orcamentos: orcs.length, faturamento: fat, comissao }
