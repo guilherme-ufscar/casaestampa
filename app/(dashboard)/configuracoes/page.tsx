@@ -19,6 +19,130 @@ type Trilho = {
   ativo: boolean
 }
 
+type Instalador = {
+  id: string
+  nome: string
+  telefone: string | null
+  ativo: boolean
+}
+
+function InstaladorTab() {
+  const [instaladores, setInstaladores] = useState<Instalador[]>([])
+  const [loading, setLoading] = useState(true)
+  const [nome, setNome] = useState('')
+  const [telefone, setTelefone] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [editando, setEditando] = useState<Instalador | null>(null)
+
+  async function carregar() {
+    const r = await fetch('/api/instaladores')
+    setInstaladores(await r.json())
+    setLoading(false)
+  }
+
+  useEffect(() => { carregar() }, [])
+
+  async function salvar() {
+    setSaving(true)
+    if (editando) {
+      await fetch(`/api/instaladores/${editando.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, telefone }),
+      })
+      setEditando(null)
+    } else {
+      await fetch('/api/instaladores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, telefone }),
+      })
+    }
+    setNome('')
+    setTelefone('')
+    setSaving(false)
+    carregar()
+  }
+
+  async function toggleAtivo(ins: Instalador) {
+    await fetch(`/api/instaladores/${ins.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ativo: !ins.ativo }),
+    })
+    carregar()
+  }
+
+  function iniciarEdicao(ins: Instalador) {
+    setEditando(ins)
+    setNome(ins.nome)
+    setTelefone(ins.telefone ?? '')
+  }
+
+  return (
+    <div className="space-y-4 max-w-2xl">
+      <div className="card-base p-6 space-y-4">
+        <p className="text-sm font-semibold text-text-primary">{editando ? 'Editar Instalador' : 'Novo Instalador'}</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Nome</label>
+            <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome do instalador" className="input-base" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">WhatsApp</label>
+            <input value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(11) 99999-9999" className="input-base" />
+          </div>
+        </div>
+        <div className="flex gap-2 justify-end">
+          {editando && (
+            <button onClick={() => { setEditando(null); setNome(''); setTelefone('') }} className="px-4 py-2 rounded-lg text-sm font-medium text-text-muted hover:bg-brand-input transition-colors">
+              Cancelar
+            </button>
+          )}
+          <button onClick={salvar} disabled={!nome || saving} className="btn-gold flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold disabled:opacity-50">
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+            {editando ? 'Salvar' : 'Adicionar'}
+          </button>
+        </div>
+      </div>
+
+      <div className="card-base overflow-hidden">
+        {loading ? (
+          <p className="p-6 text-center text-text-muted text-sm">Carregando...</p>
+        ) : instaladores.length === 0 ? (
+          <p className="p-6 text-center text-text-muted text-sm">Nenhum instalador cadastrado</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-brand-border bg-brand-bg">
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Nome</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">WhatsApp</th>
+                <th className="px-4 py-3 w-24" />
+              </tr>
+            </thead>
+            <tbody>
+              {instaladores.map(ins => (
+                <tr key={ins.id} className="border-b border-brand-border last:border-0 hover:bg-brand-bg/50">
+                  <td className="px-4 py-3 font-medium text-text-primary">{ins.nome}</td>
+                  <td className="px-4 py-3 text-text-secondary">{ins.telefone ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1 justify-end">
+                      <button onClick={() => iniciarEdicao(ins)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Pencil size={14} /></button>
+                      <button onClick={() => toggleAtivo(ins)} className="text-gold-primary">
+                        {ins.ativo ? <ToggleRight size={24} /> : <ToggleLeft size={24} className="text-text-muted" />}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  )
+}
+
 type Configs = Record<string, string>
 
 type DrawerMode = 'create' | 'edit'
@@ -37,7 +161,7 @@ const FATORES_LABELS: Record<string, string> = {
 }
 
 export default function ConfiguracoesPage() {
-  const [aba, setAba] = useState<'tecidos' | 'blackouts' | 'trilhos' | 'fatores' | 'markup' | 'confeccao' | 'pdf'>('tecidos')
+  const [aba, setAba] = useState<'tecidos' | 'blackouts' | 'trilhos' | 'instaladores' | 'fatores' | 'markup' | 'confeccao' | 'pdf'>('tecidos')
   const [tecidos, setTecidos] = useState<Tecido[]>([])
   const [trilhos, setTrilhos] = useState<Trilho[]>([])
   const [configs, setConfigs] = useState<Configs>({})
@@ -151,6 +275,7 @@ export default function ConfiguracoesPage() {
     { key: 'tecidos', label: 'Tecidos' },
     { key: 'blackouts', label: 'Blackouts' },
     { key: 'trilhos', label: 'Trilhos e Varões' },
+    { key: 'instaladores', label: 'Instaladores' },
     { key: 'fatores', label: 'Fatores de Prega' },
     { key: 'markup', label: 'Markup e Comissões' },
     { key: 'confeccao', label: 'Confecção e Instalação' },
@@ -419,6 +544,11 @@ export default function ConfiguracoesPage() {
             </div>
           )}
 
+          {/* Instaladores */}
+          {aba === 'instaladores' && (
+            <InstaladorTab />
+          )}
+
           {/* PDF e WhatsApp */}
           {aba === 'pdf' && (
             <div className="space-y-4 max-w-2xl">
@@ -463,6 +593,28 @@ export default function ConfiguracoesPage() {
                     className="input-base"
                   />
                 </div>
+              </div>
+
+              {/* WhatsApp Fornecedores */}
+              <div className="card-base p-6 space-y-5">
+                <p className="text-sm font-semibold text-text-primary">WhatsApp dos Fornecedores</p>
+                {[
+                  { key: 'whatsapp_deccor', label: 'Deccor (Tecidos)' },
+                  { key: 'whatsapp_venetillo', label: 'Venetillo (Trilhos)' },
+                  { key: 'whatsapp_rioflex', label: 'Rio Flex (Trilhos)' },
+                  { key: 'whatsapp_costureira_cici', label: 'Costureira Cici (Confecção)' },
+                ].map(({ key, label }) => (
+                  <div key={key} className="space-y-1.5">
+                    <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
+                    <input
+                      type="tel"
+                      value={(configs as Record<string, string>)[key] ?? ''}
+                      onChange={e => setConfigs(prev => ({ ...prev, [key]: e.target.value }))}
+                      placeholder="(11) 99999-9999"
+                      className="input-base"
+                    />
+                  </div>
+                ))}
               </div>
               <div className="flex justify-end">
                 <button onClick={saveConfigs} disabled={saving} className="btn-gold flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold disabled:opacity-70">

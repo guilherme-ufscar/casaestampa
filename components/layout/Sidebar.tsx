@@ -14,6 +14,7 @@ import {
   CalendarCheck,
   UserCog,
   Table2,
+  Truck,
 } from 'lucide-react'
 
 const navVendedor = [
@@ -31,6 +32,7 @@ const navAdmin = [
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/painel-pedidos', label: 'Painel de Pedidos', icon: ShoppingBag },
   { href: '/painel-pedidos?status=pronto', label: 'Instalações Agendadas', icon: CalendarCheck },
+  { href: '/fornecedores', label: 'Fornecedores', icon: Truck },
 ]
 
 const navAdminExtra = [

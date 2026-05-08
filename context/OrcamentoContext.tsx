@@ -16,10 +16,10 @@ export interface AmbienteForm {
   nomeAmbiente: string
   largura: string
   altura: string
-  bainhaDesejada: string
   modeloCortina: ModeloCortina
   tipoAbertura: TipoAbertura
   trilhoTipo: 'trilho_suico' | 'varao'
+  tecidoExtra: boolean
   tecidoId: string
   tecidoNome: string
   tecidoLargura: number
@@ -30,7 +30,12 @@ export interface AmbienteForm {
   blackoutLargura: number
   blackoutValor: number
   instalacao: boolean
-  trilhoAcessoriosValor: string
+  instaladorId: string
+  instaladorNome: string
+  instaladorTelefone: string
+  trilhoId: string
+  trilhoNome: string
+  trilhoValorUnitario: number
   outrosValor: string
   observacoes: string
 }
@@ -39,10 +44,10 @@ export const ambienteVazio: AmbienteForm = {
   nomeAmbiente: '',
   largura: '',
   altura: '',
-  bainhaDesejada: '',
   modeloCortina: 'prega_macho',
   tipoAbertura: 'INTEIRA',
   trilhoTipo: 'trilho_suico',
+  tecidoExtra: false,
   tecidoId: '',
   tecidoNome: '',
   tecidoLargura: 0,
@@ -53,7 +58,12 @@ export const ambienteVazio: AmbienteForm = {
   blackoutLargura: 0,
   blackoutValor: 0,
   instalacao: false,
-  trilhoAcessoriosValor: '',
+  instaladorId: '',
+  instaladorNome: '',
+  instaladorTelefone: '',
+  trilhoId: '',
+  trilhoNome: '',
+  trilhoValorUnitario: 0,
   outrosValor: '',
   observacoes: '',
 }

@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { clienteId, ambientes } = body as {
     clienteId?: string
-    ambientes: (AmbienteInput & { tecidoId: string; blackoutId?: string; trilhoVaraoId?: string })[]
+    ambientes: (AmbienteInput & { tecidoId: string; blackoutId?: string; trilhoVaraoId?: string; trilhoNome?: string; observacoes?: string })[]
   }
 
   if (!ambientes?.length) {
@@ -93,13 +93,18 @@ export async function POST(req: NextRequest) {
             tecidoId: a.tecidoId,
             blackoutId: a.blackoutId ?? null,
             trilhoVaraoId: a.trilhoVaraoId ?? null,
-            bainhaDesejada: a.bainhaDesejada ?? null,
+            bainhaDesejada: null,
             instalacao: a.instalacao,
-            trilhoAcessoriosValor: a.trilhoAcessoriosValor ?? null,
+            instaladorId: (a as { instaladorId?: string }).instaladorId ?? null,
+            trilhoAcessoriosValor: a.trilhoValorUnitario
+              ? Math.ceil(a.largura * 2) / 2 * a.trilhoValorUnitario
+              : null,
             outrosValor: a.outrosValor ?? null,
             observacoes: (a as { observacoes?: string }).observacoes ?? null,
             quantidadeTecido: r.quantidadeTecido,
             quantidadeBlackout: r.quantidadeBlackout ?? null,
+            custoConfeccao: r.custoConfeccao,
+            custoInstalacao: r.custoInstalacao,
             custoTotal: r.custoTotal,
             precoFinalVenda: r.precoFinalVenda,
           }
@@ -127,7 +132,8 @@ export async function POST(req: NextRequest) {
         nomeAmbiente: a.nomeAmbiente,
         quantidadeTecido: a.quantidadeTecido,
         quantidadeBlackout: a.quantidadeBlackout,
-        bainhaNaoCabe: a.bainhaNaoCabe,
+        precisaTecidoExtra: a.precisaTecidoExtra,
+        bainhaDisponivel: a.bainhaDisponivel,
         bainhaAlerta: a.bainhaAlerta,
         precoFinalVenda: a.precoFinalVenda,
       })),

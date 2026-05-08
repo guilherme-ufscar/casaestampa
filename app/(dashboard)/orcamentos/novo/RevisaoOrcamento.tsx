@@ -78,9 +78,9 @@ export default function RevisaoOrcamento() {
             modeloCortina: a.modeloCortina, tipoAbertura: a.tipoAbertura,
             tecido: { id: a.tecidoId, larguraMaxima: a.tecidoLargura, valorMetro: a.tecidoValor },
             blackout: a.blackoutAtivo && a.blackoutId ? { id: a.blackoutId, larguraMaxima: a.blackoutLargura, valorMetro: a.blackoutValor } : null,
-            bainhaDesejada: a.bainhaDesejada ? parseFloat(a.bainhaDesejada) : null,
+            tecidoExtra: a.tecidoExtra,
             instalacao: a.instalacao,
-            trilhoAcessoriosValor: a.trilhoAcessoriosValor ? parseFloat(a.trilhoAcessoriosValor) : null,
+            trilhoValorUnitario: a.trilhoValorUnitario || null,
             outrosValor: a.outrosValor ? parseFloat(a.outrosValor) : null,
           }, cfgs)
           return s + r.quantidadeTecido
@@ -114,9 +114,9 @@ export default function RevisaoOrcamento() {
                       modeloCortina: a.modeloCortina, tipoAbertura: a.tipoAbertura,
                       tecido: { id: a.tecidoId, larguraMaxima: a.tecidoLargura, valorMetro: a.tecidoValor },
                       blackout: a.blackoutAtivo && a.blackoutId ? { id: a.blackoutId, larguraMaxima: a.blackoutLargura, valorMetro: a.blackoutValor } : null,
-                      bainhaDesejada: a.bainhaDesejada ? parseFloat(a.bainhaDesejada) : null,
+                      tecidoExtra: a.tecidoExtra,
                       instalacao: a.instalacao,
-                      trilhoAcessoriosValor: a.trilhoAcessoriosValor ? parseFloat(a.trilhoAcessoriosValor) : null,
+                      trilhoValorUnitario: a.trilhoValorUnitario || null,
                       outrosValor: a.outrosValor ? parseFloat(a.outrosValor) : null,
                     }, cfgs)
                   } catch { return null }
@@ -144,7 +144,7 @@ export default function RevisaoOrcamento() {
                   <InfoRow label="Blackout" value={a.blackoutAtivo ? (a.blackoutNome || 'Sim') : 'Não'} />
                   <InfoRow label="Instalação" value={a.instalacao ? 'Sim' : 'Não'} />
                   <InfoRow label="Abertura" value={a.tipoAbertura === 'INTEIRA' ? 'Inteira' : 'Central'} />
-                  {a.bainhaDesejada && <InfoRow label="Bainha" value={`${a.bainhaDesejada}m`} />}
+                  {a.tecidoExtra && <InfoRow label="Tecido extra" value="Sim" />}
                 </div>
 
                 {resultado && (
@@ -156,7 +156,7 @@ export default function RevisaoOrcamento() {
                         <span className="text-text-secondary">Blackout: <strong className="text-text-primary">{resultado.quantidadeBlackout.toFixed(2)}m</strong></span>
                       )}
                     </div>
-                    {resultado.bainhaNaoCabe && resultado.bainhaAlerta && (
+                    {resultado.precisaTecidoExtra && resultado.bainhaAlerta && (
                       <div className="flex items-start gap-2 mt-2 p-2 bg-amber-50 rounded-lg">
                         <AlertTriangle size={13} className="text-amber-500 shrink-0 mt-0.5" />
                         <p className="text-[11px] text-amber-700">{resultado.bainhaAlerta}</p>

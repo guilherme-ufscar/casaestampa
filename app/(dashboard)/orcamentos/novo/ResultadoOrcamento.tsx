@@ -9,7 +9,8 @@ type ResultadoAmbientePublico = {
   nomeAmbiente: string
   quantidadeTecido: number
   quantidadeBlackout: number | null
-  bainhaNaoCabe: boolean
+  precisaTecidoExtra: boolean
+  bainhaDisponivel: number
   bainhaAlerta: string | null
   precoFinalVenda: number
 }
@@ -80,9 +81,10 @@ export default function ResultadoOrcamento() {
             blackout: a.blackoutAtivo && a.blackoutId
               ? { id: a.blackoutId, larguraMaxima: a.blackoutLargura, valorMetro: a.blackoutValor }
               : null,
-            bainhaDesejada: a.bainhaDesejada ? parseFloat(a.bainhaDesejada) : null,
+            tecidoExtra: a.tecidoExtra,
             instalacao: a.instalacao,
-            trilhoAcessoriosValor: a.trilhoAcessoriosValor ? parseFloat(a.trilhoAcessoriosValor) : null,
+            instaladorId: a.instaladorId || null,
+            trilhoValorUnitario: a.trilhoValorUnitario || null,
             outrosValor: a.outrosValor ? parseFloat(a.outrosValor) : null,
             observacoes: a.observacoes || null,
           })),

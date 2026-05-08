@@ -119,6 +119,15 @@ model Orcamento {
   logsHistorico LogHistorico[]
 }
 
+model Instalador {
+  id        String  @id @default(cuid())
+  nome      String
+  telefone  String?
+  ativo     Boolean @default(true)
+
+  ambientes AmbienteOrcamento[]
+}
+
 model AmbienteOrcamento {
   id                    String        @id @default(cuid())
   orcamentoId           String
@@ -133,11 +142,14 @@ model AmbienteOrcamento {
   blackoutId            String?
   bainhaDesejada        Decimal?      @db.Decimal(5, 2)
   instalacao            Boolean       @default(false)
+  instaladorId          String?
   trilhoAcessoriosValor Decimal?      @db.Decimal(10, 2)
   outrosValor           Decimal?      @db.Decimal(10, 2)
   observacoes           String?
   quantidadeTecido      Decimal?      @db.Decimal(8, 2)
   quantidadeBlackout    Decimal?      @db.Decimal(8, 2)
+  custoConfeccao        Decimal?      @db.Decimal(10, 2)
+  custoInstalacao       Decimal?      @db.Decimal(10, 2)
   custoTotal            Decimal?      @db.Decimal(10, 2)
   precoFinalVenda       Decimal?      @db.Decimal(10, 2)
 
@@ -145,6 +157,7 @@ model AmbienteOrcamento {
   tecido      Tecido       @relation("TecidoPrincipal", fields: [tecidoId], references: [id])
   blackout    Tecido?      @relation("TecidoBlackout", fields: [blackoutId], references: [id])
   trilhoVarao TrilhoVarao? @relation(fields: [trilhoVaraoId], references: [id])
+  instalador  Instalador?  @relation(fields: [instaladorId], references: [id])
 }
 
 model LogHistorico {
