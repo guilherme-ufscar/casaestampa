@@ -5,6 +5,17 @@ import { authOptions } from '@/lib/auth'
 import { calcularOrcamento, AmbienteInput, Configuracoes } from '@/lib/calculoCortina'
 import { gerarToken, tokenExpiracao } from '@/lib/token'
 
+function ambienteValido(ambiente: AmbienteInput & { tecidoId?: string; blackoutId?: string; blackout?: { id: string } | null }) {
+  return Boolean(
+    ambiente.tecidoId &&
+    Number.isFinite(ambiente.largura) &&
+    ambiente.largura > 0 &&
+    Number.isFinite(ambiente.altura) &&
+    ambiente.altura > 0 &&
+    ambiente.tecido?.id
+  ) && (!ambiente.blackout || Boolean(ambiente.blackoutId || ambiente.blackout.id))
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
@@ -49,6 +60,10 @@ export async function POST(req: NextRequest) {
 
   if (!ambientes?.length) {
     return NextResponse.json({ error: 'Nenhum ambiente informado' }, { status: 400 })
+  }
+
+  if (ambientes.some(a => !ambienteValido(a))) {
+    return NextResponse.json({ error: 'Preencha tecido, largura e altura válidos em todos os ambientes antes de calcular.' }, { status: 400 })
   }
 
   const configsRaw = await prisma.configuracaoCalculo.findMany()

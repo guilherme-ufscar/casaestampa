@@ -52,6 +52,15 @@ export default function RevisaoOrcamento() {
   const [configs, setConfigs] = useState<ConfigsRaw | null>(null)
   const [loading, setLoading] = useState(false)
 
+  const ambientesIncompletos = ambientes
+    .map((a, i) => {
+      const largura = parseFloat(a.largura)
+      const altura = parseFloat(a.altura)
+      const invalido = !a.tecidoId || !Number.isFinite(largura) || largura <= 0 || !Number.isFinite(altura) || altura <= 0
+      return invalido ? (a.nomeAmbiente || `Ambiente ${i + 1}`) : null
+    })
+    .filter((nome): nome is string => Boolean(nome))
+
   // Carrega configs uma vez
   useState(() => {
     fetch('/api/configuracoes').then(r => r.json()).then(setConfigs)
@@ -105,6 +114,14 @@ export default function RevisaoOrcamento() {
 
       <div className="card-base p-6">
         <h3 className="text-lg font-semibold text-text-primary mb-4">Revisão do Orçamento</h3>
+
+        {ambientesIncompletos.length > 0 && (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <p className="text-sm font-medium text-amber-700">
+              Preencha tecido, largura e altura destes ambientes antes de calcular: {ambientesIncompletos.join(', ')}.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-4">
           {ambientes.map((a, i) => {
@@ -198,7 +215,7 @@ export default function RevisaoOrcamento() {
           </button>
           <button
             onClick={confirmar}
-            disabled={loading}
+            disabled={loading || ambientesIncompletos.length > 0}
             className="btn-gold flex items-center gap-2 px-6 py-2.5 rounded-[10px] text-sm font-semibold disabled:opacity-70"
           >
             {loading ? <Loader2 size={15} className="animate-spin" /> : <ChevronRight size={16} />}

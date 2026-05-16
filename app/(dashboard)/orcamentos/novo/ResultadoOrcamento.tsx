@@ -119,14 +119,18 @@ export default function ResultadoOrcamento() {
           body: JSON.stringify(payload),
         })
 
-        if (!res.ok) throw new Error('Erro ao salvar orçamento')
+        if (!res.ok) {
+          const data = await res.json().catch(() => null)
+          throw new Error(data?.error || 'Erro ao salvar orçamento')
+        }
+
         const data = await res.json()
         setResultado(data)
         setOrcamentoId(data.orcamento.id)
         setOrcamentoNumero(data.orcamento.numero)
         setOrcamentoToken(data.orcamento.token ?? null)
       } catch (e) {
-        setErro('Erro ao salvar o orçamento. Tente novamente.')
+        setErro(e instanceof Error ? e.message : 'Erro ao salvar o orçamento. Tente novamente.')
         console.error(e)
       } finally {
         setLoading(false)
