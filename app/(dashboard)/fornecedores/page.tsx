@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MessageCircle, Package, Scissors, Wrench, ChevronDown, ChevronUp, Search } from 'lucide-react'
+import { MessageCircle, Package, Scissors, Wrench, ChevronDown, ChevronUp, Search, Wallet } from 'lucide-react'
 
 type Ambiente = {
   id: string
@@ -10,6 +10,11 @@ type Ambiente = {
   altura: number
   modeloCortina: string
   tipoAbertura: string
+  tipoAberturaBlackout: string
+  trilhoTipo: string
+  bainhaDesejada: number
+  tecidoExtra: boolean
+  blackoutExtra: boolean
   tecidoNome: string
   quantidadeTecido: number
   blackoutNome: string | null
@@ -22,6 +27,7 @@ type Ambiente = {
   custoTrilho: number
   custoConfeccao: number
   instalacao: boolean
+  instaladorId: string | null
   instaladorNome: string | null
   instaladorTelefone: string | null
   custoInstalacao: number
@@ -36,7 +42,25 @@ type Pedido = {
   cliente: { nome: string; telefone?: string; endereco?: string } | null
   vendedor: { nome: string }
   ambientes: Ambiente[]
-  whatsapp: { deccor: string; venetillo: string; rioflex: string; costureira_cici: string }
+  whatsapp: { deccor: string; venetillo: string; rioflex: string; costureira_cici: string; encerramento: string }
+}
+
+type GrupoFinanceiro = {
+  chave: string
+  nome: string
+  valorTotal: number
+  pedidos: number
+  ambientes: number
+}
+
+type ResponseData = {
+  pedidos: Pedido[]
+  financeiro: {
+    totalFornecedores: number
+    totalInstalacao: number
+    totalGeral: number
+    grupos: GrupoFinanceiro[]
+  }
 }
 
 const MODELO_LABELS: Record<string, string> = {
@@ -94,23 +118,109 @@ function CardFornecedor({ titulo, icon, cor, custo, children, telefone, msgWhats
 function InfoLinha({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex gap-2 text-sm">
-      <span className="text-text-muted min-w-24 shrink-0">{label}:</span>
+      <span className="text-text-muted min-w-28 shrink-0">{label}:</span>
       <span className="text-text-primary font-medium">{value}</span>
     </div>
   )
 }
 
+function mensagemDeccorPedido(pedido: Pedido, encerramento: string) {
+  const linhas = pedido.ambientes.flatMap(a => {
+    const itens = [`${a.quantidadeTecido.toFixed(2)} metros de tecido ${a.tecidoNome}`]
+    if (a.blackoutNome && a.quantidadeBlackout) itens.push(`${a.quantidadeBlackout.toFixed(2)} metros de tecido ${a.blackoutNome}`)
+    return itens
+  })
+  return `Bom dia\nGostaria de fazer um pedido:\n\n${linhas.join('\n')}\n\n${encerramento}`
+}
+
+function mensagemDeccorConsolidada(pedidos: Pedido[], encerramento: string) {
+  const itens = new Map<string, number>()
+
+  for (const pedido of pedidos) {
+    for (const ambiente of pedido.ambientes) {
+      itens.set(ambiente.tecidoNome, (itens.get(ambiente.tecidoNome) ?? 0) + ambiente.quantidadeTecido)
+      if (ambiente.blackoutNome && ambiente.quantidadeBlackout) {
+        itens.set(ambiente.blackoutNome, (itens.get(ambiente.blackoutNome) ?? 0) + ambiente.quantidadeBlackout)
+      }
+    }
+  }
+
+  const linhas = Array.from(itens.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([nome, quantidade]) => `${quantidade.toFixed(2)} metros de tecido ${nome}`)
+
+  return `Bom dia\nGostaria de fazer um pedido:\n\n${linhas.join('\n')}\n\n${encerramento}`
+}
+
+function mensagemCiciPedido(pedido: Pedido, encerramento: string) {
+  return `Bom dia Cici\nQueria fazer um pedido:\n\n${pedido.ambientes.map(a => {
+    const linhas = [
+      `Cliente ${pedido.cliente?.nome ?? '—'}`,
+      a.nomeAmbiente,
+      `Cortina ${a.trilhoTipo === 'varao' ? 'varão' : 'trilho suíço'}`,
+      `${a.largura.toFixed(2)} x ${a.altura.toFixed(2)}`,
+      MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina,
+      `Bainha ${a.bainhaDesejada.toFixed(2)}`,
+      `Abertura tecido ${a.tipoAbertura === 'INTEIRA' ? 'inteira' : 'central'}`,
+      a.blackoutNome ? `Com ${a.blackoutNome}` : 'Sem blackout',
+      a.blackoutNome ? `Abertura blackout ${a.tipoAberturaBlackout === 'INTEIRA' ? 'inteira' : 'central'}` : '',
+    ]
+    if (a.tecidoExtra) linhas.push('Com tecido extra')
+    if (a.blackoutExtra) linhas.push('Com blackout extra')
+    if (a.observacoes) linhas.push(`Obs: ${a.observacoes}`)
+    return linhas.filter(Boolean).join('\n')
+  }).join('\n\n')}\n\n${encerramento}`
+}
+
+function mensagemTrilhoPedido(pedido: Pedido, fornecedor: 'rioflex' | 'venetillo', encerramento: string) {
+  const linhas = pedido.ambientes
+    .filter(a => a.fornecedorTrilho === fornecedor)
+    .map(a => `1 ${a.trilhoNome?.replace(/\s+\((Rio Flex|Venetillo)\)/, '').toLowerCase() ?? 'trilho'} de ${a.comprimentoTrilho?.toFixed(2) ?? '0.00'}`)
+  return `Bom dia\nGostaria de fazer um pedido:\n\n${linhas.join('\n')}\n\n${encerramento}`
+}
+
+function mensagemTrilhoConsolidada(pedidos: Pedido[], fornecedor: 'rioflex' | 'venetillo', encerramento: string) {
+  const linhas = pedidos
+    .flatMap(pedido => pedido.ambientes.filter(a => a.fornecedorTrilho === fornecedor))
+    .map(a => `1 ${a.trilhoNome?.replace(/\s+\((Rio Flex|Venetillo)\)/, '').toLowerCase() ?? 'trilho'} de ${a.comprimentoTrilho?.toFixed(2) ?? '0.00'}`)
+
+  return `Bom dia\nGostaria de fazer um pedido:\n\n${linhas.join('\n')}\n\n${encerramento}`
+}
+
+function mensagemCiciConsolidada(pedidos: Pedido[], encerramento: string) {
+  return `Bom dia Cici\nQueria fazer um pedido:\n\n${pedidos.map(pedido => (
+    pedido.ambientes.map(a => {
+      const linhas = [
+        `Cliente ${pedido.cliente?.nome ?? '—'}`,
+        a.nomeAmbiente,
+        `Cortina ${a.trilhoTipo === 'varao' ? 'varão' : 'trilho suíço'}`,
+        `${a.largura.toFixed(2)} x ${a.altura.toFixed(2)}`,
+        MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina,
+        `Bainha ${a.bainhaDesejada.toFixed(2)}`,
+        `Abertura tecido ${a.tipoAbertura === 'INTEIRA' ? 'inteira' : 'central'}`,
+        a.blackoutNome ? `Com ${a.blackoutNome}` : 'Sem blackout',
+        a.blackoutNome ? `Abertura blackout ${a.tipoAberturaBlackout === 'INTEIRA' ? 'inteira' : 'central'}` : '',
+      ]
+      if (a.tecidoExtra) linhas.push('Com tecido extra')
+      if (a.blackoutExtra) linhas.push('Com blackout extra')
+      if (a.observacoes) linhas.push(`Obs: ${a.observacoes}`)
+      return linhas.filter(Boolean).join('\n')
+    }).join('\n\n')
+  )).join('\n\n')}
+
+${encerramento}`
+}
+
 export default function FornecedoresPage() {
-  const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [data, setData] = useState<ResponseData | null>(null)
   const [loading, setLoading] = useState(true)
   const [q, setQ] = useState('')
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetch('/api/fornecedores').then(r => r.json()).then(data => {
-      setPedidos(data)
-      // Expandir todos por padrão
-      setExpandidos(new Set(data.map((p: Pedido) => p.id)))
+    fetch('/api/fornecedores').then(r => r.json()).then((resp: ResponseData) => {
+      setData(resp)
+      setExpandidos(new Set(resp.pedidos.map((p: Pedido) => p.id)))
       setLoading(false)
     })
   }, [])
@@ -118,15 +228,23 @@ export default function FornecedoresPage() {
   function toggleExpandido(id: string) {
     setExpandidos(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
   }
 
+  const pedidos = data?.pedidos ?? []
   const pedidosFiltrados = pedidos.filter(p =>
-    !q || p.cliente?.nome.toLowerCase().includes(q.toLowerCase()) ||
-    String(p.numero).includes(q)
+    !q || p.cliente?.nome.toLowerCase().includes(q.toLowerCase()) || String(p.numero).includes(q)
   )
+  const whatsapp = pedidosFiltrados[0]?.whatsapp ?? { deccor: '', venetillo: '', rioflex: '', costureira_cici: '', encerramento: '' }
+  const pedidosRioFlex = pedidosFiltrados.filter(p => p.ambientes.some(a => a.fornecedorTrilho === 'rioflex'))
+  const pedidosVenetillo = pedidosFiltrados.filter(p => p.ambientes.some(a => a.fornecedorTrilho === 'venetillo'))
+  const custoDeccorConsolidado = pedidosFiltrados.reduce((s, pedido) => s + pedido.ambientes.reduce((acc, a) => acc + a.custoTecido + a.custoBlackout, 0), 0)
+  const custoCiciConsolidado = pedidosFiltrados.reduce((s, pedido) => s + pedido.ambientes.reduce((acc, a) => acc + a.custoConfeccao, 0), 0)
+  const custoRioFlexConsolidado = pedidosRioFlex.reduce((s, pedido) => s + pedido.ambientes.filter(a => a.fornecedorTrilho === 'rioflex').reduce((acc, a) => acc + a.custoTrilho, 0), 0)
+  const custoVenetilloConsolidado = pedidosVenetillo.reduce((s, pedido) => s + pedido.ambientes.filter(a => a.fornecedorTrilho === 'venetillo').reduce((acc, a) => acc + a.custoTrilho, 0), 0)
 
   return (
     <div className="space-y-5">
@@ -137,6 +255,41 @@ export default function FornecedoresPage() {
         </div>
       </div>
 
+      {data && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="card-base p-5">
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">A pagar fornecedores</p>
+            <p className="text-2xl font-bold text-text-primary">{fmt(data.financeiro.totalFornecedores)}</p>
+          </div>
+          <div className="card-base p-5">
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">A pagar instalação</p>
+            <p className="text-2xl font-bold text-text-primary">{fmt(data.financeiro.totalInstalacao)}</p>
+          </div>
+          <div className="card-base p-5">
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">Total operacional</p>
+            <p className="text-2xl font-bold text-text-primary">{fmt(data.financeiro.totalGeral)}</p>
+          </div>
+        </div>
+      )}
+
+      {data && data.financeiro.grupos.length > 0 && (
+        <div className="card-base p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Wallet size={16} className="text-gold-primary" />
+            <p className="text-sm font-semibold text-text-primary">Resumo por fornecedor / instalador</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {data.financeiro.grupos.map(grupo => (
+              <div key={grupo.chave} className="border border-brand-border rounded-lg px-4 py-3">
+                <p className="text-sm font-semibold text-text-primary">{grupo.nome}</p>
+                <p className="text-lg font-bold text-gold-primary mt-1">{fmt(grupo.valorTotal)}</p>
+                <p className="text-xs text-text-muted mt-1">{grupo.pedidos} pedido(s) · {grupo.ambientes} ambiente(s)</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="relative max-w-sm">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
         <input
@@ -146,6 +299,68 @@ export default function FornecedoresPage() {
         />
       </div>
 
+      {!loading && pedidosFiltrados.length > 0 && (
+        <div className="card-base p-5 space-y-4">
+          <div>
+            <p className="text-sm font-semibold text-text-primary">Mensagens consolidadas por fornecedor</p>
+            <p className="text-xs text-text-muted mt-0.5">Use para disparar um resumo único com todos os pedidos filtrados.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <CardFornecedor
+              titulo="Deccor — Consolidado"
+              icon={<Package size={15} />}
+              cor="#3B82F6"
+              custo={custoDeccorConsolidado}
+              telefone={whatsapp.deccor}
+              msgWhatsapp={mensagemDeccorConsolidada(pedidosFiltrados, whatsapp.encerramento)}
+            >
+              <InfoLinha label="Pedidos" value={String(pedidosFiltrados.length)} />
+              <InfoLinha label="Resumo" value="Tecidos e blackouts agrupados por nome" />
+            </CardFornecedor>
+
+            <CardFornecedor
+              titulo="Costureira Cici — Consolidado"
+              icon={<Scissors size={15} />}
+              cor="#F59E0B"
+              custo={custoCiciConsolidado}
+              telefone={whatsapp.costureira_cici}
+              msgWhatsapp={mensagemCiciConsolidada(pedidosFiltrados, whatsapp.encerramento)}
+            >
+              <InfoLinha label="Pedidos" value={String(pedidosFiltrados.length)} />
+              <InfoLinha label="Resumo" value="Ambientes agrupados por cliente e pedido" />
+            </CardFornecedor>
+
+            {pedidosRioFlex.length > 0 && (
+              <CardFornecedor
+                titulo="Rio Flex — Consolidado"
+                icon={<Wrench size={15} />}
+                cor="#8B5CF6"
+                custo={custoRioFlexConsolidado}
+                telefone={whatsapp.rioflex}
+                msgWhatsapp={mensagemTrilhoConsolidada(pedidosRioFlex, 'rioflex', whatsapp.encerramento)}
+              >
+                <InfoLinha label="Pedidos" value={String(pedidosRioFlex.length)} />
+                <InfoLinha label="Resumo" value="Trilhos agrupados dos pedidos filtrados" />
+              </CardFornecedor>
+            )}
+
+            {pedidosVenetillo.length > 0 && (
+              <CardFornecedor
+                titulo="Venetillo — Consolidado"
+                icon={<Wrench size={15} />}
+                cor="#EC4899"
+                custo={custoVenetilloConsolidado}
+                telefone={whatsapp.venetillo}
+                msgWhatsapp={mensagemTrilhoConsolidada(pedidosVenetillo, 'venetillo', whatsapp.encerramento)}
+              >
+                <InfoLinha label="Pedidos" value={String(pedidosVenetillo.length)} />
+                <InfoLinha label="Resumo" value="Trilhos agrupados dos pedidos filtrados" />
+              </CardFornecedor>
+            )}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="card-base p-12 text-center text-text-muted text-sm">Carregando...</div>
       ) : pedidosFiltrados.length === 0 ? (
@@ -154,8 +369,6 @@ export default function FornecedoresPage() {
         <div className="space-y-4">
           {pedidosFiltrados.map(pedido => {
             const expandido = expandidos.has(pedido.id)
-
-            // Agrupa ambientes por fornecedor de trilho
             const ambComTrilhoRioFlex = pedido.ambientes.filter(a => a.fornecedorTrilho === 'rioflex')
             const ambComTrilhoVenetillo = pedido.ambientes.filter(a => a.fornecedorTrilho === 'venetillo')
             const ambComInstalacao = pedido.ambientes.filter(a => a.instalacao)
@@ -164,44 +377,20 @@ export default function FornecedoresPage() {
             const custoTotalRioFlex = ambComTrilhoRioFlex.reduce((s, a) => s + a.custoTrilho, 0)
             const custoTotalVenetillo = ambComTrilhoVenetillo.reduce((s, a) => s + a.custoTrilho, 0)
             const custoTotalCici = pedido.ambientes.reduce((s, a) => s + a.custoConfeccao, 0)
-            const custoTotalInstalacao = ambComInstalacao.reduce((s, a) => s + a.custoInstalacao, 0)
 
-            // Mensagens WhatsApp
-            const msgDeccor = `*Pedido #${String(pedido.numero).padStart(4,'0')} — ${pedido.cliente?.nome ?? 'Cliente'}*\n\n` +
-              pedido.ambientes.map(a =>
-                `• ${a.nomeAmbiente}: ${a.quantidadeTecido.toFixed(2)}m ${a.tecidoNome}` +
-                (a.blackoutNome ? `\n  + ${(a.quantidadeBlackout ?? 0).toFixed(2)}m ${a.blackoutNome}` : '')
-              ).join('\n') +
-              `\n\n*Total: ${fmt(custoTotalDeccor)}*`
-
-            const msgRioFlex = `*Pedido #${String(pedido.numero).padStart(4,'0')} — ${pedido.cliente?.nome ?? 'Cliente'}*\n\n` +
-              ambComTrilhoRioFlex.map(a =>
-                `• ${a.nomeAmbiente}: ${a.comprimentoTrilho?.toFixed(2)}m ${a.trilhoNome?.replace(' (Rio Flex)', '')}`
-              ).join('\n') +
-              `\n\n*Total: ${fmt(custoTotalRioFlex)}*`
-
-            const msgVenetillo = `*Pedido #${String(pedido.numero).padStart(4,'0')} — ${pedido.cliente?.nome ?? 'Cliente'}*\n\n` +
-              ambComTrilhoVenetillo.map(a =>
-                `• ${a.nomeAmbiente}: ${a.comprimentoTrilho?.toFixed(2)}m ${a.trilhoNome?.replace(' (Venetillo)', '')}`
-              ).join('\n') +
-              `\n\n*Total: ${fmt(custoTotalVenetillo)}*`
-
-            const msgCici = `*Pedido #${String(pedido.numero).padStart(4,'0')} — ${pedido.cliente?.nome ?? 'Cliente'}*\n\n` +
-              pedido.ambientes.map(a =>
-                `• ${a.nomeAmbiente}\n  Modelo: ${MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina}\n  Medidas: ${a.largura.toFixed(2)}m × ${a.altura.toFixed(2)}m\n  Tecido: ${a.tecidoNome}\n  Abertura: ${a.tipoAbertura === 'INTEIRA' ? 'Inteira' : 'Central (2 folhas)'}` +
-                (a.observacoes ? `\n  Obs: ${a.observacoes}` : '')
-              ).join('\n\n') +
-              `\n\n*Total confecção: ${fmt(custoTotalCici)}*`
+            const msgDeccor = mensagemDeccorPedido(pedido, pedido.whatsapp.encerramento)
+            const msgRioFlex = mensagemTrilhoPedido(pedido, 'rioflex', pedido.whatsapp.encerramento)
+            const msgVenetillo = mensagemTrilhoPedido(pedido, 'venetillo', pedido.whatsapp.encerramento)
+            const msgCici = mensagemCiciPedido(pedido, pedido.whatsapp.encerramento)
 
             return (
               <div key={pedido.id} className="card-base overflow-hidden">
-                {/* Header do pedido */}
                 <button
                   onClick={() => toggleExpandido(pedido.id)}
                   className="w-full flex items-center justify-between px-5 py-4 hover:bg-brand-bg/50 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <span className="text-base font-bold text-gold-primary">#{String(pedido.numero).padStart(4,'0')}</span>
+                    <span className="text-base font-bold text-gold-primary">#{String(pedido.numero).padStart(4, '0')}</span>
                     <div className="text-left">
                       <p className="text-sm font-semibold text-text-primary">{pedido.cliente?.nome ?? '—'}</p>
                       <p className="text-xs text-text-muted">{fmtData(pedido.createdAt)} · {pedido.vendedor.nome} · {pedido.ambientes.length} ambiente{pedido.ambientes.length !== 1 ? 's' : ''}</p>
@@ -212,8 +401,6 @@ export default function FornecedoresPage() {
 
                 {expandido && (
                   <div className="px-5 pb-5 space-y-3 border-t border-brand-border pt-4">
-
-                    {/* Deccor */}
                     <CardFornecedor
                       titulo="Deccor — Tecidos"
                       icon={<Package size={15} />}
@@ -233,7 +420,6 @@ export default function FornecedoresPage() {
                       ))}
                     </CardFornecedor>
 
-                    {/* Rio Flex */}
                     {ambComTrilhoRioFlex.length > 0 && (
                       <CardFornecedor
                         titulo="Rio Flex — Trilhos"
@@ -252,7 +438,6 @@ export default function FornecedoresPage() {
                       </CardFornecedor>
                     )}
 
-                    {/* Venetillo */}
                     {ambComTrilhoVenetillo.length > 0 && (
                       <CardFornecedor
                         titulo="Venetillo — Trilhos"
@@ -271,7 +456,6 @@ export default function FornecedoresPage() {
                       </CardFornecedor>
                     )}
 
-                    {/* Costureira Cici */}
                     <CardFornecedor
                       titulo="Costureira Cici — Confecção"
                       icon={<Scissors size={15} />}
@@ -283,20 +467,26 @@ export default function FornecedoresPage() {
                       {pedido.ambientes.map(a => (
                         <div key={a.id} className="py-1.5 border-b border-brand-border last:border-0">
                           <p className="text-xs font-semibold text-text-primary mb-1">{a.nomeAmbiente}</p>
-                          <InfoLinha label="Modelo" value={MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina} />
+                          <InfoLinha label="Cliente" value={pedido.cliente?.nome ?? '—'} />
+                          <InfoLinha label="Suporte" value={a.trilhoTipo === 'varao' ? 'Varão' : 'Trilho suíço'} />
                           <InfoLinha label="Medidas" value={`${a.largura.toFixed(2)}m × ${a.altura.toFixed(2)}m`} />
+                          <InfoLinha label="Modelo" value={MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina} />
                           <InfoLinha label="Tecido" value={a.tecidoNome} />
-                          <InfoLinha label="Abertura" value={a.tipoAbertura === 'INTEIRA' ? 'Inteira' : 'Central (2 folhas)'} />
+                          {a.blackoutNome && <InfoLinha label="Blackout" value={a.blackoutNome} />}
+                          <InfoLinha label="Bainha" value={`${a.bainhaDesejada.toFixed(2)}m`} />
+                          <InfoLinha label="Abertura tecido" value={a.tipoAbertura === 'INTEIRA' ? 'Inteira' : 'Central (2 folhas)'} />
+                          {a.blackoutNome && <InfoLinha label="Abertura blackout" value={a.tipoAberturaBlackout === 'INTEIRA' ? 'Inteira' : 'Central (2 folhas)'} />}
+                          {a.tecidoExtra && <InfoLinha label="Tecido extra" value="Sim" />}
+                          {a.blackoutExtra && <InfoLinha label="Blackout extra" value="Sim" />}
                           {a.observacoes && <InfoLinha label="Obs" value={a.observacoes} />}
                         </div>
                       ))}
                     </CardFornecedor>
 
-                    {/* Instalação */}
                     {ambComInstalacao.length > 0 && (
                       <div className="space-y-2">
                         {ambComInstalacao.map(a => {
-                          const msgInstalador = `*Instalação — Pedido #${String(pedido.numero).padStart(4,'0')}*\n\nCliente: ${pedido.cliente?.nome ?? '—'}\nEndereço: ${pedido.cliente?.endereco ?? '—'}\nAmbiente: ${a.nomeAmbiente}\nModelo: ${MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina}\nValor: ${fmt(a.custoInstalacao)}`
+                          const msgInstalador = `Bom dia\nGostaria de agendar uma instalação:\n\nCliente: ${pedido.cliente?.nome ?? '—'}\nEndereço: ${pedido.cliente?.endereco ?? '—'}\nAmbiente: ${a.nomeAmbiente}\nModelo: ${MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina}\nValor da instalação: ${fmt(a.custoInstalacao)}\n\n${pedido.whatsapp.encerramento}`
                           return (
                             <CardFornecedor
                               key={a.id}
@@ -311,6 +501,7 @@ export default function FornecedoresPage() {
                               <InfoLinha label="Endereço" value={pedido.cliente?.endereco ?? '—'} />
                               <InfoLinha label="Ambiente" value={a.nomeAmbiente} />
                               <InfoLinha label="Modelo" value={MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina} />
+                              <InfoLinha label="Valor" value={fmt(a.custoInstalacao)} />
                             </CardFornecedor>
                           )
                         })}

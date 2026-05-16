@@ -14,6 +14,7 @@ type DashData = {
   margemMedia?: number
   faturamento6Meses?: { mes: string; faturamento: number }[]
   rankingVendedores?: { id: string; nome: string; orcamentos: number; faturamento: number; comissao: number }[]
+  operacionalFinanceiro?: { totalFornecedores: number; totalInstalacao: number; totalGeral: number }
   recentes: { id: string; numero: number; status: string; precoFinalTotal: number | null; createdAt: string; cliente: { nome: string } | null; ambientes: { id: string }[] }[]
 }
 
@@ -69,6 +70,12 @@ export default function DashboardAdminPage() {
         <MetricCard icon={<DollarSign size={20} />} label="Faturamento do Mês" value={dash?.faturamentoMes !== undefined ? fmt(dash.faturamentoMes) : '—'} color="#C9A84C" restricted />
         <MetricCard icon={<TrendingUp size={20} />} label="Custo Total" value={dash?.custoTotal !== undefined ? fmt(dash.custoTotal) : '—'} color="#EF4444" restricted />
         <MetricCard icon={<Percent size={20} />} label="Margem Média" value={dash?.margemMedia !== undefined ? `${dash.margemMedia.toFixed(1)}%` : '—'} color="#10B981" restricted />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <MetricCard icon={<DollarSign size={20} />} label="A pagar fornecedores" value={dash?.operacionalFinanceiro ? fmt(dash.operacionalFinanceiro.totalFornecedores) : '—'} color="#7C3AED" restricted />
+        <MetricCard icon={<DollarSign size={20} />} label="A pagar instalação" value={dash?.operacionalFinanceiro ? fmt(dash.operacionalFinanceiro.totalInstalacao) : '—'} color="#16A34A" restricted />
+        <MetricCard icon={<DollarSign size={20} />} label="Total operacional" value={dash?.operacionalFinanceiro ? fmt(dash.operacionalFinanceiro.totalGeral) : '—'} color="#0F766E" restricted />
       </div>
 
       {/* Linha 3 — Gráfico + Ranking + Ações */}

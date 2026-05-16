@@ -1,11 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Info, ToggleLeft, ToggleRight, AlertTriangle, Ruler, Layers, Wrench, FileText, ChevronDown } from 'lucide-react'
+import { ChevronLeft, ToggleLeft, ToggleRight, AlertTriangle, Ruler, Layers, Wrench, FileText, ChevronDown } from 'lucide-react'
 import { useOrcamento, AmbienteForm, ambienteVazio } from '@/context/OrcamentoContext'
 import { calcularAmbiente, Configuracoes, ModeloCortina, TipoAbertura } from '@/lib/calculoCortina'
 
-type Tecido = { id: string; nome: string; larguraMaxima: number; valorMetro: number; tipo: string }
+type Tecido = { id: string; nome: string; larguraMaxima: number; valorMetro: number; tipo: string; ativo?: boolean }
+type Configs = Record<string, string>
+type Trilho = { id: string; nome: string; valorUnitario: number; ativo: boolean }
+type Instalador = { id: string; nome: string; telefone: string | null; especialidades?: string[] }
+type PreviaCalc = {
+  metros: number
+  metrosBlackout: number | null
+  precisaTecidoExtra: boolean
+  precisaBlackoutExtra: boolean
+  bainhaDisponivel: number
+  alerta: string | null
+}
 
 const MODELOS: { value: ModeloCortina; label: string }[] = [
   { value: 'prega_macho', label: 'Prega Macho' },
@@ -68,7 +79,7 @@ function TecidoSelect({
             <Ruler size={10} />
             {Number(selecionado.larguraMaxima).toFixed(2)}m largura
           </span>
-{composicao(selecionado.nome) && (
+          {composicao(selecionado.nome) && (
             <span className="inline-flex items-center px-2.5 py-1 bg-brand-input border border-brand-border rounded-full text-[11px] text-text-muted">
               {composicao(selecionado.nome)}
             </span>
@@ -87,11 +98,6 @@ export default function Etapa3Cortina() {
   const [configs, setConfigs] = useState<Configs | null>(null)
   const [previa, setPrevia] = useState<PreviaCalc | null>(null)
 
-  type Configs = Record<string, string>
-  type Trilho = { id: string; nome: string; valorUnitario: number; ativo: boolean }
-  type Instalador = { id: string; nome: string; telefone: string | null }
-  type PreviaCalc = { metros: number; precisaTecidoExtra: boolean; bainhaDisponivel: number; alerta: string | null }
-
   const form = ambientes[ambienteAtual]
 
   function setForm(updater: (prev: AmbienteForm) => AmbienteForm) {
@@ -103,7 +109,7 @@ export default function Etapa3Cortina() {
       fetch('/api/tecidos').then(r => r.json()),
       fetch('/api/configuracoes').then(r => r.json()),
       fetch('/api/trilhos').then(r => r.json()),
-      fetch('/api/instaladores').then(r => r.json()),
+      fetch('/api/instaladores?tipo=CORTINA').then(r => r.json()),
     ]).then(([t, c, tr, ins]) => {
       setTecidos(t)
       setConfigs(c)
@@ -112,7 +118,6 @@ export default function Etapa3Cortina() {
     })
   }, [])
 
-  // Prévia em tempo real
   useEffect(() => {
     if (!configs || !form.tecidoId || !form.largura || !form.altura) {
       setPrevia(null)
@@ -147,21 +152,31 @@ export default function Etapa3Cortina() {
         altura: parseFloat(form.altura),
         modeloCortina: form.modeloCortina,
         tipoAbertura: form.tipoAbertura,
+        tipoAberturaBlackout: form.blackoutAtivo ? form.tipoAberturaBlackout : null,
         tecido: { id: form.tecidoId, larguraMaxima: form.tecidoLargura, valorMetro: form.tecidoValor },
         blackout: form.blackoutAtivo && form.blackoutId ? { id: form.blackoutId, larguraMaxima: form.blackoutLargura, valorMetro: form.blackoutValor } : null,
         tecidoExtra: form.tecidoExtra,
+        blackoutExtra: form.blackoutExtra,
+        bainhaDesejada: form.bainhaDesejada ? parseFloat(form.bainhaDesejada) : 0.2,
         instalacao: form.instalacao,
         trilhoValorUnitario: form.trilhoValorUnitario || null,
         outrosValor: form.outrosValor ? parseFloat(form.outrosValor) : null,
       }, cfg)
-      setPrevia({ metros: r.quantidadeTecido, precisaTecidoExtra: r.precisaTecidoExtra, bainhaDisponivel: r.bainhaDisponivel, alerta: r.bainhaAlerta })
+      setPrevia({
+        metros: r.quantidadeTecido,
+        metrosBlackout: r.quantidadeBlackout,
+        precisaTecidoExtra: r.precisaTecidoExtra,
+        precisaBlackoutExtra: r.precisaBlackoutExtra,
+        bainhaDisponivel: r.bainhaDisponivel,
+        alerta: r.bainhaAlerta,
+      })
     } catch {
       setPrevia(null)
     }
   }, [form, configs])
 
-  const tecidosPrincipais = tecidos.filter(t => t.tipo === 'PRINCIPAL' && (t as { ativo?: boolean }).ativo !== false)
-  const tecidosBlackout = tecidos.filter(t => t.tipo === 'BLACKOUT' && (t as { ativo?: boolean }).ativo !== false)
+  const tecidosPrincipais = tecidos.filter(t => t.tipo === 'PRINCIPAL' && t.ativo !== false)
+  const tecidosBlackout = tecidos.filter(t => t.tipo === 'BLACKOUT' && t.ativo !== false)
 
   function adicionarAmbiente() {
     const novos = [...ambientes, { ...ambienteVazio, nomeAmbiente: `Ambiente ${ambientes.length + 1}` }]
@@ -176,7 +191,6 @@ export default function Etapa3Cortina() {
   return (
     <div className="flex gap-6">
       <div className="flex-1 min-w-0">
-        {/* Resumo cliente */}
         {cliente && (
           <div className="flex items-center justify-between px-4 py-3 bg-white border border-brand-border rounded-xl mb-4 shadow-sm">
             <div className="flex items-center gap-2.5">
@@ -192,7 +206,6 @@ export default function Etapa3Cortina() {
           </div>
         )}
 
-        {/* Tabs de ambientes */}
         {ambientes.length > 1 && (
           <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
             {ambientes.map((a, i) => (
@@ -221,7 +234,6 @@ export default function Etapa3Cortina() {
             )}
           </div>
 
-          {/* IDENTIFICAÇÃO */}
           <SectionLabel label="Identificação" icon={<FileText size={13} />} />
           <input
             type="text"
@@ -231,7 +243,6 @@ export default function Etapa3Cortina() {
             className="input-base"
           />
 
-          {/* MEDIDAS */}
           <SectionLabel label="Medidas" icon={<Ruler size={13} />} />
           <div className="grid grid-cols-2 gap-3">
             {[
@@ -253,29 +264,22 @@ export default function Etapa3Cortina() {
             ))}
           </div>
 
-          {/* Alerta bainha automático */}
           {previa && previa.precisaTecidoExtra && !form.tecidoExtra && (
             <div className="flex items-start justify-between gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl mt-3">
               <div className="flex items-start gap-3">
                 <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-amber-700">Bainha insuficiente</p>
-                  <p className="text-xs text-amber-600 mt-0.5">Bainha disponível: {previa.bainhaDisponivel.toFixed(2)}m (mínimo 0,18m). É necessário tecido extra.</p>
+                  <p className="text-sm font-semibold text-amber-700">Tecido extra necessário</p>
+                  <p className="text-xs text-amber-600 mt-0.5">Bainha útil: {previa.bainhaDisponivel.toFixed(2)}m. Abaixo de 0,18m, o sistema já considera tecido extra automaticamente.</p>
                 </div>
               </div>
-              <button
-                onClick={() => setForm(p => ({ ...p, tecidoExtra: true }))}
-                className="shrink-0 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap"
-              >
-                + Tecido extra
-              </button>
             </div>
           )}
 
           {form.tecidoExtra && (
             <div className="flex items-center justify-between gap-3 p-3 bg-green-50 border border-green-200 rounded-xl mt-3">
               <div className="flex items-center gap-2">
-                <span className="text-green-600 text-sm font-semibold">Tecido extra incluído</span>
+                <span className="text-green-600 text-sm font-semibold">Tecido extra ativado</span>
                 <span className="text-xs text-green-500">({previa ? `${previa.metros.toFixed(2)}m` : '—'})</span>
               </div>
               <button
@@ -287,7 +291,6 @@ export default function Etapa3Cortina() {
             </div>
           )}
 
-          {/* SUPORTE E MODELO */}
           <SectionLabel label="Suporte e Modelo" icon={<Layers size={13} />} />
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -311,9 +314,21 @@ export default function Etapa3Cortina() {
             </div>
           </div>
 
-          {/* TECIDOS */}
           <SectionLabel label="Tecidos" icon={<Layers size={13} />} />
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Bainha desejada (m)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.18"
+                  value={form.bainhaDesejada}
+                  onChange={e => setForm(p => ({ ...p, bainhaDesejada: e.target.value || '0.20' }))}
+                  className="input-base"
+                />
+              </div>
+            </div>
             <TecidoSelect
               label="Tecido principal"
               tecidos={tecidosPrincipais}
@@ -359,14 +374,14 @@ export default function Etapa3Cortina() {
                   onChange={(id, t) => setForm(p => ({ ...p, blackoutId: id, blackoutNome: t?.nome ?? '', blackoutLargura: Number(t?.larguraMaxima ?? 0), blackoutValor: Number(t?.valorMetro ?? 0) }))}
                 />
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Abertura da cortina</label>
+                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Abertura do blackout</label>
                   <div className="flex rounded-xl overflow-hidden border border-brand-border">
                     {(['INTEIRA', 'CENTRAL'] as TipoAbertura[]).map(op => (
                       <button
                         key={op}
-                        onClick={() => setForm(p => ({ ...p, tipoAbertura: op }))}
+                        onClick={() => setForm(p => ({ ...p, tipoAberturaBlackout: op }))}
                         className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-                          form.tipoAbertura === op
+                          form.tipoAberturaBlackout === op
                             ? 'bg-gold-primary text-white'
                             : 'bg-brand-input text-text-secondary hover:bg-brand-border'
                         }`}
@@ -376,11 +391,19 @@ export default function Etapa3Cortina() {
                     ))}
                   </div>
                 </div>
+                <div className="flex items-center justify-between py-2 px-3 bg-brand-input rounded-xl border border-brand-border">
+                  <div>
+                    <p className="text-sm font-medium text-text-primary">Tecido extra no blackout</p>
+                    <p className="text-xs text-text-muted">Ative se quiser forçar o cálculo extra além da regra automática</p>
+                  </div>
+                  <button onClick={() => setForm(p => ({ ...p, blackoutExtra: !p.blackoutExtra }))} className="text-gold-primary">
+                    {form.blackoutExtra ? <ToggleRight size={30} /> : <ToggleLeft size={30} className="text-text-muted" />}
+                  </button>
+                </div>
               </>
             )}
           </div>
 
-          {/* INSTALAÇÃO E ACABAMENTO */}
           <SectionLabel label="Instalação e Acabamento" icon={<Wrench size={13} />} />
           <div className="space-y-4">
             <div className="flex items-center justify-between py-2 px-3 bg-brand-input rounded-xl border border-brand-border">
@@ -455,7 +478,6 @@ export default function Etapa3Cortina() {
             </div>
           </div>
 
-          {/* OBSERVAÇÕES */}
           <SectionLabel label="Observações" icon={<FileText size={13} />} />
           <textarea
             value={form.observacoes}
@@ -465,7 +487,6 @@ export default function Etapa3Cortina() {
             className="input-base h-auto py-3 resize-none"
           />
 
-          {/* Alerta bainha */}
           {previa?.alerta && form.tecidoExtra && (
             <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-xl mt-4">
               <AlertTriangle size={18} className="text-green-500 shrink-0 mt-0.5" />
@@ -473,7 +494,6 @@ export default function Etapa3Cortina() {
             </div>
           )}
 
-          {/* Ações */}
           <div className="flex items-center justify-between pt-6 mt-4 border-t border-brand-border">
             <button onClick={() => setEtapa(2)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-text-muted hover:text-red-400 hover:bg-red-50 transition-colors">
               <ChevronLeft size={16} />
@@ -498,7 +518,6 @@ export default function Etapa3Cortina() {
         </div>
       </div>
 
-      {/* Painel de prévia lateral */}
       <div className="hidden lg:block w-60 shrink-0">
         <div className="sticky top-6 space-y-3">
           {previa ? (
@@ -517,7 +536,7 @@ export default function Etapa3Cortina() {
               {form.blackoutAtivo && form.blackoutId && (
                 <div className="space-y-1 pt-2 border-t border-brand-border">
                   <p className="text-xs text-text-muted">Metros de blackout</p>
-                  <p className="text-xl font-bold text-text-primary">—</p>
+                  <p className="text-xl font-bold text-text-primary">{previa?.metrosBlackout?.toFixed(2) ?? '—'}m</p>
                 </div>
               )}
               {previa.precisaTecidoExtra && !form.tecidoExtra && (

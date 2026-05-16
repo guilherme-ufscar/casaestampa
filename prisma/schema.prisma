@@ -136,11 +136,14 @@ model AmbienteOrcamento {
   altura                Decimal       @db.Decimal(8, 2)
   modeloCortina         ModeloCortina
   tipoAbertura          TipoAbertura  @default(INTEIRA)
+  tipoAberturaBlackout  TipoAbertura?
   trilhoTipo            TipoTrilho    @default(trilho_suico)
   trilhoVaraoId         String?
   tecidoId              String
   blackoutId            String?
   bainhaDesejada        Decimal?      @db.Decimal(5, 2)
+  tecidoExtra           Boolean       @default(false)
+  blackoutExtra         Boolean       @default(false)
   instalacao            Boolean       @default(false)
   instaladorId          String?
   trilhoAcessoriosValor Decimal?      @db.Decimal(10, 2)

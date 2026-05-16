@@ -34,7 +34,17 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const { clienteId, ambientes } = body as {
     clienteId?: string
-    ambientes: (AmbienteInput & { tecidoId: string; blackoutId?: string; trilhoVaraoId?: string; trilhoNome?: string; observacoes?: string })[]
+    ambientes: (AmbienteInput & {
+      tecidoId: string
+      blackoutId?: string
+      trilhoTipo?: 'trilho_suico' | 'varao'
+      trilhoVaraoId?: string
+      trilhoNome?: string
+      observacoes?: string
+      bainhaDesejada?: number | null
+      tipoAberturaBlackout?: 'INTEIRA' | 'CENTRAL' | null
+      blackoutExtra?: boolean
+    })[]
   }
 
   if (!ambientes?.length) {
@@ -83,21 +93,27 @@ export async function POST(req: NextRequest) {
       ambientes: {
         create: ambientes.map((a, i) => {
           const r = resultado.ambientes[i]
+          const comprimentoTrilho = a.trilhoValorUnitario
+            ? Math.ceil(a.largura * 2) / 2
+            : null
           return {
             nomeAmbiente: a.nomeAmbiente,
             largura: a.largura,
             altura: a.altura,
             modeloCortina: a.modeloCortina,
             tipoAbertura: a.tipoAbertura,
-            trilhoTipo: 'trilho_suico',
+            trilhoTipo: a.trilhoTipo ?? 'trilho_suico',
             tecidoId: a.tecidoId,
             blackoutId: a.blackoutId ?? null,
             trilhoVaraoId: a.trilhoVaraoId ?? null,
-            bainhaDesejada: null,
+            bainhaDesejada: a.bainhaDesejada ?? 0.2,
+            tecidoExtra: a.tecidoExtra,
+            blackoutExtra: a.blackoutExtra ?? false,
+            tipoAberturaBlackout: a.tipoAberturaBlackout ?? null,
             instalacao: a.instalacao,
             instaladorId: (a as { instaladorId?: string }).instaladorId ?? null,
-            trilhoAcessoriosValor: a.trilhoValorUnitario
-              ? Math.ceil(a.largura * 2) / 2 * a.trilhoValorUnitario
+            trilhoAcessoriosValor: a.trilhoValorUnitario && comprimentoTrilho
+              ? comprimentoTrilho * a.trilhoValorUnitario
               : null,
             outrosValor: a.outrosValor ?? null,
             observacoes: (a as { observacoes?: string }).observacoes ?? null,

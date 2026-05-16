@@ -26,20 +26,24 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   if (!orc) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
 
-  // Buscar configurações
   const configsRaw = await prisma.configuracaoCalculo.findMany()
   const cfg: Record<string, string> = {}
   for (const c of configsRaw) cfg[c.chave] = c.valor
 
   const ambientesPDF: AmbientePDF[] = orc.ambientes.map(a => ({
     nomeAmbiente: a.nomeAmbiente,
+    largura: Number(a.largura),
+    altura: Number(a.altura),
+    modeloCortina: a.modeloCortina,
+    trilhoTipo: a.trilhoTipo,
+    tipoAbertura: a.tipoAbertura,
+    tipoAberturaBlackout: a.tipoAberturaBlackout ?? a.tipoAbertura,
+    bainhaDesejada: a.bainhaDesejada ? Number(a.bainhaDesejada) : null,
     tecidoNome: a.tecido.nome,
     quantidadeTecido: Number(a.quantidadeTecido ?? 0),
     blackoutNome: a.blackout?.nome ?? null,
     quantidadeBlackout: a.quantidadeBlackout ? Number(a.quantidadeBlackout) : null,
-    trilhoAcessoriosValor: a.trilhoAcessoriosValor ? Number(a.trilhoAcessoriosValor) : null,
     instalacao: a.instalacao,
-    outrosValor: a.outrosValor ? Number(a.outrosValor) : null,
     precoFinalVenda: Number(a.precoFinalVenda ?? 0),
   }))
 
@@ -56,6 +60,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     precoFinalTotal: Number(orc.precoFinalTotal ?? 0),
     condicoesComerciais: cfg.condicoes_comerciais,
     telefoneEmpresa: cfg.telefone_empresa,
+    mostrarMedidas: cfg.pdf_mostrar_medidas !== 'false',
   }
 
   const doc = React.createElement(OrcamentoPDFDoc, { orc: orcPDF })

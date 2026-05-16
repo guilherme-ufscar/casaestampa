@@ -2,19 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { listarArquitetos } from '@/lib/arquitetosStore'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const cliente = await prisma.cliente.findUnique({
-    where: { id: params.id },
-    include: {
-      orcamentos: {
-        include: { vendedor: { select: { nome: true } } },
-        orderBy: { createdAt: 'desc' },
+  const [cliente, arquitetos] = await Promise.all([
+    prisma.cliente.findUnique({
+      where: { id: params.id },
+      include: {
+        orcamentos: {
+          include: { vendedor: { select: { nome: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
       },
-    },
-  })
+    }),
+    listarArquitetos(),
+  ])
   if (!cliente) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
-  return NextResponse.json(cliente)
+  return NextResponse.json({ ...cliente, arquitetosDisponiveis: arquitetos.filter(item => item.ativo) })
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {

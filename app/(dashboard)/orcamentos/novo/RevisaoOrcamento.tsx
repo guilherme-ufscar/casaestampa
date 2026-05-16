@@ -75,10 +75,12 @@ export default function RevisaoOrcamento() {
         try {
           const r = calcularAmbiente({
             nomeAmbiente: a.nomeAmbiente, largura: parseFloat(a.largura), altura: parseFloat(a.altura),
-            modeloCortina: a.modeloCortina, tipoAbertura: a.tipoAbertura,
+            modeloCortina: a.modeloCortina, tipoAbertura: a.tipoAbertura, tipoAberturaBlackout: a.blackoutAtivo ? a.tipoAberturaBlackout : null,
             tecido: { id: a.tecidoId, larguraMaxima: a.tecidoLargura, valorMetro: a.tecidoValor },
             blackout: a.blackoutAtivo && a.blackoutId ? { id: a.blackoutId, larguraMaxima: a.blackoutLargura, valorMetro: a.blackoutValor } : null,
             tecidoExtra: a.tecidoExtra,
+            blackoutExtra: a.blackoutExtra,
+            bainhaDesejada: a.bainhaDesejada ? parseFloat(a.bainhaDesejada) : 0.2,
             instalacao: a.instalacao,
             trilhoValorUnitario: a.trilhoValorUnitario || null,
             outrosValor: a.outrosValor ? parseFloat(a.outrosValor) : null,
@@ -111,10 +113,12 @@ export default function RevisaoOrcamento() {
                   try {
                     return calcularAmbiente({
                       nomeAmbiente: a.nomeAmbiente, largura: parseFloat(a.largura), altura: parseFloat(a.altura),
-                      modeloCortina: a.modeloCortina, tipoAbertura: a.tipoAbertura,
+                      modeloCortina: a.modeloCortina, tipoAbertura: a.tipoAbertura, tipoAberturaBlackout: a.blackoutAtivo ? a.tipoAberturaBlackout : null,
                       tecido: { id: a.tecidoId, larguraMaxima: a.tecidoLargura, valorMetro: a.tecidoValor },
                       blackout: a.blackoutAtivo && a.blackoutId ? { id: a.blackoutId, larguraMaxima: a.blackoutLargura, valorMetro: a.blackoutValor } : null,
                       tecidoExtra: a.tecidoExtra,
+                      blackoutExtra: a.blackoutExtra,
+                      bainhaDesejada: a.bainhaDesejada ? parseFloat(a.bainhaDesejada) : 0.2,
                       instalacao: a.instalacao,
                       trilhoValorUnitario: a.trilhoValorUnitario || null,
                       outrosValor: a.outrosValor ? parseFloat(a.outrosValor) : null,
@@ -143,8 +147,12 @@ export default function RevisaoOrcamento() {
                   <InfoRow label="Tecido" value={a.tecidoNome || '—'} />
                   <InfoRow label="Blackout" value={a.blackoutAtivo ? (a.blackoutNome || 'Sim') : 'Não'} />
                   <InfoRow label="Instalação" value={a.instalacao ? 'Sim' : 'Não'} />
-                  <InfoRow label="Abertura" value={a.tipoAbertura === 'INTEIRA' ? 'Inteira' : 'Central'} />
+                  <InfoRow label="Suporte" value={a.trilhoTipo === 'varao' ? 'Varão' : 'Trilho suíço'} />
+                  <InfoRow label="Abertura tecido" value={a.tipoAbertura === 'INTEIRA' ? 'Inteira' : 'Central'} />
+                  {a.blackoutAtivo && <InfoRow label="Abertura blackout" value={a.tipoAberturaBlackout === 'INTEIRA' ? 'Inteira' : 'Central'} />}
+                  <InfoRow label="Bainha" value={`${a.bainhaDesejada || '0.20'}m`} />
                   {a.tecidoExtra && <InfoRow label="Tecido extra" value="Sim" />}
+                  {a.blackoutExtra && <InfoRow label="Blackout extra" value="Sim" />}
                 </div>
 
                 {resultado && (

@@ -22,9 +22,12 @@ export interface AmbienteInput {
   altura: number
   modeloCortina: ModeloCortina
   tipoAbertura: TipoAbertura
+  tipoAberturaBlackout?: TipoAbertura | null
   tecido: TecidoInput
   blackout?: TecidoInput | null
   tecidoExtra: boolean
+  blackoutExtra?: boolean
+  bainhaDesejada?: number | null
   instalacao: boolean
   trilhoValorUnitario?: number | null
   outrosValor?: number | null
@@ -34,7 +37,6 @@ export interface Configuracoes {
   markup_padrao: number
   comissao_padrao: number
   rt_padrao: number
-  // Confecção por m² por modelo (Costureira Cici)
   confeccao_prega_macho: number
   confeccao_prega_femea: number
   confeccao_prega_americana: number
@@ -43,7 +45,6 @@ export interface Configuracoes {
   confeccao_wave: number
   confeccao_soft_wave: number
   confeccao_varao: number
-  // Instalação por m²
   instalacao_valor_m2: number
   fator_prega_macho: number
   fator_prega_femea: number
@@ -60,6 +61,10 @@ export interface ResultadoAmbiente {
   quantidadeTecido: number
   quantidadeBlackout: number | null
   precisaTecidoExtra: boolean
+  precisaBlackoutExtra: boolean
+  tecidoExtraAplicado: boolean
+  blackoutExtraAplicado: boolean
+  bainhaDesejada: number
   bainhaDisponivel: number
   bainhaNaoCabe: boolean
   bainhaAlerta: string | null
@@ -86,7 +91,10 @@ export interface ResultadoOrcamento {
   totalMargem: number
 }
 
-// Arredonda para cima de 0,50 em 0,50
+const CABECA_PADRAO = 0.1
+const BAINHA_PADRAO = 0.2
+const LIMITE_BAINHA_UTIL = 0.18
+
 function arredondarConsumo(valor: number): number {
   return Math.ceil(valor * 2) / 2
 }
@@ -105,39 +113,53 @@ function getFatorPrega(modelo: ModeloCortina, configs: Configuracoes): number {
   return map[modelo]
 }
 
-function calcularConsumoTecido(
+function aplicarTecidoExtra(quantidadeBase: number, tipoAbertura: TipoAbertura): number {
+  return arredondarConsumo(tipoAbertura === 'INTEIRA' ? quantidadeBase * 2 : quantidadeBase * 1.5)
+}
+
+function calcularConsumoPrincipal(
+  largura: number,
+  altura: number,
+  tipoAbertura: TipoAbertura,
+  fator: number,
+  larguraMaximaTecido: number,
+  forcarTecidoExtra: boolean = false,
+  bainhaDesejada: number = BAINHA_PADRAO
+): { quantidade: number; quantidadeBase: number; precisaExtra: boolean; extraAplicado: boolean; bainhaDisponivel: number; alerta: string | null } {
+  const quantidadeBase = arredondarConsumo(largura * fator)
+  const alturaComCabeca = altura + CABECA_PADRAO
+  const sobraParaBainha = larguraMaximaTecido - alturaComCabeca
+  const bainhaDisponivel = sobraParaBainha / 2
+  const precisaExtra = bainhaDisponivel < LIMITE_BAINHA_UTIL
+  const extraAplicado = forcarTecidoExtra || precisaExtra
+  const quantidade = extraAplicado ? aplicarTecidoExtra(quantidadeBase, tipoAbertura) : quantidadeBase
+
+  const alerta = precisaExtra
+    ? `Bainha útil de ${bainhaDisponivel.toFixed(2)}m abaixo do mínimo de ${LIMITE_BAINHA_UTIL.toFixed(2)}m. Considerando cabeça de ${CABECA_PADRAO.toFixed(2)}m e bainha padrão de ${bainhaDesejada.toFixed(2)}m.`
+    : null
+
+  return { quantidade, quantidadeBase, precisaExtra, extraAplicado, bainhaDisponivel, alerta }
+}
+
+function calcularConsumoBlackout(
   largura: number,
   altura: number,
   tipoAbertura: TipoAbertura,
   fator: number,
   larguraMaximaTecido: number,
   forcarTecidoExtra: boolean = false
-): { quantidade: number; precisaTecidoExtra: boolean; bainhaDisponivel: number; alerta: string | null } {
-  const larguraComConsumo = largura * fator
-  const consumoBase = arredondarConsumo(larguraComConsumo)
+): { quantidade: number; quantidadeBase: number; precisaExtra: boolean; extraAplicado: boolean; alerta: string | null } {
+  const quantidadeBase = arredondarConsumo(largura * fator)
+  const alturaComCabeca = altura + CABECA_PADRAO
+  const precisaExtra = alturaComCabeca > larguraMaximaTecido
+  const extraAplicado = forcarTecidoExtra || precisaExtra
+  const quantidade = extraAplicado ? aplicarTecidoExtra(quantidadeBase, tipoAbertura) : quantidadeBase
 
-  const larguraUtilReal = larguraMaximaTecido - 0.1
-  const alturaReal = altura + 0.1  // cabeça sempre +0,10
-  const sobraParaBainha = larguraUtilReal - alturaReal
-  const bainhaDisponivel = sobraParaBainha / 2  // bainha dupla
+  const alerta = precisaExtra
+    ? `Blackout com altura útil de ${alturaComCabeca.toFixed(2)}m excede a largura de ${larguraMaximaTecido.toFixed(2)}m após considerar a cabeça de ${CABECA_PADRAO.toFixed(2)}m.`
+    : null
 
-  const precisaTecidoExtra = bainhaDisponivel < 0.18
-
-  let consumoFinal = consumoBase
-  let alerta: string | null = null
-
-  if (forcarTecidoExtra || precisaTecidoExtra) {
-    if (tipoAbertura === 'INTEIRA') {
-      consumoFinal = arredondarConsumo(consumoBase * 2)
-    } else {
-      consumoFinal = arredondarConsumo(consumoBase * 1.5)
-    }
-    if (precisaTecidoExtra) {
-      alerta = `Bainha disponível (${bainhaDisponivel.toFixed(2)}m) abaixo de 0,18m — tecido extra ${forcarTecidoExtra ? 'adicionado' : 'necessário'}: ${consumoFinal.toFixed(2)}m.`
-    }
-  }
-
-  return { quantidade: consumoFinal, precisaTecidoExtra, bainhaDisponivel, alerta }
+  return { quantidade, quantidadeBase, precisaExtra, extraAplicado, alerta }
 }
 
 export function calcularAmbiente(
@@ -145,25 +167,27 @@ export function calcularAmbiente(
   configs: Configuracoes
 ): ResultadoAmbiente {
   const fator = getFatorPrega(ambiente.modeloCortina, configs)
+  const bainhaDesejada = ambiente.bainhaDesejada ?? BAINHA_PADRAO
 
-  const tecidoCalc = calcularConsumoTecido(
+  const tecidoCalc = calcularConsumoPrincipal(
     ambiente.largura,
     ambiente.altura,
     ambiente.tipoAbertura,
     fator,
     ambiente.tecido.larguraMaxima,
-    ambiente.tecidoExtra
+    ambiente.tecidoExtra,
+    bainhaDesejada
   )
 
-  let blackoutCalc: ReturnType<typeof calcularConsumoTecido> | null = null
+  let blackoutCalc: ReturnType<typeof calcularConsumoBlackout> | null = null
   if (ambiente.blackout) {
-    blackoutCalc = calcularConsumoTecido(
+    blackoutCalc = calcularConsumoBlackout(
       ambiente.largura,
       ambiente.altura,
-      ambiente.tipoAbertura,
+      ambiente.tipoAberturaBlackout ?? ambiente.tipoAbertura,
       configs.fator_prega_reta,
       ambiente.blackout.larguraMaxima,
-      ambiente.tecidoExtra
+      ambiente.blackoutExtra ?? false
     )
   }
 
@@ -199,14 +223,20 @@ export function calcularAmbiente(
   const precoFinalVenda = precoComMarkup + valorRt + valorComissao
   const margem = precoComMarkup - custoTotal
 
+  const alertas = [tecidoCalc.alerta, blackoutCalc?.alerta].filter(Boolean).join(' ')
+
   return {
     nomeAmbiente: ambiente.nomeAmbiente,
     quantidadeTecido: tecidoCalc.quantidade,
     quantidadeBlackout: blackoutCalc?.quantidade ?? null,
-    precisaTecidoExtra: tecidoCalc.precisaTecidoExtra || (blackoutCalc?.precisaTecidoExtra ?? false),
+    precisaTecidoExtra: tecidoCalc.precisaExtra,
+    precisaBlackoutExtra: blackoutCalc?.precisaExtra ?? false,
+    tecidoExtraAplicado: tecidoCalc.extraAplicado,
+    blackoutExtraAplicado: blackoutCalc?.extraAplicado ?? false,
+    bainhaDesejada,
     bainhaDisponivel: tecidoCalc.bainhaDisponivel,
-    bainhaNaoCabe: tecidoCalc.precisaTecidoExtra || (blackoutCalc?.precisaTecidoExtra ?? false),
-    bainhaAlerta: tecidoCalc.alerta ?? blackoutCalc?.alerta ?? null,
+    bainhaNaoCabe: tecidoCalc.precisaExtra || (blackoutCalc?.precisaExtra ?? false),
+    bainhaAlerta: alertas || null,
     custoTecido,
     custoBlackout,
     custoMaterial,

@@ -1,7 +1,7 @@
 ﻿"use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { ChevronDown, FileDown, FileSpreadsheet, TrendingUp, Trophy, FileBarChart, DollarSign, Users, Package, Table, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react"
+import { ChevronDown, FileDown, FileSpreadsheet, TrendingUp, Trophy, FileBarChart, DollarSign, Users, Package, Table, ArrowUpRight, ArrowDownRight, Loader2, Search } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { STATUS_CONFIG, StatusOrcamento } from "@/components/ui/StatusBadge"
 import { Toaster, toast } from "sonner"
@@ -17,6 +17,15 @@ type DadosRelatorio = {
   produtosMaisOrcados: { nome: string; count: number; percentual: number }[]
   orcamentosPorStatus: { status: string; count: number; percentual: number }[]
   rankingVendedores: { id: string; nome: string; orcamentos: number; fechados: number; faturamento: number; comissao: number; taxaAprovacao: number }[]
+}
+
+type ClienteResumo = {
+  id: string
+  nome: string
+  telefone?: string
+  email?: string
+  createdAt: string
+  orcamentos: { id: string; createdAt: string; precoFinalTotal: number | null; status: string }[]
 }
 
 const PERIODO_LABELS: Record<string, string> = { mes: "Este mês", "3meses": "Últimos 3 meses", ano: "Este ano", personalizado: "Personalizado" }
@@ -60,6 +69,10 @@ export default function RelatoriosPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [exportingPdf, setExportingPdf] = useState(false)
   const [exportingXls, setExportingXls] = useState(false)
+  const [clientes, setClientes] = useState<ClienteResumo[]>([])
+  const [buscaCliente, setBuscaCliente] = useState("")
+  const [loadingClientes, setLoadingClientes] = useState(false)
+  const [baixandoFichaId, setBaixandoFichaId] = useState<string | null>(null)
 
   const fetchDados = useCallback(async () => {
     setLoading(true)
@@ -71,6 +84,20 @@ export default function RelatoriosPage() {
   }, [periodo, dataInicio, dataFim])
 
   useEffect(() => { fetchDados() }, [fetchDados])
+
+  const fetchClientes = useCallback(async () => {
+    setLoadingClientes(true)
+    const params = new URLSearchParams()
+    if (buscaCliente) params.set("q", buscaCliente)
+    const res = await fetch(`/api/clientes?${params}`)
+    if (res.ok) setClientes(await res.json())
+    setLoadingClientes(false)
+  }, [buscaCliente])
+
+  useEffect(() => {
+    const t = setTimeout(fetchClientes, buscaCliente ? 300 : 0)
+    return () => clearTimeout(t)
+  }, [fetchClientes, buscaCliente])
 
   async function exportarPdf() {
     setExportingPdf(true)
@@ -100,6 +127,26 @@ export default function RelatoriosPage() {
       toast.success("Excel gerado com sucesso!")
     } else { toast.error("Erro ao gerar Excel") }
     setExportingXls(false)
+  }
+
+  async function baixarFichaCliente(cliente: ClienteResumo) {
+    setBaixandoFichaId(cliente.id)
+    try {
+      const res = await fetch(`/api/clientes/${cliente.id}/ficha`)
+      if (!res.ok) throw new Error("Erro ao gerar ficha")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `ficha-${cliente.nome.replace(/\s+/g, "-").toLowerCase()}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success("Ficha do cliente gerada com sucesso!")
+    } catch {
+      toast.error("Erro ao gerar ficha do cliente")
+    } finally {
+      setBaixandoFichaId(null)
+    }
   }
 
   const kpis = dados?.kpis
@@ -334,6 +381,79 @@ export default function RelatoriosPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="card-base p-5 space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-semibold text-text-primary">Ficha por Cliente</h3>
+            <p className="text-sm text-text-muted mt-0.5">Busque um cliente e gere a ficha completa com histórico de orçamentos.</p>
+          </div>
+          <div className="relative w-full max-w-md">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            <input
+              type="text"
+              value={buscaCliente}
+              onChange={e => setBuscaCliente(e.target.value)}
+              placeholder="Buscar cliente por nome, telefone ou email..."
+              className="input-base pl-9"
+            />
+          </div>
+        </div>
+
+        {loadingClientes ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 size={20} className="animate-spin text-gold-primary" />
+          </div>
+        ) : clientes.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-brand-border px-4 py-8 text-center text-sm text-text-muted">
+            Nenhum cliente encontrado.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {clientes.slice(0, 8).map(cliente => {
+              const totalOrcamentos = cliente.orcamentos.length
+              const ultimoOrcamento = cliente.orcamentos[0]?.createdAt
+              const valorTotal = cliente.orcamentos.reduce((s, o) => s + Number(o.precoFinalTotal ?? 0), 0)
+
+              return (
+                <div key={cliente.id} className="rounded-2xl border border-brand-border p-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-text-primary truncate">{cliente.nome}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-muted">
+                      {cliente.telefone && <span>{cliente.telefone}</span>}
+                      {cliente.email && <span>{cliente.email}</span>}
+                      <span>Cliente desde {new Date(cliente.createdAt).toLocaleDateString("pt-BR")}</span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-blue-50 text-blue-600">
+                        {totalOrcamentos} orçamento{totalOrcamentos !== 1 ? "s" : ""}
+                      </span>
+                      {valorTotal > 0 && (
+                        <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-green-50 text-green-600">
+                          {fmt(valorTotal)}
+                        </span>
+                      )}
+                      {ultimoOrcamento && (
+                        <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-brand-input text-text-muted">
+                          Último: {new Date(ultimoOrcamento).toLocaleDateString("pt-BR")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => baixarFichaCliente(cliente)}
+                    disabled={baixandoFichaId === cliente.id}
+                    className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-brand-border text-sm font-medium text-text-secondary hover:bg-brand-bg transition-colors disabled:opacity-60"
+                  >
+                    {baixandoFichaId === cliente.id ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />}
+                    Baixar ficha
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

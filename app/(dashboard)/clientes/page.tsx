@@ -1,20 +1,34 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Search, UserPlus, MapPin, Phone, Mail, User, X, Pencil, Loader2, Check, FileText, Plus } from 'lucide-react'
+import { Search, UserPlus, MapPin, Phone, Mail, User, X, Pencil, Loader2, Check, FileText, Plus, FileDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type Orcamento = { id: string; precoFinalTotal: number | null; status: string; createdAt: string }
+type Arquiteto = {
+  id: string
+  nome: string
+  telefone: string
+  email: string
+  observacoes: string
+  ativo: boolean
+}
 type Cliente = {
-  id: string; nome: string; telefone?: string; email?: string
-  endereco?: string; arquiteto?: string; createdAt: string
+  id: string
+  nome: string
+  telefone?: string
+  email?: string
+  endereco?: string
+  arquiteto?: string
+  createdAt: string
   orcamentos: Orcamento[]
+  arquitetosDisponiveis?: Arquiteto[]
 }
 
 const FILTROS = [
   { key: 'todos', label: 'Todos' },
-  { key: 'com_orcamento', label: 'Com orÃ§amento ativo' },
-  { key: 'sem_orcamento', label: 'Sem orÃ§amento' },
+  { key: 'com_orcamento', label: 'Com orçamento ativo' },
+  { key: 'sem_orcamento', label: 'Sem orçamento' },
   { key: 'arquiteto', label: 'Arquiteto / RT' },
 ]
 
@@ -26,6 +40,13 @@ function mascaraTelefone(v: string) {
   const d = v.replace(/\D/g, '').slice(0, 11)
   if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
   return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+}
+
+function getArquitetoState(arquiteto: string | undefined, arquitetos: Arquiteto[]) {
+  if (!arquiteto) return { modo: 'cadastro' as const, selecionado: '', manual: '' }
+  const encontrado = arquitetos.find(item => item.nome === arquiteto)
+  if (encontrado) return { modo: 'cadastro' as const, selecionado: encontrado.nome, manual: '' }
+  return { modo: 'manual' as const, selecionado: '', manual: arquiteto }
 }
 
 function Avatar({ nome }: { nome: string }) {
@@ -44,10 +65,14 @@ export default function ClientesPage() {
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState('todos')
   const [drawerCliente, setDrawerCliente] = useState<Cliente | null>(null)
-  const [editForm, setEditForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquiteto: '' })
   const [saving, setSaving] = useState(false)
+  const [baixandoFicha, setBaixandoFicha] = useState(false)
   const [novoDrawer, setNovoDrawer] = useState(false)
-  const [novoForm, setNovoForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquiteto: '' })
+  const [arquitetos, setArquitetos] = useState<Arquiteto[]>([])
+  const [editArquitetoModo, setEditArquitetoModo] = useState<'cadastro' | 'manual'>('cadastro')
+  const [novoArquitetoModo, setNovoArquitetoModo] = useState<'cadastro' | 'manual'>('cadastro')
+  const [editForm, setEditForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
+  const [novoForm, setNovoForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
 
   const fetchClientes = useCallback(async () => {
     setLoading(true)
@@ -58,6 +83,16 @@ export default function ClientesPage() {
     setLoading(false)
   }, [busca, filtro])
 
+  const fetchArquitetos = useCallback(async () => {
+    const res = await fetch('/api/arquitetos')
+    const data = await res.json()
+    setArquitetos(Array.isArray(data) ? data : [])
+  }, [])
+
+  useEffect(() => {
+    fetchArquitetos()
+  }, [fetchArquitetos])
+
   useEffect(() => {
     const t = setTimeout(fetchClientes, busca ? 300 : 0)
     return () => clearTimeout(t)
@@ -65,16 +100,33 @@ export default function ClientesPage() {
 
   function abrirDrawer(c: Cliente) {
     setDrawerCliente(c)
-    setEditForm({ nome: c.nome, telefone: c.telefone ?? '', email: c.email ?? '', endereco: c.endereco ?? '', arquiteto: c.arquiteto ?? '' })
+    const listaArquitetos = c.arquitetosDisponiveis?.length ? c.arquitetosDisponiveis : arquitetos
+    const arquitetoState = getArquitetoState(c.arquiteto, listaArquitetos)
+    setEditArquitetoModo(arquitetoState.modo)
+    setEditForm({
+      nome: c.nome,
+      telefone: c.telefone ?? '',
+      email: c.email ?? '',
+      endereco: c.endereco ?? '',
+      arquitetoSelecionado: arquitetoState.selecionado,
+      arquitetoManual: arquitetoState.manual,
+    })
   }
 
   async function salvarEdicao() {
     if (!drawerCliente) return
     setSaving(true)
+    const arquiteto = editArquitetoModo === 'cadastro' ? editForm.arquitetoSelecionado : editForm.arquitetoManual.trim()
     await fetch(`/api/clientes/${drawerCliente.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editForm),
+      body: JSON.stringify({
+        nome: editForm.nome,
+        telefone: editForm.telefone,
+        email: editForm.email,
+        endereco: editForm.endereco,
+        arquiteto,
+      }),
     })
     setSaving(false)
     setDrawerCliente(null)
@@ -84,15 +136,41 @@ export default function ClientesPage() {
   async function criarCliente() {
     if (!novoForm.nome) return
     setSaving(true)
+    const arquiteto = novoArquitetoModo === 'cadastro' ? novoForm.arquitetoSelecionado : novoForm.arquitetoManual.trim()
     await fetch('/api/clientes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(novoForm),
+      body: JSON.stringify({
+        nome: novoForm.nome,
+        telefone: novoForm.telefone,
+        email: novoForm.email,
+        endereco: novoForm.endereco,
+        arquiteto,
+      }),
     })
     setSaving(false)
     setNovoDrawer(false)
-    setNovoForm({ nome: '', telefone: '', email: '', endereco: '', arquiteto: '' })
+    setNovoArquitetoModo('cadastro')
+    setNovoForm({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
     fetchClientes()
+  }
+
+  async function baixarFichaCliente() {
+    if (!drawerCliente) return
+    setBaixandoFicha(true)
+    try {
+      const res = await fetch(`/api/clientes/${drawerCliente.id}/ficha`)
+      if (!res.ok) throw new Error('Erro ao gerar ficha')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `ficha-${drawerCliente.nome.replace(/\s+/g, '-').toLowerCase()}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setBaixandoFicha(false)
+    }
   }
 
   function novoOrcamento(c: Cliente) {
@@ -106,14 +184,17 @@ export default function ClientesPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-text-primary">Clientes</h2>
           <p className="text-sm text-text-muted mt-0.5">{clientes.length} cliente{clientes.length !== 1 ? 's' : ''} encontrado{clientes.length !== 1 ? 's' : ''}</p>
         </div>
         <button
-          onClick={() => setNovoDrawer(true)}
+          onClick={() => {
+            setNovoArquitetoModo('cadastro')
+            setNovoForm({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
+            setNovoDrawer(true)
+          }}
           className="btn-gold flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-sm font-semibold"
         >
           <UserPlus size={16} />
@@ -121,7 +202,6 @@ export default function ClientesPage() {
         </button>
       </div>
 
-      {/* Busca */}
       <div className="relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
         <input
@@ -133,7 +213,6 @@ export default function ClientesPage() {
         />
       </div>
 
-      {/* Filtros */}
       <div className="flex gap-2 flex-wrap">
         {FILTROS.map(f => (
           <button
@@ -150,7 +229,6 @@ export default function ClientesPage() {
         ))}
       </div>
 
-      {/* Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 size={24} className="animate-spin text-gold-primary" />
@@ -201,7 +279,7 @@ export default function ClientesPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-blue-50 text-blue-600">
                   <FileText size={10} className="inline mr-1" />
-                  {totalOrcamentos(c)} orÃ§amento{totalOrcamentos(c) !== 1 ? 's' : ''}
+                  {totalOrcamentos(c)} orçamento{totalOrcamentos(c) !== 1 ? 's' : ''}
                 </span>
                 {valorTotal(c) > 0 && (
                   <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-green-50 text-green-600">
@@ -210,7 +288,7 @@ export default function ClientesPage() {
                 )}
                 {ultimoOrcamento(c) && (
                   <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-brand-input text-text-muted">
-                    Ãšltimo: {new Date(ultimoOrcamento(c)!).toLocaleDateString('pt-BR')}
+                    Último: {new Date(ultimoOrcamento(c)!).toLocaleDateString('pt-BR')}
                   </span>
                 )}
               </div>
@@ -221,14 +299,14 @@ export default function ClientesPage() {
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium border border-brand-border text-text-secondary hover:bg-brand-input transition-colors"
                 >
                   <Pencil size={13} />
-                  Ver histÃ³rico
+                  Ver histórico
                 </button>
                 <button
                   onClick={() => novoOrcamento(c)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold btn-gold"
                 >
                   <Plus size={13} />
-                  Novo orÃ§amento
+                  Novo orçamento
                 </button>
               </div>
             </div>
@@ -236,7 +314,6 @@ export default function ClientesPage() {
         </div>
       )}
 
-      {/* Drawer ediÃ§Ã£o */}
       {drawerCliente && (
         <div className="fixed inset-0 z-50 flex">
           <div className="flex-1 bg-black/30" onClick={() => setDrawerCliente(null)} />
@@ -257,16 +334,16 @@ export default function ClientesPage() {
             <div className="flex-1 overflow-y-auto">
               {drawerCliente.orcamentos.length > 0 && (
                 <div className="px-6 py-4 border-b border-brand-border">
-                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">HistÃ³rico de OrÃ§amentos</p>
+                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Histórico de Orçamentos</p>
                   <div className="space-y-2">
                     {drawerCliente.orcamentos.map(o => (
                       <div key={o.id} className="flex items-center justify-between py-2 border-b border-brand-border last:border-0">
                         <div>
-                          <p className="text-sm font-medium text-text-primary">OrÃ§amento</p>
+                          <p className="text-sm font-medium text-text-primary">Orçamento</p>
                           <p className="text-xs text-text-muted">{new Date(o.createdAt).toLocaleDateString('pt-BR')}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-text-primary">{o.precoFinalTotal ? fmt(Number(o.precoFinalTotal)) : 'â€”'}</p>
+                          <p className="text-sm font-semibold text-text-primary">{o.precoFinalTotal ? fmt(Number(o.precoFinalTotal)) : '—'}</p>
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-input text-text-muted">{o.status.replace(/_/g, ' ')}</span>
                         </div>
                       </div>
@@ -290,27 +367,57 @@ export default function ClientesPage() {
                   <input type="email" value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} placeholder="email@exemplo.com" className="input-base" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">EndereÃ§o</label>
+                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Endereço</label>
                   <input type="text" value={editForm.endereco} onChange={e => setEditForm(p => ({ ...p, endereco: e.target.value }))} className="input-base" />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Arquiteto / RT</label>
-                  <input type="text" value={editForm.arquiteto} onChange={e => setEditForm(p => ({ ...p, arquiteto: e.target.value }))} className="input-base" />
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Arquiteto / RT</label>
+                    <div className="flex rounded-lg overflow-hidden border border-brand-border">
+                      <button
+                        type="button"
+                        onClick={() => setEditArquitetoModo('cadastro')}
+                        className={`px-3 py-1.5 text-xs font-semibold transition-colors ${editArquitetoModo === 'cadastro' ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary hover:bg-brand-border'}`}
+                      >
+                        Cadastrado
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditArquitetoModo('manual')}
+                        className={`px-3 py-1.5 text-xs font-semibold transition-colors ${editArquitetoModo === 'manual' ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary hover:bg-brand-border'}`}
+                      >
+                        Manual
+                      </button>
+                    </div>
+                  </div>
+                  {editArquitetoModo === 'cadastro' ? (
+                    <select value={editForm.arquitetoSelecionado} onChange={e => setEditForm(p => ({ ...p, arquitetoSelecionado: e.target.value }))} className="input-base">
+                      <option value="">Sem arquiteto / RT</option>
+                      {(drawerCliente.arquitetosDisponiveis?.length ? drawerCliente.arquitetosDisponiveis : arquitetos).map(arquiteto => (
+                        <option key={arquiteto.id} value={arquiteto.nome}>{arquiteto.nome}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input type="text" value={editForm.arquitetoManual} onChange={e => setEditForm(p => ({ ...p, arquitetoManual: e.target.value }))} className="input-base" />
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-brand-border">
+            <div className="px-6 py-4 border-t border-brand-border space-y-2">
+              <button onClick={baixarFichaCliente} disabled={baixandoFicha} className="w-full h-11 rounded-[8px] text-sm font-semibold flex items-center justify-center gap-2 border border-brand-border text-text-secondary hover:bg-brand-input transition-colors disabled:opacity-70">
+                {baixandoFicha ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />}
+                Baixar ficha do cliente
+              </button>
               <button onClick={salvarEdicao} disabled={saving} className="btn-gold w-full h-11 rounded-[8px] text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-70">
                 {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
-                Salvar AlteraÃ§Ãµes
+                Salvar Alterações
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Drawer novo cliente */}
       {novoDrawer && (
         <div className="fixed inset-0 z-50 flex">
           <div className="flex-1 bg-black/30" onClick={() => setNovoDrawer(false)} />
@@ -333,12 +440,39 @@ export default function ClientesPage() {
                 <input type="email" value={novoForm.email} onChange={e => setNovoForm(p => ({ ...p, email: e.target.value }))} placeholder="email@exemplo.com" className="input-base" />
               </div>
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">EndereÃ§o</label>
-                <input type="text" value={novoForm.endereco} onChange={e => setNovoForm(p => ({ ...p, endereco: e.target.value }))} placeholder="Rua, nÃºmero, bairro" className="input-base" />
+                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Endereço</label>
+                <input type="text" value={novoForm.endereco} onChange={e => setNovoForm(p => ({ ...p, endereco: e.target.value }))} placeholder="Rua, número, bairro" className="input-base" />
               </div>
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Arquiteto / RT</label>
-                <input type="text" value={novoForm.arquiteto} onChange={e => setNovoForm(p => ({ ...p, arquiteto: e.target.value }))} placeholder="Nome do arquiteto (opcional)" className="input-base" />
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Arquiteto / RT</label>
+                  <div className="flex rounded-lg overflow-hidden border border-brand-border">
+                    <button
+                      type="button"
+                      onClick={() => setNovoArquitetoModo('cadastro')}
+                      className={`px-3 py-1.5 text-xs font-semibold transition-colors ${novoArquitetoModo === 'cadastro' ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary hover:bg-brand-border'}`}
+                    >
+                      Cadastrado
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNovoArquitetoModo('manual')}
+                      className={`px-3 py-1.5 text-xs font-semibold transition-colors ${novoArquitetoModo === 'manual' ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary hover:bg-brand-border'}`}
+                    >
+                      Manual
+                    </button>
+                  </div>
+                </div>
+                {novoArquitetoModo === 'cadastro' ? (
+                  <select value={novoForm.arquitetoSelecionado} onChange={e => setNovoForm(p => ({ ...p, arquitetoSelecionado: e.target.value }))} className="input-base">
+                    <option value="">Sem arquiteto / RT</option>
+                    {arquitetos.map(arquiteto => (
+                      <option key={arquiteto.id} value={arquiteto.nome}>{arquiteto.nome}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input type="text" value={novoForm.arquitetoManual} onChange={e => setNovoForm(p => ({ ...p, arquitetoManual: e.target.value }))} placeholder="Nome do arquiteto (opcional)" className="input-base" />
+                )}
               </div>
             </div>
             <div className="px-6 py-4 border-t border-brand-border">

@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     prisma.orcamento.findMany({
       where,
       include: {
-        cliente: { select: { nome: true, telefone: true } },
+        cliente: { select: { nome: true, telefone: true, endereco: true, email: true } },
         vendedor: { select: { id: true, nome: true } },
         ambientes: { select: { id: true, nomeAmbiente: true } },
       },

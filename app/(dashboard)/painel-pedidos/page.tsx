@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Search, Eye, Edit2, MessageCircle, Download, Check, ChevronLeft, ChevronRight, X, Loader2, Home, Clock, FileText } from 'lucide-react'
+import { Search, Eye, Edit2, MessageCircle, Download, Check, ChevronLeft, ChevronRight, X, Loader2, Home, Clock, FileText, Pencil } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { StatusBadge, STATUS_CONFIG, StatusOrcamento } from '@/components/ui/StatusBadge'
 
 type Pedido = {
   id: string; numero: number; status: string; precoFinalTotal: number | null
   createdAt: string
-  cliente: { nome: string; telefone?: string } | null
+  cliente: { nome: string; telefone?: string; endereco?: string; email?: string } | null
   vendedor: { id: string; nome: string }
   ambientes: { id: string; nomeAmbiente?: string; tecido?: { nome: string }; quantidadeTecido?: number | null; precoFinalVenda?: number | null }[]
 }
@@ -111,6 +111,10 @@ export default function PainelPedidosPage() {
 
   function toggleSelecionado(id: string) {
     setSelecionados(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  function editarPedido(id: string) {
+    window.open(`/orcamentos/novo?editar=${id}`, '_self')
   }
 
   function toggleTodos() {
@@ -246,6 +250,7 @@ export default function PainelPedidosPage() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1 justify-end">
                     <button onClick={() => abrirDrawer(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Eye size={15} /></button>
+                    <button onClick={() => editarPedido(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Pencil size={15} /></button>
                     <div className="relative" ref={popoverAberto === p.id ? popoverRef : null}>
                       <button onClick={() => setPopoverAberto(popoverAberto === p.id ? null : p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Edit2 size={15} /></button>
                       {popoverAberto === p.id && (

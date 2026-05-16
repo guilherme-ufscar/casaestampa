@@ -30,6 +30,7 @@ const navAdmin = [
   { href: '/dashboard-admin', label: 'Início', icon: LayoutDashboard },
   { href: '/orcamentos/novo', label: 'Novo Orçamento', icon: PlusCircle },
   { href: '/clientes', label: 'Clientes', icon: Users },
+  { href: '/arquitetos', label: 'Arquitetos', icon: Users },
   { href: '/painel-pedidos', label: 'Painel de Pedidos', icon: ShoppingBag },
   { href: '/painel-pedidos?status=pronto', label: 'Instalações Agendadas', icon: CalendarCheck },
   { href: '/fornecedores', label: 'Fornecedores', icon: Truck },

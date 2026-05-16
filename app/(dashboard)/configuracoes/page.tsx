@@ -24,6 +24,29 @@ type Instalador = {
   nome: string
   telefone: string | null
   ativo: boolean
+  especialidades: string[]
+}
+
+type Configs = Record<string, string>
+type DrawerMode = 'create' | 'edit'
+
+const LARGURAS = ['2.80', '3.00', '3.30', 'personalizado']
+const ESPECIALIDADES_OPCOES = [
+  { value: 'CORTINA', label: 'Cortina' },
+  { value: 'PERSIANA', label: 'Persiana' },
+  { value: 'PAPEL_PAREDE', label: 'Papel de Parede' },
+  { value: 'PISO', label: 'Piso' },
+]
+
+const FATORES_LABELS: Record<string, string> = {
+  fator_prega_macho: 'Prega Macho',
+  fator_prega_femea: 'Prega Fêmea',
+  fator_prega_americana: 'Prega Americana',
+  fator_prega_franzida: 'Prega Franzida',
+  fator_prega_reta: 'Prega Reta / Blackout',
+  fator_wave: 'Wave',
+  fator_soft_wave: 'Soft Wave',
+  fator_varao: 'Varão',
 }
 
 function InstaladorTab() {
@@ -31,35 +54,42 @@ function InstaladorTab() {
   const [loading, setLoading] = useState(true)
   const [nome, setNome] = useState('')
   const [telefone, setTelefone] = useState('')
+  const [especialidades, setEspecialidades] = useState<string[]>(['CORTINA', 'PERSIANA'])
   const [saving, setSaving] = useState(false)
   const [editando, setEditando] = useState<Instalador | null>(null)
 
   async function carregar() {
-    const r = await fetch('/api/instaladores')
+    const r = await fetch('/api/instaladores?incluirInativos=true')
     setInstaladores(await r.json())
     setLoading(false)
   }
 
   useEffect(() => { carregar() }, [])
 
+  function toggleEspecialidade(value: string) {
+    setEspecialidades(prev => prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value])
+  }
+
   async function salvar() {
     setSaving(true)
+    const payload = { nome, telefone, especialidades }
     if (editando) {
       await fetch(`/api/instaladores/${editando.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, telefone }),
+        body: JSON.stringify(payload),
       })
       setEditando(null)
     } else {
       await fetch('/api/instaladores', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, telefone }),
+        body: JSON.stringify(payload),
       })
     }
     setNome('')
     setTelefone('')
+    setEspecialidades(['CORTINA', 'PERSIANA'])
     setSaving(false)
     carregar()
   }
@@ -77,10 +107,11 @@ function InstaladorTab() {
     setEditando(ins)
     setNome(ins.nome)
     setTelefone(ins.telefone ?? '')
+    setEspecialidades(ins.especialidades?.length ? ins.especialidades : ['CORTINA', 'PERSIANA'])
   }
 
   return (
-    <div className="space-y-4 max-w-2xl">
+    <div className="space-y-4 max-w-3xl">
       <div className="card-base p-6 space-y-4">
         <p className="text-sm font-semibold text-text-primary">{editando ? 'Editar Instalador' : 'Novo Instalador'}</p>
         <div className="grid grid-cols-2 gap-3">
@@ -93,13 +124,28 @@ function InstaladorTab() {
             <input value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(11) 99999-9999" className="input-base" />
           </div>
         </div>
+        <div className="space-y-2">
+          <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Especialidades</label>
+          <div className="flex flex-wrap gap-2">
+            {ESPECIALIDADES_OPCOES.map(opcao => (
+              <button
+                key={opcao.value}
+                type="button"
+                onClick={() => toggleEspecialidade(opcao.value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${especialidades.includes(opcao.value) ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary hover:bg-brand-border'}`}
+              >
+                {opcao.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="flex gap-2 justify-end">
           {editando && (
-            <button onClick={() => { setEditando(null); setNome(''); setTelefone('') }} className="px-4 py-2 rounded-lg text-sm font-medium text-text-muted hover:bg-brand-input transition-colors">
+            <button onClick={() => { setEditando(null); setNome(''); setTelefone(''); setEspecialidades(['CORTINA', 'PERSIANA']) }} className="px-4 py-2 rounded-lg text-sm font-medium text-text-muted hover:bg-brand-input transition-colors">
               Cancelar
             </button>
           )}
-          <button onClick={salvar} disabled={!nome || saving} className="btn-gold flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold disabled:opacity-50">
+          <button onClick={salvar} disabled={!nome || saving || especialidades.length === 0} className="btn-gold flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold disabled:opacity-50">
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
             {editando ? 'Salvar' : 'Adicionar'}
           </button>
@@ -117,7 +163,8 @@ function InstaladorTab() {
               <tr className="border-b border-brand-border bg-brand-bg">
                 <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Nome</th>
                 <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">WhatsApp</th>
-                <th className="px-4 py-3 w-24" />
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Especialidades</th>
+                <th className="px-4 py-3 w-28" />
               </tr>
             </thead>
             <tbody>
@@ -126,10 +173,19 @@ function InstaladorTab() {
                   <td className="px-4 py-3 font-medium text-text-primary">{ins.nome}</td>
                   <td className="px-4 py-3 text-text-secondary">{ins.telefone ?? '—'}</td>
                   <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {(ins.especialidades ?? []).map(esp => (
+                        <span key={esp} className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-brand-input text-text-secondary">
+                          {ESPECIALIDADES_OPCOES.find(item => item.value === esp)?.label ?? esp}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-1 justify-end">
                       <button onClick={() => iniciarEdicao(ins)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Pencil size={14} /></button>
-                      <button onClick={() => toggleAtivo(ins)} className="text-gold-primary">
-                        {ins.ativo ? <ToggleRight size={24} /> : <ToggleLeft size={24} className="text-text-muted" />}
+                      <button onClick={() => toggleAtivo(ins)} className="text-xs px-2 py-1 rounded border border-brand-border text-text-secondary hover:bg-brand-input transition-colors">
+                        {ins.ativo ? 'Ativo' : 'Inativo'}
                       </button>
                     </div>
                   </td>
@@ -141,23 +197,6 @@ function InstaladorTab() {
       </div>
     </div>
   )
-}
-
-type Configs = Record<string, string>
-
-type DrawerMode = 'create' | 'edit'
-
-const LARGURAS = ['2.80', '3.00', '3.30', 'personalizado']
-
-const FATORES_LABELS: Record<string, string> = {
-  fator_prega_macho: 'Prega Macho',
-  fator_prega_femea: 'Prega Fêmea',
-  fator_prega_americana: 'Prega Americana',
-  fator_prega_franzida: 'Prega Franzida',
-  fator_prega_reta: 'Prega Reta / Blackout',
-  fator_wave: 'Wave',
-  fator_soft_wave: 'Soft Wave',
-  fator_varao: 'Varão',
 }
 
 export default function ConfiguracoesPage() {
@@ -286,7 +325,6 @@ export default function ConfiguracoesPage() {
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-text-primary">Configurações</h2>
 
-      {/* Abas */}
       <div className="flex gap-1 border-b border-brand-border overflow-x-auto">
         {abas.map(a => (
           <button
@@ -309,7 +347,6 @@ export default function ConfiguracoesPage() {
         </div>
       ) : (
         <>
-          {/* Tecidos / Blackouts */}
           {(aba === 'tecidos' || aba === 'blackouts') && (
             <div className="space-y-4">
               <div className="flex justify-end">
@@ -364,7 +401,6 @@ export default function ConfiguracoesPage() {
             </div>
           )}
 
-          {/* Trilhos */}
           {aba === 'trilhos' && (
             <div className="space-y-4">
               <div className="flex justify-end">
@@ -414,7 +450,6 @@ export default function ConfiguracoesPage() {
             </div>
           )}
 
-          {/* Fatores de Prega */}
           {aba === 'fatores' && (
             <div className="space-y-4">
               <div className="card-base overflow-hidden">
@@ -453,7 +488,6 @@ export default function ConfiguracoesPage() {
             </div>
           )}
 
-          {/* Markup e Comissões */}
           {aba === 'markup' && (
             <div className="space-y-4 max-w-md">
               <div className="card-base p-6 space-y-5">
@@ -487,7 +521,6 @@ export default function ConfiguracoesPage() {
             </div>
           )}
 
-          {/* Confecção e Instalação */}
           {aba === 'confeccao' && (
             <div className="space-y-4 max-w-md">
               <div className="card-base p-6 space-y-5">
@@ -505,14 +538,14 @@ export default function ConfiguracoesPage() {
                   <div key={chave} className="space-y-1.5">
                     <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">R$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm leading-none pointer-events-none">R$</span>
                       <input
                         type="number"
                         step="0.01"
                         min="0"
                         value={configs[chave] ?? ''}
                         onChange={e => setConfigs(prev => ({ ...prev, [chave]: e.target.value }))}
-                        className="input-base pl-10"
+                        className="input-base pl-12"
                       />
                     </div>
                   </div>
@@ -522,14 +555,14 @@ export default function ConfiguracoesPage() {
                   <div className="space-y-1.5">
                     <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Instalação (R$/m²)</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">R$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm leading-none pointer-events-none">R$</span>
                       <input
                         type="number"
                         step="0.01"
                         min="0"
                         value={configs['instalacao_valor_m2'] ?? ''}
                         onChange={e => setConfigs(prev => ({ ...prev, instalacao_valor_m2: e.target.value }))}
-                        className="input-base pl-10"
+                        className="input-base pl-12"
                       />
                     </div>
                   </div>
@@ -544,12 +577,10 @@ export default function ConfiguracoesPage() {
             </div>
           )}
 
-          {/* Instaladores */}
           {aba === 'instaladores' && (
             <InstaladorTab />
           )}
 
-          {/* PDF e WhatsApp */}
           {aba === 'pdf' && (
             <div className="space-y-4 max-w-2xl">
               <div className="card-base p-6 space-y-5">
@@ -595,7 +626,6 @@ export default function ConfiguracoesPage() {
                 </div>
               </div>
 
-              {/* WhatsApp Fornecedores */}
               <div className="card-base p-6 space-y-5">
                 <p className="text-sm font-semibold text-text-primary">WhatsApp dos Fornecedores</p>
                 {[
@@ -627,7 +657,6 @@ export default function ConfiguracoesPage() {
         </>
       )}
 
-      {/* Drawer */}
       {drawerOpen && (
         <div className="fixed inset-0 z-50 flex">
           <div className="flex-1 bg-black/30" onClick={() => setDrawerOpen(false)} />

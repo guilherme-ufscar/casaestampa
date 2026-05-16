@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { enriquecerInstaladores, salvarEspecialidadesInstalador } from '@/lib/instaladorEspecialidades'
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -20,5 +21,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     data,
   })
 
-  return NextResponse.json(instalador)
+  if (body.especialidades !== undefined) {
+    await salvarEspecialidadesInstalador(instalador.id, body.especialidades)
+  }
+
+  return NextResponse.json((await enriquecerInstaladores([instalador]))[0])
 }

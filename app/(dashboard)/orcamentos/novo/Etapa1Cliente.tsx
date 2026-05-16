@@ -2,8 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Search, ChevronRight, SkipForward, X } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useOrcamento, ClienteOrcamento } from '@/context/OrcamentoContext'
+
+type Arquiteto = {
+  id: string
+  nome: string
+  telefone: string
+  email: string
+  observacoes: string
+  ativo: boolean
+}
 
 type ClienteAPI = {
   id: string
@@ -12,6 +21,7 @@ type ClienteAPI = {
   email?: string
   endereco?: string
   arquiteto?: string
+  arquitetosDisponiveis?: Arquiteto[]
 }
 
 function mascaraTelefone(v: string) {
@@ -20,20 +30,60 @@ function mascaraTelefone(v: string) {
   return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
 }
 
+function getArquitetoState(arquiteto: string | undefined, arquitetos: Arquiteto[]) {
+  if (!arquiteto) return { modo: 'cadastro' as const, selecionado: '', manual: '' }
+  const encontrado = arquitetos.find(item => item.nome === arquiteto)
+  if (encontrado) return { modo: 'cadastro' as const, selecionado: encontrado.nome, manual: '' }
+  return { modo: 'manual' as const, selecionado: '', manual: arquiteto }
+}
+
 export default function Etapa1Cliente() {
-  const { setCliente, setEtapa } = useOrcamento()
-  const router = useRouter()
+  const { cliente, setCliente, setEtapa, modoEdicao } = useOrcamento()
   const searchParams = useSearchParams()
   const [busca, setBusca] = useState('')
   const [resultados, setResultados] = useState<ClienteAPI[]>([])
   const [clienteSelecionado, setClienteSelecionado] = useState<ClienteAPI | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
   const [ignorarBusca, setIgnorarBusca] = useState(false)
-  const [form, setForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquiteto: '' })
+  const [arquitetos, setArquitetos] = useState<Arquiteto[]>([])
+  const [arquitetoModo, setArquitetoModo] = useState<'cadastro' | 'manual'>('cadastro')
+  const [form, setForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Preencher cliente vindo da página de clientes via query param
   useEffect(() => {
+    fetch('/api/arquitetos')
+      .then(res => res.json())
+      .then(data => setArquitetos(Array.isArray(data) ? data : []))
+      .catch(() => setArquitetos([]))
+  }, [])
+
+  useEffect(() => {
+    if (!cliente) return
+    const c: ClienteAPI = {
+      id: cliente.id ?? '',
+      nome: cliente.nome,
+      telefone: cliente.telefone,
+      email: cliente.email,
+      endereco: cliente.endereco,
+      arquiteto: cliente.arquiteto,
+    }
+    const arquitetoState = getArquitetoState(cliente.arquiteto, arquitetos)
+    setClienteSelecionado(c)
+    setBusca(c.nome)
+    setIgnorarBusca(true)
+    setArquitetoModo(arquitetoState.modo)
+    setForm({
+      nome: cliente.nome,
+      telefone: cliente.telefone ?? '',
+      email: cliente.email ?? '',
+      endereco: cliente.endereco ?? '',
+      arquitetoSelecionado: arquitetoState.selecionado,
+      arquitetoManual: arquitetoState.manual,
+    })
+  }, [cliente, arquitetos])
+
+  useEffect(() => {
+    if (modoEdicao || cliente) return
     const clienteParam = searchParams.get('cliente')
     if (!clienteParam) return
     try {
@@ -42,7 +92,7 @@ export default function Etapa1Cliente() {
       setBusca(c.nome)
       setIgnorarBusca(true)
     } catch {}
-  }, [searchParams])
+  }, [searchParams, modoEdicao, cliente])
 
   useEffect(() => {
     if (ignorarBusca) { setIgnorarBusca(false); return }
@@ -54,7 +104,7 @@ export default function Etapa1Cliente() {
       setShowDropdown(true)
     }, 300)
     return () => clearTimeout(t)
-  }, [busca])
+  }, [busca, ignorarBusca])
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -81,7 +131,14 @@ export default function Etapa1Cliente() {
 
   function usarClienteSelecionado() {
     if (!clienteSelecionado) return
-    setCliente({ id: clienteSelecionado.id, nome: clienteSelecionado.nome, telefone: clienteSelecionado.telefone, email: clienteSelecionado.email, endereco: clienteSelecionado.endereco, arquiteto: clienteSelecionado.arquiteto })
+    setCliente({
+      id: clienteSelecionado.id,
+      nome: clienteSelecionado.nome,
+      telefone: clienteSelecionado.telefone,
+      email: clienteSelecionado.email,
+      endereco: clienteSelecionado.endereco,
+      arquiteto: clienteSelecionado.arquiteto,
+    })
     setEtapa(2)
   }
 
@@ -92,7 +149,14 @@ export default function Etapa1Cliente() {
 
   function proximo() {
     if (!form.nome || !form.telefone) return
-    const c: ClienteOrcamento = { nome: form.nome, telefone: form.telefone, email: form.email, endereco: form.endereco, arquiteto: form.arquiteto }
+    const arquiteto = arquitetoModo === 'cadastro' ? form.arquitetoSelecionado : form.arquitetoManual.trim()
+    const c: ClienteOrcamento = {
+      nome: form.nome,
+      telefone: form.telefone,
+      email: form.email,
+      endereco: form.endereco,
+      arquiteto: arquiteto || undefined,
+    }
     setCliente(c)
     setEtapa(2)
   }
@@ -107,7 +171,6 @@ export default function Etapa1Cliente() {
         </button>
       </div>
 
-      {/* Busca */}
       <div className="space-y-2">
         <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Buscar cliente existente</label>
         <div className="relative" ref={dropdownRef}>
@@ -164,14 +227,12 @@ export default function Etapa1Cliente() {
         )}
       </div>
 
-      {/* Divisor */}
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-brand-border" />
         <span className="text-xs text-text-muted font-medium">ou cadastre um novo cliente</span>
         <div className="flex-1 h-px bg-brand-border" />
       </div>
 
-      {/* Formulário */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Nome completo *</label>
@@ -195,9 +256,47 @@ export default function Etapa1Cliente() {
           <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Endereço</label>
           <input type="text" value={form.endereco} onChange={e => setForm(p => ({ ...p, endereco: e.target.value }))} placeholder="Rua, número, bairro" className="input-base" />
         </div>
-        <div className="space-y-1.5 md:col-span-2">
-          <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Arquiteto / RT responsável</label>
-          <input type="text" value={form.arquiteto} onChange={e => setForm(p => ({ ...p, arquiteto: e.target.value }))} placeholder="Nome do arquiteto (opcional)" className="input-base" />
+        <div className="space-y-3 md:col-span-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Arquiteto / RT responsável</label>
+            <div className="flex rounded-lg overflow-hidden border border-brand-border">
+              <button
+                type="button"
+                onClick={() => setArquitetoModo('cadastro')}
+                className={`px-3 py-1.5 text-xs font-semibold transition-colors ${arquitetoModo === 'cadastro' ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary hover:bg-brand-border'}`}
+              >
+                Cadastrado
+              </button>
+              <button
+                type="button"
+                onClick={() => setArquitetoModo('manual')}
+                className={`px-3 py-1.5 text-xs font-semibold transition-colors ${arquitetoModo === 'manual' ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary hover:bg-brand-border'}`}
+              >
+                Digitar manualmente
+              </button>
+            </div>
+          </div>
+
+          {arquitetoModo === 'cadastro' ? (
+            <select
+              value={form.arquitetoSelecionado}
+              onChange={e => setForm(p => ({ ...p, arquitetoSelecionado: e.target.value }))}
+              className="input-base"
+            >
+              <option value="">Sem arquiteto / RT</option>
+              {arquitetos.map(arquiteto => (
+                <option key={arquiteto.id} value={arquiteto.nome}>{arquiteto.nome}</option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={form.arquitetoManual}
+              onChange={e => setForm(p => ({ ...p, arquitetoManual: e.target.value }))}
+              placeholder="Nome do arquiteto (opcional)"
+              className="input-base"
+            />
+          )}
         </div>
       </div>
 

@@ -55,7 +55,21 @@ function Toast({ msg, onClose }: { msg: string; onClose: () => void }) {
 
 export default function ResultadoOrcamento() {
   const { data: session } = useSession()
-  const { cliente, ambientes, setAmbientes, setAmbienteAtual, setEtapa, resetOrcamento } = useOrcamento()
+  const {
+    cliente,
+    ambientes,
+    setAmbientes,
+    setAmbienteAtual,
+    setEtapa,
+    resetOrcamento,
+    orcamentoId,
+    modoEdicao,
+    orcamentoNumero,
+    orcamentoToken,
+    setOrcamentoId,
+    setOrcamentoNumero,
+    setOrcamentoToken,
+  } = useOrcamento()
   const [resultado, setResultado] = useState<ResultadoAPI | null>(null)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
@@ -75,23 +89,32 @@ export default function ResultadoOrcamento() {
             altura: parseFloat(a.altura),
             modeloCortina: a.modeloCortina,
             tipoAbertura: a.tipoAbertura,
+            tipoAberturaBlackout: a.blackoutAtivo ? a.tipoAberturaBlackout : null,
+            trilhoTipo: a.trilhoTipo,
             tecidoId: a.tecidoId,
             tecido: { id: a.tecidoId, larguraMaxima: a.tecidoLargura, valorMetro: a.tecidoValor },
             blackoutId: a.blackoutAtivo && a.blackoutId ? a.blackoutId : undefined,
             blackout: a.blackoutAtivo && a.blackoutId
               ? { id: a.blackoutId, larguraMaxima: a.blackoutLargura, valorMetro: a.blackoutValor }
               : null,
+            bainhaDesejada: a.bainhaDesejada ? parseFloat(a.bainhaDesejada) : 0.2,
             tecidoExtra: a.tecidoExtra,
+            blackoutExtra: a.blackoutExtra,
             instalacao: a.instalacao,
             instaladorId: a.instaladorId || null,
+            trilhoVaraoId: a.trilhoId || null,
+            trilhoNome: a.trilhoNome || null,
             trilhoValorUnitario: a.trilhoValorUnitario || null,
             outrosValor: a.outrosValor ? parseFloat(a.outrosValor) : null,
             observacoes: a.observacoes || null,
           })),
         }
 
-        const res = await fetch('/api/orcamentos', {
-          method: 'POST',
+        const endpoint = modoEdicao && orcamentoId ? `/api/orcamentos/${orcamentoId}` : '/api/orcamentos'
+        const method = modoEdicao && orcamentoId ? 'PUT' : 'POST'
+
+        const res = await fetch(endpoint, {
+          method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
@@ -99,6 +122,9 @@ export default function ResultadoOrcamento() {
         if (!res.ok) throw new Error('Erro ao salvar orçamento')
         const data = await res.json()
         setResultado(data)
+        setOrcamentoId(data.orcamento.id)
+        setOrcamentoNumero(data.orcamento.numero)
+        setOrcamentoToken(data.orcamento.token ?? null)
       } catch (e) {
         setErro('Erro ao salvar o orçamento. Tente novamente.')
         console.error(e)
@@ -138,8 +164,8 @@ export default function ResultadoOrcamento() {
       .map(a => `• ${a.nomeAmbiente}: ${fmt(a.precoFinalVenda)}`)
       .join('\n')
     const vendedor = session?.user?.name ?? 'Equipe Casa Estampa'
-    const linkPublico = resultado.orcamento.token
-      ? `\n\nVisualize seu orçamento: ${window.location.origin}/orcamento/${resultado.orcamento.token}`
+    const linkPublico = tokenExibicao
+      ? `\n\nVisualize seu orçamento: ${window.location.origin}/orcamento/${tokenExibicao}`
       : ''
 
     const msg = encodeURIComponent(
@@ -179,6 +205,8 @@ export default function ResultadoOrcamento() {
   if (!resultado) return null
 
   const { orcamento, resultado: res } = resultado
+  const numeroExibicao = orcamentoNumero ?? orcamento.numero
+  const tokenExibicao = orcamentoToken ?? orcamento.token
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
@@ -189,7 +217,7 @@ export default function ResultadoOrcamento() {
         <CheckCircle size={48} className="text-gold-primary mx-auto" />
         <h3 className="text-xl font-semibold text-text-primary">Orçamento Calculado</h3>
         <span className="inline-block px-3 py-1 bg-gold-primary/10 text-gold-dark text-sm font-semibold rounded-full">
-          Orçamento #{String(orcamento.numero).padStart(4, '0')}
+          Orçamento #{String(numeroExibicao).padStart(4, '0')}
         </span>
         {cliente && <p className="text-sm text-text-muted">{cliente.nome}</p>}
       </div>

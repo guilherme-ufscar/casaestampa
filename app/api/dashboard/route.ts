@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { STATUS_FINANCEIROS, somarPrecoFinal, somarCusto, calcularMargemMedia } from '@/lib/relatorioUtils'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -12,23 +13,20 @@ export async function GET() {
   const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1)
   const vendedorFilter = isAdmin ? {} : { vendedorId: session.user.id }
 
-  // Métricas por status
   const statusCounts = await prisma.orcamento.groupBy({
     by: ['status'],
     where: vendedorFilter,
     _count: { status: true },
   })
   const byStatus: Record<string, number> = {}
-  for (const s of statusCounts) { byStatus[s.status] = s._count.status }
+  for (const s of statusCounts) byStatus[s.status] = s._count.status
 
-  // Métricas do mês
   const mesFiltro = { ...vendedorFilter, createdAt: { gte: inicioMes } }
   const [totalMes, aprovadosMes] = await Promise.all([
     prisma.orcamento.count({ where: mesFiltro }),
-    prisma.orcamento.count({ where: { ...mesFiltro, status: { in: ['aprovado', 'em_producao', 'pronto', 'instalado', 'finalizado'] } } }),
+    prisma.orcamento.count({ where: { ...mesFiltro, status: { in: [...STATUS_FINANCEIROS] } } }),
   ])
 
-  // Orçamentos recentes
   const recentes = await prisma.orcamento.findMany({
     where: vendedorFilter,
     include: {
@@ -40,7 +38,6 @@ export async function GET() {
     take: 10,
   })
 
-  // Instalações agendadas (pronto + instalado)
   const instalacoes = await prisma.orcamento.findMany({
     where: { ...vendedorFilter, status: { in: ['pronto', 'instalado'] } },
     include: { cliente: { select: { nome: true, endereco: true } } },
@@ -49,62 +46,82 @@ export async function GET() {
   })
 
   const base = { byStatus, totalMes, aprovadosMes, recentes, instalacoes }
-
   if (!isAdmin) return NextResponse.json(base)
 
-  // Métricas financeiras (admin only)
-  const orcamentosMes = await prisma.orcamento.findMany({
-    where: { createdAt: { gte: inicioMes }, status: { in: ['aprovado', 'em_producao', 'pronto', 'instalado', 'finalizado'] } },
-    select: { precoFinalTotal: true },
-  })
-  const faturamentoMes = orcamentosMes.reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0)
+  const [orcamentosMes, ambientesMes] = await Promise.all([
+    prisma.orcamento.findMany({
+      where: { createdAt: { gte: inicioMes }, status: { in: [...STATUS_FINANCEIROS] } },
+      select: { precoFinalTotal: true },
+    }),
+    prisma.ambienteOrcamento.findMany({
+      where: { orcamento: { createdAt: { gte: inicioMes } } },
+      select: { custoTotal: true, precoFinalVenda: true },
+    }),
+  ])
 
-  const ambientesMes = await prisma.ambienteOrcamento.findMany({
-    where: { orcamento: { createdAt: { gte: inicioMes } } },
-    select: { custoTotal: true, precoFinalVenda: true },
-  })
-  const custoTotal = ambientesMes.reduce((s: number, a) => s + Number(a.custoTotal ?? 0), 0)
-  const margemMedia = ambientesMes.length > 0
-    ? ambientesMes.reduce((s: number, a) => {
-        const preco = Number(a.precoFinalVenda ?? 0)
-        const custo = Number(a.custoTotal ?? 0)
-        return s + (preco > 0 ? (preco - custo) / preco * 100 : 0)
-      }, 0) / ambientesMes.length
-    : 0
+  const faturamentoMes = somarPrecoFinal(orcamentosMes)
+  const custoTotal = somarCusto(ambientesMes)
+  const margemMedia = calcularMargemMedia(ambientesMes)
 
-  // Faturamento últimos 6 meses
   const faturamento6Meses = await Promise.all(
     Array.from({ length: 6 }, (_, i) => {
       const d = new Date(agora.getFullYear(), agora.getMonth() - (5 - i), 1)
       const fim = new Date(agora.getFullYear(), agora.getMonth() - (5 - i) + 1, 0, 23, 59, 59)
       return prisma.orcamento.findMany({
-        where: { createdAt: { gte: d, lte: fim }, status: { in: ['aprovado', 'em_producao', 'pronto', 'instalado', 'finalizado'] } },
+        where: { createdAt: { gte: d, lte: fim }, status: { in: [...STATUS_FINANCEIROS] } },
         select: { precoFinalTotal: true },
       }).then(orcs => ({
         mes: d.toLocaleDateString('pt-BR', { month: 'short' }),
-        faturamento: orcs.reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0),
+        faturamento: somarPrecoFinal(orcs),
       }))
     })
   )
 
-  // Ranking vendedores do mês
   const vendedores = await prisma.user.findMany({
     where: { role: 'VENDEDOR', ativo: true },
     select: { id: true, nome: true },
   })
+  const configComissao = await prisma.configuracaoCalculo.findUnique({ where: { chave: 'comissao_padrao' } })
+  const comissaoPercentual = parseFloat(configComissao?.valor ?? '8') / 100
+
   const rankingVendedores = await Promise.all(
-    vendedores.map(async v => {
+    vendedores.map(async vendedor => {
       const orcs = await prisma.orcamento.findMany({
-        where: { vendedorId: v.id, createdAt: { gte: inicioMes } },
+        where: { vendedorId: vendedor.id, createdAt: { gte: inicioMes }, status: { in: [...STATUS_FINANCEIROS] } },
         select: { precoFinalTotal: true },
       })
-      const fat = orcs.reduce((s: number, o) => s + Number(o.precoFinalTotal ?? 0), 0)
-      const configs = await prisma.configuracaoCalculo.findUnique({ where: { chave: 'comissao_padrao' } })
-      const comissao = fat * (parseFloat(configs?.valor ?? '8') / 100)
-      return { id: v.id, nome: v.nome, orcamentos: orcs.length, faturamento: fat, comissao }
+      const faturamento = somarPrecoFinal(orcs)
+      return {
+        id: vendedor.id,
+        nome: vendedor.nome,
+        orcamentos: orcs.length,
+        faturamento,
+        comissao: faturamento * comissaoPercentual,
+      }
     })
   )
   rankingVendedores.sort((a, b) => b.faturamento - a.faturamento)
+
+  const fornecedoresOperacionais = await prisma.orcamento.findMany({
+    where: { status: { in: ['aprovado', 'em_producao'] } },
+    include: {
+      ambientes: {
+        include: { tecido: true, blackout: true, trilhoVarao: true, instalador: true },
+      },
+    },
+  })
+
+  let totalFornecedores = 0
+  let totalInstalacaoOperacional = 0
+  for (const orcamento of fornecedoresOperacionais) {
+    for (const ambiente of orcamento.ambientes) {
+      totalFornecedores += Number(ambiente.quantidadeTecido ?? 0) * Number(ambiente.tecido.valorMetro)
+      if (ambiente.blackout && ambiente.quantidadeBlackout) totalFornecedores += Number(ambiente.quantidadeBlackout) * Number(ambiente.blackout.valorMetro)
+      if (ambiente.trilhoVarao && ambiente.trilhoAcessoriosValor) totalFornecedores += Number(ambiente.trilhoAcessoriosValor)
+      totalFornecedores += Number(ambiente.custoConfeccao ?? 0)
+      totalInstalacaoOperacional += Number(ambiente.custoInstalacao ?? 0)
+    }
+  }
 
   return NextResponse.json({
     ...base,
@@ -113,5 +130,10 @@ export async function GET() {
     margemMedia,
     faturamento6Meses,
     rankingVendedores,
+    operacionalFinanceiro: {
+      totalFornecedores,
+      totalInstalacao: totalInstalacaoOperacional,
+      totalGeral: totalFornecedores + totalInstalacaoOperacional,
+    },
   })
 }
