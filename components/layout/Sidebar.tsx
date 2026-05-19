@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
@@ -47,6 +49,7 @@ export default function Sidebar() {
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN'
   const navItems = isAdmin ? navAdmin : navVendedor
+  const [logoError, setLogoError] = useState(false)
 
   function isActive(href: string) {
     const base = href.split('?')[0]
@@ -57,8 +60,14 @@ export default function Sidebar() {
     <aside className="hidden md:flex flex-col w-60 min-h-screen bg-white border-r border-brand-border shrink-0">
       {/* Logo */}
       <div className="px-6 py-6 border-b border-brand-border">
-        <p className="text-gold-primary font-semibold text-lg leading-tight tracking-wide">Casa Estampa</p>
-        <p className="text-text-muted font-normal text-[11px] tracking-widest uppercase mt-0.5">Interiores</p>
+        {!logoError ? (
+          <Image src="/logo-casa-estampa.png" alt="Casa Estampa Interiores" width={160} height={50} className="object-contain" priority onError={() => setLogoError(true)} />
+        ) : (
+          <>
+            <p className="text-gold-primary font-semibold text-lg leading-tight tracking-wide">Casa Estampa</p>
+            <p className="text-text-muted font-normal text-[11px] tracking-widest uppercase mt-0.5">Interiores</p>
+          </>
+        )}
       </div>
 
       {/* Nav principal */}

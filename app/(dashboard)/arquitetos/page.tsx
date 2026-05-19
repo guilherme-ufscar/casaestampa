@@ -8,6 +8,8 @@ type Arquiteto = {
   nome: string
   telefone: string
   email: string
+  cpf: string
+  endereco: string
   observacoes: string
   ativo: boolean
   createdAt: string
@@ -26,7 +28,7 @@ export default function ArquitetosPage() {
   const [saving, setSaving] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editando, setEditando] = useState<Arquiteto | null>(null)
-  const [form, setForm] = useState({ nome: '', telefone: '', email: '', observacoes: '', ativo: true })
+  const [form, setForm] = useState({ nome: '', telefone: '', email: '', cpf: '', endereco: '', observacoes: '', ativo: true })
 
   const carregar = useCallback(async () => {
     setLoading(true)
@@ -39,13 +41,13 @@ export default function ArquitetosPage() {
 
   function abrirNovo() {
     setEditando(null)
-    setForm({ nome: '', telefone: '', email: '', observacoes: '', ativo: true })
+    setForm({ nome: '', telefone: '', email: '', cpf: '', endereco: '', observacoes: '', ativo: true })
     setDrawerOpen(true)
   }
 
   function abrirEdicao(arquiteto: Arquiteto) {
     setEditando(arquiteto)
-    setForm({ nome: arquiteto.nome, telefone: arquiteto.telefone, email: arquiteto.email, observacoes: arquiteto.observacoes, ativo: arquiteto.ativo })
+    setForm({ nome: arquiteto.nome, telefone: arquiteto.telefone, email: arquiteto.email, cpf: arquiteto.cpf || '', endereco: arquiteto.endereco || '', observacoes: arquiteto.observacoes, ativo: arquiteto.ativo })
     setDrawerOpen(true)
   }
 
@@ -61,7 +63,7 @@ export default function ArquitetosPage() {
     if (res.ok) {
       setDrawerOpen(false)
       setEditando(null)
-      setForm({ nome: '', telefone: '', email: '', observacoes: '', ativo: true })
+      setForm({ nome: '', telefone: '', email: '', cpf: '', endereco: '', observacoes: '', ativo: true })
       carregar()
     }
     setSaving(false)
@@ -91,6 +93,8 @@ export default function ArquitetosPage() {
               <tr className="border-b border-brand-border bg-brand-bg">
                 <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Nome</th>
                 <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Contato</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">CPF</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Endereço</th>
                 <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 w-24" />
               </tr>
@@ -106,6 +110,8 @@ export default function ArquitetosPage() {
                     <p>{arquiteto.telefone || '—'}</p>
                     <p className="text-xs text-text-muted mt-0.5">{arquiteto.email || 'Sem e-mail'}</p>
                   </td>
+                  <td className="px-4 py-3 text-text-secondary">{arquiteto.cpf || '—'}</td>
+                  <td className="px-4 py-3 text-text-secondary text-xs max-w-48 truncate">{arquiteto.endereco || '—'}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${arquiteto.ativo ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-text-muted'}`}>
                       {arquiteto.ativo ? 'Ativo' : 'Inativo'}
@@ -143,6 +149,14 @@ export default function ArquitetosPage() {
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Email</label>
                 <input type="email" value={form.email} onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))} className="input-base" placeholder="email@exemplo.com" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">CPF</label>
+                <input type="text" value={form.cpf} onChange={e => setForm(prev => ({ ...prev, cpf: e.target.value }))} className="input-base" placeholder="000.000.000-00" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Endereço</label>
+                <input type="text" value={form.endereco} onChange={e => setForm(prev => ({ ...prev, endereco: e.target.value }))} className="input-base" placeholder="Rua, número, bairro, cidade" />
               </div>
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Observações</label>

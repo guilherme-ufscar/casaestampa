@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [showSenha, setShowSenha] = useState(false)
   const [erro, setErro] = useState('')
   const [loading, setLoading] = useState(false)
+  const [logoError, setLogoError] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -48,14 +50,16 @@ export default function LoginPage() {
         {/* Card */}
         <div className="card-base p-8 md:p-10">
           {/* Logo */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-semibold text-gold-primary tracking-wide">
-              Casa Estampa
-            </h1>
-            <div className="h-px bg-gradient-to-r from-transparent via-gold-primary to-transparent mt-2 mb-2 opacity-50" />
-            <p className="text-[11px] font-normal text-text-muted tracking-widest uppercase">
-              Interiores
-            </p>
+          <div className="text-center mb-8 flex flex-col items-center">
+            {!logoError ? (
+              <Image src="/logo-casa-estampa.png" alt="Casa Estampa Interiores" width={180} height={56} className="object-contain" priority onError={() => setLogoError(true)} />
+            ) : (
+              <>
+                <h1 className="text-2xl font-semibold text-gold-primary tracking-wide">Casa Estampa</h1>
+                <div className="h-px bg-gradient-to-r from-transparent via-gold-primary to-transparent mt-2 mb-2 opacity-50 w-full" />
+                <p className="text-[11px] font-normal text-text-muted tracking-widest uppercase">Interiores</p>
+              </>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

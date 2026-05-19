@@ -3,8 +3,14 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
 } from '@react-pdf/renderer'
+import path from 'path'
+import fs from 'fs'
+
+const LOGO_FILE = path.join(process.cwd(), 'public', 'logo-casa-estampa.png')
+const LOGO_EXISTS = fs.existsSync(LOGO_FILE)
 
 const GOLD = '#C9A84C'
 const DARK = '#1C1C1C'
@@ -16,6 +22,7 @@ const s = StyleSheet.create({
   page: { fontSize: 9, color: DARK, padding: 36, backgroundColor: '#FFFFFF' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: BORDER },
   logoArea: { flexDirection: 'column' },
+  logoImage: { width: 120, height: 38, objectFit: 'contain' },
   logoNome: { fontSize: 18, fontWeight: 700, color: GOLD, letterSpacing: 1 },
   logoSub: { fontSize: 8, color: MUTED, letterSpacing: 3, marginTop: 2 },
   headerRight: { alignItems: 'flex-end' },
@@ -90,12 +97,20 @@ export type OrcamentoPDF = {
   condicoesComerciais?: string
   telefoneEmpresa?: string
   mostrarMedidas?: boolean
+  mostrarModelo?: boolean
+  mostrarTecido?: boolean
+  mostrarPrega?: boolean
+  mostrarBainha?: boolean
 }
 
 export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
   const dataGeracao = new Date().toLocaleDateString('pt-BR')
   const dataOrc = new Date(orc.createdAt).toLocaleDateString('pt-BR')
   const mostrarMedidas = orc.mostrarMedidas !== false
+  const mostrarModelo = orc.mostrarModelo !== false
+  const mostrarTecido = orc.mostrarTecido !== false
+  const mostrarPrega = orc.mostrarPrega !== false
+  const mostrarBainha = orc.mostrarBainha !== false
   const valorParcela = orc.precoFinalTotal / 10
   const valorVista = orc.precoFinalTotal * 0.95
   const condicoes = orc.condicoesComerciais || 'Prazo de 20 dias úteis para confecção. Trilho e instalação inclusos quando previstos no orçamento.'
@@ -106,8 +121,14 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
       <Page size="A4" style={s.page}>
         <View style={s.header}>
           <View style={s.logoArea}>
-            <Text style={s.logoNome}>Casa Estampa</Text>
-            <Text style={s.logoSub}>INTERIORES</Text>
+            {LOGO_EXISTS ? (
+              <Image style={s.logoImage} src={LOGO_FILE} />
+            ) : (
+              <>
+                <Text style={s.logoNome}>Casa Estampa</Text>
+                <Text style={s.logoSub}>INTERIORES</Text>
+              </>
+            )}
           </View>
           <View style={s.headerRight}>
             <Text style={s.orcNumero}>Orçamento #{String(orc.numero).padStart(4, '0')}</Text>
@@ -136,14 +157,14 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
         {orc.ambientes.map((a, i) => (
           <View key={i} style={s.ambienteCard} wrap={false}>
             <Text style={s.ambienteNome}>{a.nomeAmbiente}</Text>
-            <Text style={s.linha}><Text style={s.destaque}>Prega:</Text> {MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina}</Text>
-            <Text style={s.linha}><Text style={s.destaque}>Suporte:</Text> {a.trilhoTipo === 'varao' ? 'Varão' : 'Cortina Trilho Suíço'}</Text>
+            {mostrarPrega && <Text style={s.linha}><Text style={s.destaque}>Prega:</Text> {MODELO_LABELS[a.modeloCortina] ?? a.modeloCortina}</Text>}
+            {mostrarModelo && <Text style={s.linha}><Text style={s.destaque}>Suporte:</Text> {a.trilhoTipo === 'varao' ? 'Varão' : 'Cortina Trilho Suíço'}</Text>}
             {mostrarMedidas && <Text style={s.linha}><Text style={s.destaque}>Medidas:</Text> {a.largura.toFixed(2)} x {a.altura.toFixed(2)} m</Text>}
-            <Text style={s.linha}><Text style={s.destaque}>Tecido:</Text> {a.tecidoNome} — {a.quantidadeTecido.toFixed(2)}m</Text>
-            {a.blackoutNome && a.quantidadeBlackout && <Text style={s.linha}><Text style={s.destaque}>Blackout:</Text> {a.blackoutNome} — {a.quantidadeBlackout.toFixed(2)}m</Text>}
-            <Text style={s.linha}><Text style={s.destaque}>Abertura tecido:</Text> {a.tipoAbertura === 'CENTRAL' ? 'Central' : 'Inteira'}</Text>
-            {a.blackoutNome && <Text style={s.linha}><Text style={s.destaque}>Abertura blackout:</Text> {a.tipoAberturaBlackout === 'CENTRAL' ? 'Central' : 'Inteira'}</Text>}
-            {a.bainhaDesejada != null && <Text style={s.linha}><Text style={s.destaque}>Bainha:</Text> {a.bainhaDesejada.toFixed(2)}m</Text>}
+            {mostrarTecido && <Text style={s.linha}><Text style={s.destaque}>Tecido:</Text> {a.tecidoNome} — {a.quantidadeTecido.toFixed(2)}m</Text>}
+            {mostrarTecido && a.blackoutNome && a.quantidadeBlackout && <Text style={s.linha}><Text style={s.destaque}>Blackout:</Text> {a.blackoutNome} — {a.quantidadeBlackout.toFixed(2)}m</Text>}
+            {mostrarTecido && <Text style={s.linha}><Text style={s.destaque}>Abertura tecido:</Text> {a.tipoAbertura === 'CENTRAL' ? 'Central' : 'Inteira'}</Text>}
+            {mostrarTecido && a.blackoutNome && <Text style={s.linha}><Text style={s.destaque}>Abertura blackout:</Text> {a.tipoAberturaBlackout === 'CENTRAL' ? 'Central' : 'Inteira'}</Text>}
+            {mostrarBainha && a.bainhaDesejada != null && <Text style={s.linha}><Text style={s.destaque}>Bainha:</Text> {a.bainhaDesejada.toFixed(2)}m</Text>}
             <Text style={s.linha}><Text style={s.destaque}>Inclusos:</Text> Trilho e instalação {a.instalacao ? 'incluídos' : 'conforme orçamento'}</Text>
             <Text style={s.linha}><Text style={s.destaque}>Valor do ambiente:</Text> {fmt(a.precoFinalVenda)}</Text>
           </View>

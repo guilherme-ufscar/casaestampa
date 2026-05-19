@@ -109,7 +109,7 @@ export default function Etapa3Cortina() {
       fetch('/api/tecidos').then(r => r.json()),
       fetch('/api/configuracoes').then(r => r.json()),
       fetch('/api/trilhos').then(r => r.json()),
-      fetch('/api/instaladores?tipo=CORTINA').then(r => r.json()),
+      fetch('/api/instaladores?tipo=CORTINA,PERSIANA').then(r => r.json()),
     ]).then(([t, c, tr, ins]) => {
       setTecidos(t)
       setConfigs(c)

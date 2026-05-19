@@ -21,6 +21,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     nome: body.nome,
     telefone: body.telefone,
     email: body.email,
+    cpf: body.cpf,
+    endereco: body.endereco,
     observacoes: body.observacoes,
     ativo: body.ativo,
   })

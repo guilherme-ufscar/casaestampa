@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Search, Eye, Edit2, MessageCircle, Download, Check, ChevronLeft, ChevronRight, X, Loader2, Home, Clock, FileText, Pencil } from 'lucide-react'
+import { Search, Eye, Edit2, MessageCircle, Download, Check, ChevronLeft, ChevronRight, X, Loader2, Home, Clock, FileText, Pencil, Trash2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { StatusBadge, STATUS_CONFIG, StatusOrcamento } from '@/components/ui/StatusBadge'
 
@@ -49,6 +49,15 @@ export default function PainelPedidosPage() {
   const [drawerLoading, setDrawerLoading] = useState(false)
   const [toast, setToast] = useState('')
   const [vendedores, setVendedores] = useState<{ id: string; nome: string }[]>([])
+  const [pdfModal, setPdfModal] = useState<string | null>(null)
+  const [pdfOpcoes, setPdfOpcoes] = useState({
+    modelo: true,
+    tecido: true,
+    prega: true,
+    bainha: true,
+    medida: true,
+    valor: true,
+  })
   const popoverRef = useRef<HTMLDivElement>(null)
 
   const fetchPedidos = useCallback(async () => {
@@ -117,6 +126,16 @@ export default function PainelPedidosPage() {
     window.open(`/orcamentos/novo?editar=${id}`, '_self')
   }
 
+  async function excluirPedido(id: string) {
+    if (!confirm('Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.')) return
+    const res = await fetch(`/api/orcamentos/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      setToast('Orçamento excluído!')
+      setTimeout(() => setToast(''), 3000)
+      fetchPedidos()
+    }
+  }
+
   function toggleTodos() {
     if (!data) return
     setSelecionados(prev => prev.length === data.pedidos.length ? [] : data.pedidos.map(p => p.id))
@@ -148,7 +167,19 @@ export default function PainelPedidosPage() {
           <h2 className="text-2xl font-semibold text-text-primary">Painel de Pedidos</h2>
           <p className="text-sm text-text-muted mt-0.5">{data?.total ?? 0} pedido{(data?.total ?? 0) !== 1 ? 's' : ''}</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-brand-border text-text-secondary hover:bg-brand-input transition-colors">
+        <button
+          onClick={() => {
+            const params = new URLSearchParams()
+            if (q) params.set('q', q)
+            if (statusFiltro) params.set('status', statusFiltro)
+            if (vendedorFiltro) params.set('vendedor', vendedorFiltro)
+            if (periodo) params.set('periodo', periodo)
+            if (dataInicio) params.set('dataInicio', dataInicio)
+            if (dataFim) params.set('dataFim', dataFim)
+            window.open(`/api/pedidos/exportar?${params}`, '_blank')
+          }}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-brand-border text-text-secondary hover:bg-brand-input transition-colors"
+        >
           <Download size={15} /> Exportar
         </button>
       </div>
@@ -251,6 +282,8 @@ export default function PainelPedidosPage() {
                   <div className="flex items-center gap-1 justify-end">
                     <button onClick={() => abrirDrawer(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Eye size={15} /></button>
                     <button onClick={() => editarPedido(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Pencil size={15} /></button>
+                    <button onClick={() => setPdfModal(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><FileText size={15} /></button>
+                    <button onClick={() => excluirPedido(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-red-500 transition-colors"><Trash2 size={15} /></button>
                     <div className="relative" ref={popoverAberto === p.id ? popoverRef : null}>
                       <button onClick={() => setPopoverAberto(popoverAberto === p.id ? null : p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Edit2 size={15} /></button>
                       {popoverAberto === p.id && (
@@ -382,15 +415,70 @@ export default function PainelPedidosPage() {
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-3 pt-2">
-                  <a href={`/api/orcamentos/${drawerPedido.id}/pdf`} target="_blank" className="btn-gold flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-sm font-semibold">
+                  <button
+                    onClick={() => setPdfModal(drawerPedido.id)}
+                    className="btn-gold flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-sm font-semibold"
+                  >
                     <FileText size={15} /> Gerar PDF
-                  </a>
+                  </button>
                   <button onClick={() => whatsappRapido(drawerPedido)} className="flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-sm font-semibold text-white" style={{ background: '#25D366' }}>
                     <MessageCircle size={15} /> WhatsApp
                   </button>
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de opções do PDF */}
+      {pdfModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setPdfModal(null)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-text-primary">Opções do PDF</h3>
+              <button onClick={() => setPdfModal(null)} className="p-1.5 rounded hover:bg-brand-input text-text-secondary"><X size={18} /></button>
+            </div>
+            <p className="text-sm text-text-muted">Selecione quais informações incluir no PDF do cliente. O nome do ambiente e o valor sempre serão exibidos.</p>
+            <div className="space-y-3">
+              {[
+                { key: 'modelo', label: 'Modelo (Trilho Suíço / Varão)' },
+                { key: 'tecido', label: 'Tecido' },
+                { key: 'prega', label: 'Prega' },
+                { key: 'bainha', label: 'Bainha' },
+                { key: 'medida', label: 'Medidas' },
+              ].map(({ key, label }) => (
+                <label key={key} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={pdfOpcoes[key as keyof typeof pdfOpcoes]}
+                    onChange={() => setPdfOpcoes(prev => ({ ...prev, [key]: !prev[key as keyof typeof pdfOpcoes] }))}
+                    className="rounded border-brand-border text-gold-primary focus:ring-gold-primary"
+                  />
+                  <span className="text-sm text-text-primary">{label}</span>
+                </label>
+              ))}
+              <label className="flex items-center gap-3 cursor-not-allowed opacity-60">
+                <input type="checkbox" checked disabled className="rounded" />
+                <span className="text-sm text-text-primary">Valor (sempre incluso)</span>
+              </label>
+            </div>
+            <button
+              onClick={() => {
+                const params = new URLSearchParams()
+                if (!pdfOpcoes.modelo) params.set('modelo', '0')
+                if (!pdfOpcoes.tecido) params.set('tecido', '0')
+                if (!pdfOpcoes.prega) params.set('prega', '0')
+                if (!pdfOpcoes.bainha) params.set('bainha', '0')
+                if (!pdfOpcoes.medida) params.set('medida', '0')
+                window.open(`/api/orcamentos/${pdfModal}/pdf?${params}`, '_blank')
+                setPdfModal(null)
+              }}
+              className="btn-gold w-full h-11 rounded-[8px] text-sm font-semibold flex items-center justify-center gap-2"
+            >
+              <FileText size={15} /> Gerar PDF
+            </button>
           </div>
         </div>
       )}

@@ -185,3 +185,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: String(error) }, { status: 500 })
   }
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const orc = await prisma.orcamento.findUnique({ where: { id: params.id } })
+  if (!orc) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
+
+  if (session.user.role === 'VENDEDOR' && orc.vendedorId !== session.user.id) {
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
+  }
+
+  await prisma.orcamento.delete({ where: { id: params.id } })
+
+  return NextResponse.json({ ok: true })
+}

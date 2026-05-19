@@ -17,7 +17,10 @@ export async function GET(req: NextRequest) {
 
   const enriquecidos = await enriquecerInstaladores(instaladores)
   const filtrados = tipo
-    ? enriquecidos.filter(instalador => instalador.especialidades.includes(tipo as never))
+    ? enriquecidos.filter(instalador => {
+        const tipos = tipo.split(',')
+        return tipos.some(t => instalador.especialidades.includes(t as never))
+      })
     : enriquecidos
 
   return NextResponse.json(filtrados)

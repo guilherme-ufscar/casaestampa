@@ -7,6 +7,8 @@ export type ArquitetoCadastro = {
   nome: string
   telefone: string
   email: string
+  cpf: string
+  endereco: string
   observacoes: string
   ativo: boolean
   createdAt: string
@@ -25,6 +27,8 @@ function parseArquitetos(raw: string | null | undefined): ArquitetoCadastro[] {
         nome: typeof item.nome === 'string' ? item.nome : '',
         telefone: typeof item.telefone === 'string' ? item.telefone : '',
         email: typeof item.email === 'string' ? item.email : '',
+        cpf: typeof item.cpf === 'string' ? item.cpf : '',
+        endereco: typeof item.endereco === 'string' ? item.endereco : '',
         observacoes: typeof item.observacoes === 'string' ? item.observacoes : '',
         ativo: typeof item.ativo === 'boolean' ? item.ativo : true,
         createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
@@ -54,7 +58,7 @@ export async function listarArquitetos() {
   return parseArquitetos(config?.valor)
 }
 
-export async function criarArquiteto(input: Pick<ArquitetoCadastro, 'nome' | 'telefone' | 'email' | 'observacoes'> & { ativo?: boolean }) {
+export async function criarArquiteto(input: Pick<ArquitetoCadastro, 'nome' | 'telefone' | 'email' | 'cpf' | 'endereco' | 'observacoes'> & { ativo?: boolean }) {
   const arquitetos = await listarArquitetos()
   const now = new Date().toISOString()
   const arquiteto: ArquitetoCadastro = {
@@ -62,6 +66,8 @@ export async function criarArquiteto(input: Pick<ArquitetoCadastro, 'nome' | 'te
     nome: input.nome.trim(),
     telefone: input.telefone?.trim() ?? '',
     email: input.email?.trim() ?? '',
+    cpf: input.cpf?.trim() ?? '',
+    endereco: input.endereco?.trim() ?? '',
     observacoes: input.observacoes?.trim() ?? '',
     ativo: input.ativo ?? true,
     createdAt: now,
@@ -73,7 +79,7 @@ export async function criarArquiteto(input: Pick<ArquitetoCadastro, 'nome' | 'te
   return arquiteto
 }
 
-export async function atualizarArquiteto(id: string, input: Partial<Pick<ArquitetoCadastro, 'nome' | 'telefone' | 'email' | 'observacoes' | 'ativo'>>) {
+export async function atualizarArquiteto(id: string, input: Partial<Pick<ArquitetoCadastro, 'nome' | 'telefone' | 'email' | 'cpf' | 'endereco' | 'observacoes' | 'ativo'>>) {
   const arquitetos = await listarArquitetos()
   const index = arquitetos.findIndex(item => item.id === id)
   if (index === -1) return null
@@ -83,6 +89,8 @@ export async function atualizarArquiteto(id: string, input: Partial<Pick<Arquite
     nome: input.nome !== undefined ? input.nome.trim() : arquitetos[index].nome,
     telefone: input.telefone !== undefined ? input.telefone.trim() : arquitetos[index].telefone,
     email: input.email !== undefined ? input.email.trim() : arquitetos[index].email,
+    cpf: input.cpf !== undefined ? input.cpf.trim() : arquitetos[index].cpf,
+    endereco: input.endereco !== undefined ? input.endereco.trim() : arquitetos[index].endereco,
     observacoes: input.observacoes !== undefined ? input.observacoes.trim() : arquitetos[index].observacoes,
     ativo: input.ativo !== undefined ? input.ativo : arquitetos[index].ativo,
     updatedAt: new Date().toISOString(),

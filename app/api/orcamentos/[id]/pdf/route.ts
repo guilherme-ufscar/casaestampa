@@ -10,6 +10,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
+  const { searchParams } = new URL(_req.url)
+  const mostrarModelo = searchParams.get('modelo') !== '0'
+  const mostrarTecido = searchParams.get('tecido') !== '0'
+  const mostrarPrega = searchParams.get('prega') !== '0'
+  const mostrarBainha = searchParams.get('bainha') !== '0'
+  const mostrarMedida = searchParams.get('medida') !== '0'
+
   const orc = await prisma.orcamento.findUnique({
     where: { id: params.id },
     include: {
@@ -60,7 +67,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     precoFinalTotal: Number(orc.precoFinalTotal ?? 0),
     condicoesComerciais: cfg.condicoes_comerciais,
     telefoneEmpresa: cfg.telefone_empresa,
-    mostrarMedidas: cfg.pdf_mostrar_medidas !== 'false',
+    mostrarMedidas: mostrarMedida,
+    mostrarModelo: mostrarModelo,
+    mostrarTecido: mostrarTecido,
+    mostrarPrega: mostrarPrega,
+    mostrarBainha: mostrarBainha,
   }
 
   const doc = React.createElement(OrcamentoPDFDoc, { orc: orcPDF })

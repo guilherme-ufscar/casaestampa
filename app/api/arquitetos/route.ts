@@ -34,6 +34,8 @@ export async function POST(req: NextRequest) {
     nome,
     telefone: String(body.telefone ?? ''),
     email: String(body.email ?? ''),
+    cpf: String(body.cpf ?? ''),
+    endereco: String(body.endereco ?? ''),
     observacoes: String(body.observacoes ?? ''),
     ativo: body.ativo !== false,
   })
