@@ -1,15 +1,16 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Pencil, Trash2, X, Check, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Check, Loader2, ToggleLeft, ToggleRight, Star } from 'lucide-react'
 
 type Tecido = {
   id: string
   nome: string
   larguraMaxima: number
   valorMetro: number
-  tipo: 'PRINCIPAL' | 'BLACKOUT'
+  tipo: 'PRINCIPAL' | 'BLACKOUT' | 'DECORACAO'
   ativo: boolean
+  favorito: boolean
 }
 
 type Trilho = {
@@ -199,8 +200,144 @@ function InstaladorTab() {
   )
 }
 
+type FornecedorCadastro = {
+  id: string
+  nomeEmpresa: string
+  vendedor: string | null
+  telefone: string | null
+  email: string | null
+  endereco: string | null
+  contaBancaria: string | null
+  pix: string | null
+  observacoes: string | null
+  ativo: boolean
+}
+
+function FornecedoresTab() {
+  const [fornecedores, setFornecedores] = useState<FornecedorCadastro[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [editando, setEditando] = useState<FornecedorCadastro | null>(null)
+  const [form, setForm] = useState({
+    nomeEmpresa: '', vendedor: '', telefone: '', email: '',
+    endereco: '', contaBancaria: '', pix: '', observacoes: '',
+  })
+
+  async function carregar() {
+    const r = await fetch('/api/fornecedores-cadastro')
+    setFornecedores(await r.json())
+    setLoading(false)
+  }
+
+  useEffect(() => { carregar() }, [])
+
+  function iniciarEdicao(f: FornecedorCadastro) {
+    setEditando(f)
+    setForm({ nomeEmpresa: f.nomeEmpresa, vendedor: f.vendedor ?? '', telefone: f.telefone ?? '', email: f.email ?? '', endereco: f.endereco ?? '', contaBancaria: f.contaBancaria ?? '', pix: f.pix ?? '', observacoes: f.observacoes ?? '' })
+  }
+
+  function cancelar() {
+    setEditando(null)
+    setForm({ nomeEmpresa: '', vendedor: '', telefone: '', email: '', endereco: '', contaBancaria: '', pix: '', observacoes: '' })
+  }
+
+  async function salvar() {
+    if (!form.nomeEmpresa) return
+    setSaving(true)
+    if (editando) {
+      await fetch(`/api/fornecedores-cadastro/${editando.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    } else {
+      await fetch('/api/fornecedores-cadastro', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    }
+    cancelar()
+    setSaving(false)
+    carregar()
+  }
+
+  async function excluir(id: string) {
+    if (!confirm('Excluir este fornecedor?')) return
+    await fetch(`/api/fornecedores-cadastro/${id}`, { method: 'DELETE' })
+    carregar()
+  }
+
+  const campos = [
+    { key: 'nomeEmpresa', label: 'Nome da Empresa *', placeholder: 'Ex: Deccor Casa' },
+    { key: 'vendedor', label: 'Vendedor / Atendente', placeholder: 'Nome do contato' },
+    { key: 'telefone', label: 'Telefone / WhatsApp', placeholder: '(11) 99999-9999' },
+    { key: 'email', label: 'E-mail', placeholder: 'vendedor@empresa.com.br' },
+    { key: 'endereco', label: 'Endereço', placeholder: 'Rua, número, bairro, cidade' },
+    { key: 'contaBancaria', label: 'Conta Bancária', placeholder: 'Banco, agência, conta' },
+    { key: 'pix', label: 'Pix', placeholder: 'Chave Pix' },
+  ]
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div className="card-base p-6 space-y-4">
+        <p className="text-sm font-semibold text-text-primary">{editando ? 'Editar Fornecedor' : 'Novo Fornecedor'}</p>
+        <div className="grid grid-cols-2 gap-3">
+          {campos.map(({ key, label, placeholder }) => (
+            <div key={key} className={`space-y-1.5 ${key === 'endereco' || key === 'contaBancaria' ? 'col-span-2' : ''}`}>
+              <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
+              <input
+                value={(form as Record<string, string>)[key]}
+                onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
+                placeholder={placeholder}
+                className="input-base"
+              />
+            </div>
+          ))}
+          <div className="col-span-2 space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Observações</label>
+            <textarea value={form.observacoes} onChange={e => setForm(p => ({ ...p, observacoes: e.target.value }))} rows={2} placeholder="Informações adicionais..." className="input-base h-auto py-3 resize-none" />
+          </div>
+        </div>
+        <div className="flex gap-2 justify-end">
+          {editando && <button onClick={cancelar} className="px-4 py-2 rounded-lg text-sm font-medium text-text-muted hover:bg-brand-input transition-colors">Cancelar</button>}
+          <button onClick={salvar} disabled={!form.nomeEmpresa || saving} className="btn-gold flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold disabled:opacity-50">
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+            {editando ? 'Salvar' : 'Adicionar'}
+          </button>
+        </div>
+      </div>
+
+      <div className="card-base overflow-hidden">
+        {loading ? (
+          <p className="p-6 text-center text-text-muted text-sm">Carregando...</p>
+        ) : fornecedores.length === 0 ? (
+          <p className="p-6 text-center text-text-muted text-sm">Nenhum fornecedor cadastrado</p>
+        ) : (
+          <div className="divide-y divide-brand-border">
+            {fornecedores.map(f => (
+              <div key={f.id} className="p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1 flex-1">
+                    <p className="text-sm font-semibold text-text-primary">{f.nomeEmpresa}</p>
+                    {f.vendedor && <p className="text-xs text-text-secondary">Vendedor: {f.vendedor}</p>}
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                      {f.telefone && <span className="text-xs text-text-muted">Tel: {f.telefone}</span>}
+                      {f.email && <span className="text-xs text-text-muted">Email: {f.email}</span>}
+                      {f.pix && <span className="text-xs text-text-muted">Pix: {f.pix}</span>}
+                    </div>
+                    {f.endereco && <p className="text-xs text-text-muted">Endereço: {f.endereco}</p>}
+                    {f.contaBancaria && <p className="text-xs text-text-muted">Banco: {f.contaBancaria}</p>}
+                    {f.observacoes && <p className="text-xs italic text-text-muted mt-1">{f.observacoes}</p>}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => iniciarEdicao(f)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Pencil size={14} /></button>
+                    <button onClick={() => excluir(f.id)} className="p-1.5 rounded hover:bg-red-50 text-red-400 transition-colors"><Trash2 size={14} /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function ConfiguracoesPage() {
-  const [aba, setAba] = useState<'tecidos' | 'blackouts' | 'trilhos' | 'instaladores' | 'fatores' | 'markup' | 'confeccao' | 'pdf'>('tecidos')
+  const [aba, setAba] = useState<'tecidos' | 'blackouts' | 'decoracao' | 'trilhos' | 'instaladores' | 'fatores' | 'markup' | 'confeccao' | 'pdf' | 'fornecedores'>('tecidos')
   const [tecidos, setTecidos] = useState<Tecido[]>([])
   const [trilhos, setTrilhos] = useState<Trilho[]>([])
   const [configs, setConfigs] = useState<Configs>({})
@@ -217,7 +354,7 @@ export default function ConfiguracoesPage() {
     larguraCustom: '',
     valorMetro: '',
     valorUnitario: '',
-    tipo: 'PRINCIPAL' as 'PRINCIPAL' | 'BLACKOUT',
+    tipo: 'PRINCIPAL' as 'PRINCIPAL' | 'BLACKOUT' | 'DECORACAO',
     ativo: true,
   })
 
@@ -259,7 +396,7 @@ export default function ConfiguracoesPage() {
       }
     } else {
       setEditingId(null)
-      setForm({ nome: '', larguraMaxima: '2.80', larguraCustom: '', valorMetro: '', valorUnitario: '', tipo: tipo === 'tecido' ? (aba === 'blackouts' ? 'BLACKOUT' : 'PRINCIPAL') : 'PRINCIPAL', ativo: true })
+      setForm({ nome: '', larguraMaxima: '2.80', larguraCustom: '', valorMetro: '', valorUnitario: '', tipo: tipo === 'tecido' ? (aba === 'blackouts' ? 'BLACKOUT' : aba === 'decoracao' ? 'DECORACAO' : 'PRINCIPAL') : 'PRINCIPAL', ativo: true })
     }
     setDrawerOpen(true)
   }
@@ -308,13 +445,20 @@ export default function ConfiguracoesPage() {
     setSaving(false)
   }
 
-  const tecidosFiltrados = tecidos.filter(t => aba === 'tecidos' ? t.tipo === 'PRINCIPAL' : t.tipo === 'BLACKOUT')
+  const tecidosFiltrados = tecidos.filter(t => {
+    if (aba === 'tecidos') return t.tipo === 'PRINCIPAL'
+    if (aba === 'blackouts') return t.tipo === 'BLACKOUT'
+    if (aba === 'decoracao') return t.tipo === 'DECORACAO'
+    return false
+  })
 
   const abas = [
     { key: 'tecidos', label: 'Tecidos' },
     { key: 'blackouts', label: 'Blackouts' },
+    { key: 'decoracao', label: 'Decoração' },
     { key: 'trilhos', label: 'Trilhos e Varões' },
     { key: 'instaladores', label: 'Instaladores' },
+    { key: 'fornecedores', label: 'Fornecedores' },
     { key: 'fatores', label: 'Fatores de Prega' },
     { key: 'markup', label: 'Markup e Comissões' },
     { key: 'confeccao', label: 'Confecção e Instalação' },
@@ -347,7 +491,7 @@ export default function ConfiguracoesPage() {
         </div>
       ) : (
         <>
-          {(aba === 'tecidos' || aba === 'blackouts') && (
+          {(aba === 'tecidos' || aba === 'blackouts' || aba === 'decoracao') && (
             <div className="space-y-4">
               <div className="flex justify-end">
                 <button
@@ -355,13 +499,14 @@ export default function ConfiguracoesPage() {
                   className="btn-gold flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold"
                 >
                   <Plus size={16} />
-                  {aba === 'tecidos' ? 'Novo Tecido' : 'Novo Blackout'}
+                  {aba === 'tecidos' ? 'Novo Tecido' : aba === 'blackouts' ? 'Novo Blackout' : 'Novo Tecido Decoração'}
                 </button>
               </div>
               <div className="card-base overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-brand-border bg-brand-bg">
+                      <th className="px-4 py-3 w-8" />
                       <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Nome</th>
                       <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Largura</th>
                       <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">R$/metro</th>
@@ -372,6 +517,18 @@ export default function ConfiguracoesPage() {
                   <tbody>
                     {tecidosFiltrados.map((t, i) => (
                       <tr key={t.id} className={`border-b border-brand-border last:border-0 ${i % 2 === 0 ? '' : 'bg-brand-bg/50'}`}>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={async () => {
+                              await fetch(`/api/tecidos/${t.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ favorito: !t.favorito }) })
+                              fetchAll()
+                            }}
+                            className="p-0.5"
+                            title={t.favorito ? 'Remover dos favoritos' : 'Marcar como favorito'}
+                          >
+                            <Star size={15} className={t.favorito ? 'fill-gold-primary text-gold-primary' : 'text-text-muted'} />
+                          </button>
+                        </td>
                         <td className="px-4 py-3 font-medium text-text-primary">{t.nome}</td>
                         <td className="px-4 py-3 text-text-secondary">{Number(t.larguraMaxima).toFixed(2)}m</td>
                         <td className="px-4 py-3 text-text-secondary">R$ {Number(t.valorMetro).toFixed(2)}</td>
@@ -581,6 +738,10 @@ export default function ConfiguracoesPage() {
             <InstaladorTab />
           )}
 
+          {aba === 'fornecedores' && (
+            <FornecedoresTab />
+          )}
+
           {aba === 'pdf' && (
             <div className="space-y-4 max-w-2xl">
               <div className="card-base p-6 space-y-5">
@@ -664,7 +825,7 @@ export default function ConfiguracoesPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border">
               <h3 className="text-base font-semibold text-text-primary">
                 {drawerMode === 'create' ? 'Novo' : 'Editar'}{' '}
-                {drawerTipo === 'tecido' ? (aba === 'blackouts' ? 'Blackout' : 'Tecido') : 'Trilho/Varão'}
+                {drawerTipo === 'tecido' ? (aba === 'blackouts' ? 'Blackout' : aba === 'decoracao' ? 'Tecido Decoração' : 'Tecido') : 'Trilho/Varão'}
               </h3>
               <button onClick={() => setDrawerOpen(false)} className="p-1.5 rounded hover:bg-brand-input text-text-secondary">
                 <X size={18} />
@@ -700,9 +861,10 @@ export default function ConfiguracoesPage() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Tipo</label>
-                    <select value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value as 'PRINCIPAL' | 'BLACKOUT' }))} className="input-base">
+                    <select value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value as 'PRINCIPAL' | 'BLACKOUT' | 'DECORACAO' }))} className="input-base">
                       <option value="PRINCIPAL">Principal</option>
                       <option value="BLACKOUT">Blackout</option>
+                      <option value="DECORACAO">Decoração</option>
                     </select>
                   </div>
                 </>

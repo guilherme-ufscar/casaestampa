@@ -45,6 +45,7 @@ enum TipoTrilho {
 enum TipoTecido {
   PRINCIPAL
   BLACKOUT
+  DECORACAO
 }
 
 model User {
@@ -80,6 +81,7 @@ model Tecido {
   valorMetro    Decimal    @db.Decimal(10, 2)
   tipo          TipoTecido
   ativo         Boolean    @default(true)
+  favorito      Boolean    @default(false)
 
   ambientes AmbienteOrcamento[] @relation("TecidoPrincipal")
   blackouts AmbienteOrcamento[] @relation("TecidoBlackout")
@@ -161,6 +163,21 @@ model AmbienteOrcamento {
   blackout    Tecido?      @relation("TecidoBlackout", fields: [blackoutId], references: [id])
   trilhoVarao TrilhoVarao? @relation(fields: [trilhoVaraoId], references: [id])
   instalador  Instalador?  @relation(fields: [instaladorId], references: [id])
+}
+
+model FornecedorCadastro {
+  id           String   @id @default(cuid())
+  nomeEmpresa  String
+  vendedor     String?
+  telefone     String?
+  email        String?
+  endereco     String?
+  contaBancaria String?
+  pix          String?
+  observacoes  String?
+  ativo        Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model LogHistorico {

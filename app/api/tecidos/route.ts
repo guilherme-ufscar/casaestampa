@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth'
 
 export async function GET() {
   try {
-    const tecidos = await prisma.tecido.findMany({ orderBy: { nome: 'asc' } })
+    const tecidos = await prisma.tecido.findMany({ orderBy: [{ favorito: 'desc' }, { nome: 'asc' }] })
     const normalized = tecidos.map(t => ({ ...t, larguraMaxima: Number(t.larguraMaxima), valorMetro: Number(t.valorMetro) }))
     return NextResponse.json(normalized)
   } catch (e) {

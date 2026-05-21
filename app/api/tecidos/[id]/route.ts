@@ -26,6 +26,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(tecido)
 }
 
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions)
+  if (!session || session.user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  }
+
+  const body = await req.json()
+  const tecido = await prisma.tecido.update({
+    where: { id: params.id },
+    data: body,
+  })
+
+  return NextResponse.json(tecido)
+}
+
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session || session.user.role !== 'ADMIN') {

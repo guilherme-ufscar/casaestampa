@@ -8,7 +8,7 @@ type Tecido = {
   nome: string
   larguraMaxima: number
   valorMetro: number
-  tipo: 'PRINCIPAL' | 'BLACKOUT'
+  tipo: 'PRINCIPAL' | 'BLACKOUT' | 'DECORACAO'
   ativo: boolean
 }
 
@@ -27,7 +27,7 @@ export default function TabelasPage() {
   const [tecidos, setTecidos] = useState<Tecido[]>([])
   const [trilhos, setTrilhos] = useState<Trilho[]>([])
   const [loading, setLoading] = useState(true)
-  const [aba, setAba] = useState<'principais' | 'blackouts' | 'trilhos'>('principais')
+  const [aba, setAba] = useState<'principais' | 'blackouts' | 'decoracao' | 'trilhos'>('principais')
 
   useEffect(() => {
     Promise.all([
@@ -42,6 +42,7 @@ export default function TabelasPage() {
 
   const tecidosPrincipais = tecidos.filter(t => t.tipo === 'PRINCIPAL' && t.ativo)
   const tecidosBlackout = tecidos.filter(t => t.tipo === 'BLACKOUT' && t.ativo)
+  const tecidosDecoracao = tecidos.filter(t => t.tipo === 'DECORACAO' && t.ativo)
   const trilhosAtivos = trilhos.filter(t => t.ativo)
 
   if (loading) {
@@ -63,6 +64,7 @@ export default function TabelasPage() {
         {[
           { key: 'principais', label: `Tecidos (${tecidosPrincipais.length})` },
           { key: 'blackouts', label: `Blackouts (${tecidosBlackout.length})` },
+          { key: 'decoracao', label: `Decoração (${tecidosDecoracao.length})` },
           { key: 'trilhos', label: `Trilhos (${trilhosAtivos.length})` },
         ].map(({ key, label }) => (
           <button
@@ -107,7 +109,7 @@ export default function TabelasPage() {
               </tr>
             </thead>
             <tbody>
-              {(aba === 'principais' ? tecidosPrincipais : tecidosBlackout).map(t => (
+              {(aba === 'principais' ? tecidosPrincipais : aba === 'blackouts' ? tecidosBlackout : tecidosDecoracao).map(t => (
                 <tr key={t.id} className="border-b border-brand-border last:border-0 hover:bg-brand-bg/50">
                   <td className="px-4 py-3 font-medium text-text-primary">{t.nome}</td>
                   <td className="px-4 py-3 text-text-secondary">{Number(t.larguraMaxima).toFixed(2)}m</td>

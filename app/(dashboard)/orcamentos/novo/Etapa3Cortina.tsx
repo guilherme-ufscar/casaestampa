@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ToggleLeft, ToggleRight, AlertTriangle, Ruler, Layers, Wrench, FileText, ChevronDown } from 'lucide-react'
+import { ChevronLeft, ToggleLeft, ToggleRight, AlertTriangle, Ruler, Layers, Wrench, FileText, ChevronDown, Star } from 'lucide-react'
 import { useOrcamento, AmbienteForm, ambienteVazio } from '@/context/OrcamentoContext'
 import { calcularAmbiente, Configuracoes, ModeloCortina, TipoAbertura } from '@/lib/calculoCortina'
 
-type Tecido = { id: string; nome: string; larguraMaxima: number; valorMetro: number; tipo: string; ativo?: boolean }
+type Tecido = { id: string; nome: string; larguraMaxima: number; valorMetro: number; tipo: string; ativo?: boolean; favorito?: boolean }
 type Configs = Record<string, string>
 type Trilho = { id: string; nome: string; valorUnitario: number; ativo: boolean }
 type Instalador = { id: string; nome: string; telefone: string | null; especialidades?: string[] }
@@ -68,7 +68,7 @@ function TecidoSelect({
         >
           <option value="">Selecione o tecido...</option>
           {tecidos.map(t => (
-            <option key={t.id} value={t.id}>{nomeLimpo(t.nome)}</option>
+            <option key={t.id} value={t.id}>{t.favorito ? '★ ' : ''}{nomeLimpo(t.nome)}</option>
           ))}
         </select>
         <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
@@ -176,7 +176,7 @@ export default function Etapa3Cortina() {
   }, [form, configs])
 
   const tecidosPrincipais = tecidos.filter(t => t.tipo === 'PRINCIPAL' && t.ativo !== false)
-  const tecidosBlackout = tecidos.filter(t => t.tipo === 'BLACKOUT' && t.ativo !== false)
+  const tecidosBlackout = tecidos.filter(t => t.ativo !== false)
 
   function adicionarAmbiente() {
     const novos = [...ambientes, { ...ambienteVazio, nomeAmbiente: `Ambiente ${ambientes.length + 1}` }]

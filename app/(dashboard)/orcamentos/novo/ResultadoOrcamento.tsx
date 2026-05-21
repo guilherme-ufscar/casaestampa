@@ -1,7 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, FileDown, MessageCircle, Plus, Save, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react'
+import { CheckCircle, FileDown, MessageCircle, Plus, Save, ChevronDown, ChevronUp, Loader2, X, CreditCard, Banknote } from 'lucide-react'
+
+const TAXAS_CARTAO = [
+  { parcelas: 1, taxa: 3.15 },
+  { parcelas: 2, taxa: 5.39 },
+  { parcelas: 3, taxa: 6.12 },
+  { parcelas: 4, taxa: 6.85 },
+  { parcelas: 5, taxa: 7.57 },
+  { parcelas: 6, taxa: 8.28 },
+  { parcelas: 7, taxa: 8.99 },
+  { parcelas: 8, taxa: 9.69 },
+  { parcelas: 9, taxa: 10.38 },
+  { parcelas: 10, taxa: 11.06 },
+]
 import { useOrcamento, ambienteVazio } from '@/context/OrcamentoContext'
 import { useSession } from 'next-auth/react'
 
@@ -267,6 +280,38 @@ export default function ResultadoOrcamento() {
           <MessageCircle size={16} />
           Enviar por WhatsApp
         </button>
+      </div>
+
+      {/* Formas de pagamento */}
+      <div className="card-base overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-brand-border bg-brand-bg">
+          <CreditCard size={15} className="text-gold-primary" />
+          <span className="text-sm font-semibold text-text-primary">Formas de Pagamento</span>
+        </div>
+        <div className="p-5 space-y-3">
+          <div className="flex items-center justify-between py-2.5 px-4 bg-green-50 border border-green-200 rounded-xl">
+            <div className="flex items-center gap-2">
+              <Banknote size={16} className="text-green-600" />
+              <span className="text-sm font-semibold text-green-700">À vista (Pix / Dinheiro)</span>
+            </div>
+            <span className="text-lg font-extrabold text-green-700">{fmt(res.totalPrecoFinalVenda)}</span>
+          </div>
+          <div className="space-y-1">
+            {TAXAS_CARTAO.map(({ parcelas, taxa }) => {
+              const total = res.totalPrecoFinalVenda * (1 + taxa / 100)
+              const parcela = total / parcelas
+              return (
+                <div key={parcelas} className="flex items-center justify-between py-2 px-4 rounded-lg hover:bg-brand-bg transition-colors">
+                  <span className="text-sm text-text-secondary">{parcelas}x no crédito <span className="text-[11px] text-text-muted">({taxa}%)</span></span>
+                  <div className="text-right">
+                    <span className="text-sm font-semibold text-text-primary">{fmt(parcela)}/mês</span>
+                    <span className="text-[11px] text-text-muted ml-2">total {fmt(total)}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Botões secundários */}

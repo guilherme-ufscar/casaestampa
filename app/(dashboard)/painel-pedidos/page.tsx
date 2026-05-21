@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { Search, Eye, Edit2, MessageCircle, Download, Check, ChevronLeft, ChevronRight, X, Loader2, Home, Clock, FileText, Pencil, Trash2 } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Search, Eye, MessageCircle, Download, Check, ChevronLeft, ChevronRight, X, Loader2, Home, Clock, FileText, Pencil, Trash2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { StatusBadge, STATUS_CONFIG, StatusOrcamento } from '@/components/ui/StatusBadge'
 
@@ -44,7 +44,6 @@ export default function PainelPedidosPage() {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [selecionados, setSelecionados] = useState<string[]>([])
-  const [popoverAberto, setPopoverAberto] = useState<string | null>(null)
   const [drawerPedido, setDrawerPedido] = useState<PedidoDetalhe | null>(null)
   const [drawerLoading, setDrawerLoading] = useState(false)
   const [toast, setToast] = useState('')
@@ -58,8 +57,6 @@ export default function PainelPedidosPage() {
     medida: true,
     valor: true,
   })
-  const popoverRef = useRef<HTMLDivElement>(null)
-
   const fetchPedidos = useCallback(async () => {
     setLoading(true)
     const params = new URLSearchParams({ page: String(page), limit: String(limit) })
@@ -83,17 +80,8 @@ export default function PainelPedidosPage() {
     if (isAdmin) fetch('/api/usuarios').then(r => r.json()).then(setVendedores)
   }, [isAdmin])
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) setPopoverAberto(null)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
   async function alterarStatus(id: string, status: string) {
     setData(prev => prev ? { ...prev, pedidos: prev.pedidos.map(p => p.id === id ? { ...p, status } : p) } : prev)
-    setPopoverAberto(null)
     const res = await fetch(`/api/pedidos/${id}/status`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status })
     })
@@ -284,23 +272,6 @@ export default function PainelPedidosPage() {
                     <button onClick={() => editarPedido(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Pencil size={15} /></button>
                     <button onClick={() => setPdfModal(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><FileText size={15} /></button>
                     <button onClick={() => excluirPedido(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-red-500 transition-colors"><Trash2 size={15} /></button>
-                    <div className="relative" ref={popoverAberto === p.id ? popoverRef : null}>
-                      <button onClick={() => setPopoverAberto(popoverAberto === p.id ? null : p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Edit2 size={15} /></button>
-                      {popoverAberto === p.id && (
-                        <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-brand-border rounded-xl shadow-card-hover z-30 overflow-hidden">
-                          {TODOS_STATUS.map(s => {
-                            const cfg = STATUS_CONFIG[s]
-                            return (
-                              <button key={s} onClick={() => alterarStatus(p.id, s)} className="w-full flex items-center gap-2 px-3 py-2.5 text-xs hover:bg-brand-bg transition-colors text-left">
-                                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
-                                <span className="flex-1" style={{ color: cfg.color }}>{cfg.label}</span>
-                                {p.status === s && <Check size={12} className="text-gold-primary" />}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
                     <button onClick={() => whatsappRapido(p)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><MessageCircle size={15} /></button>
                   </div>
                 </td>
