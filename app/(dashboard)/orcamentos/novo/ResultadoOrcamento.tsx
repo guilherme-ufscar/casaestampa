@@ -280,7 +280,9 @@ export default function ResultadoOrcamento() {
         <div key={i} className="card-base p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-semibold text-text-primary">{a.nomeAmbiente || `Ambiente ${i + 1}`}</p>
-            <p className="text-2xl font-extrabold text-text-primary">{fmt(a.precoFinalVenda)}</p>
+            {produto !== 'papel_parede' && (
+              <p className="text-2xl font-extrabold text-text-primary">{fmt(a.precoFinalVenda)}</p>
+            )}
           </div>
           <div className="flex gap-4 text-sm text-text-secondary">
             {produto === 'papel_parede' ? (
@@ -302,9 +304,10 @@ export default function ResultadoOrcamento() {
 
       {/* Total */}
       <div className="p-6 rounded-2xl text-center" style={{ background: 'linear-gradient(135deg, #FFFBF2, #FFF8EC)', border: '1px solid #E8C97A' }}>
-        <p className="text-[11px] font-semibold text-gold-dark uppercase tracking-widest mb-1">Valor Total</p>
+        <p className="text-[11px] font-semibold text-gold-dark uppercase tracking-widest mb-1">Valor do Orçamento</p>
         <p className="text-5xl font-extrabold text-text-primary">{fmt(res.totalPrecoFinalVenda)}</p>
-        <p className="text-xs text-text-muted mt-2">em até 10x sem juros</p>
+        <p className="text-sm font-medium text-text-secondary mt-1">à vista</p>
+        <p className="text-xs text-text-muted mt-2">ou 10x sem juros de {fmt(res.totalPrecoFinalVenda / 10)}</p>
       </div>
 
       {/* Opções do PDF para papel de parede */}
