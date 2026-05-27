@@ -199,6 +199,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       fator_varao: parseFloat(configMap.fator_varao ?? '1.5'),
     }
 
+    // Buscar comissão do vendedor e verificar arquiteto
+    const vendedor = await prisma.user.findUnique({ where: { id: session.user.id }, select: { comissao: true } })
+    const comissaoVendedor = vendedor?.comissao ? Number(vendedor.comissao) : null
+
+    let clienteTemArquiteto = false
+    if (clienteId) {
+      const clienteDb = await prisma.cliente.findUnique({ where: { id: clienteId }, select: { arquiteto: true } })
+      clienteTemArquiteto = Boolean(clienteDb?.arquiteto)
+    }
+
+    if (comissaoVendedor !== null) configs.comissao_padrao = comissaoVendedor
+    if (!clienteTemArquiteto) configs.rt_padrao = 0
+
     const resultado = calcularOrcamento(ambientes, configs)
 
     const orcamento = await prisma.orcamento.update({
@@ -259,19 +272,52 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const isAdmin = session.user.role === 'ADMIN'
 
+    const detalhesFinanceiros = {
+      ambientes: resultado.ambientes.map(a => ({
+        nomeAmbiente: a.nomeAmbiente,
+        quantidadeTecido: a.quantidadeTecido,
+        quantidadeBlackout: a.quantidadeBlackout,
+        precisaTecidoExtra: a.precisaTecidoExtra,
+        bainhaDisponivel: a.bainhaDisponivel,
+        bainhaAlerta: a.bainhaAlerta,
+        precoFinalVenda: a.precoFinalVenda,
+        custoTecido: a.custoTecido,
+        custoBlackout: a.custoBlackout,
+        custoConfeccao: a.custoConfeccao,
+        custoInstalacao: a.custoInstalacao,
+        custoTotal: a.custoTotal,
+        precoComMarkup: a.precoComMarkup,
+        valorRt: a.valorRt,
+        valorComissao: a.valorComissao,
+        markup: a.markup,
+        margem: a.margem,
+      })),
+      totalPrecoFinalVenda: resultado.totalPrecoFinalVenda,
+      totalCusto: resultado.totalCusto,
+      totalComissao: resultado.totalComissao,
+      totalRt: resultado.totalRt,
+      totalMargem: resultado.totalMargem,
+      comissaoVendedor,
+      clienteTemArquiteto,
+    }
+
     return NextResponse.json({
       orcamento,
-      resultado: isAdmin ? resultado : {
-        ambientes: resultado.ambientes.map(a => ({
-          nomeAmbiente: a.nomeAmbiente,
-          quantidadeTecido: a.quantidadeTecido,
-          quantidadeBlackout: a.quantidadeBlackout,
-          precisaTecidoExtra: a.precisaTecidoExtra,
-          bainhaDisponivel: a.bainhaDisponivel,
-          bainhaAlerta: a.bainhaAlerta,
-          precoFinalVenda: a.precoFinalVenda,
+      resultado: isAdmin ? detalhesFinanceiros : {
+        ...detalhesFinanceiros,
+        ambientes: detalhesFinanceiros.ambientes.map(a => ({
+          ...a,
+          margem: undefined,
+          custoTecido: undefined,
+          custoBlackout: undefined,
+          custoConfeccao: undefined,
+          custoInstalacao: undefined,
+          custoTotal: undefined,
+          precoComMarkup: undefined,
+          markup: undefined,
         })),
-        totalPrecoFinalVenda: resultado.totalPrecoFinalVenda,
+        totalCusto: undefined,
+        totalMargem: undefined,
       },
     })
   } catch (error) {

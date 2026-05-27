@@ -1,3 +1,4 @@
 ALTER TABLE "PapelParede" ALTER COLUMN "referencia" DROP NOT NULL;
 ALTER TABLE "PapelParede" ADD COLUMN IF NOT EXISTS "categoria" TEXT;
 ALTER TABLE "AmbientePapelOrcamento" ADD COLUMN IF NOT EXISTS "referenciaDigitada" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "comissao" DECIMAL(5,2);

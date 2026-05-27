@@ -10,7 +10,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  const { nome, email, senha, role, ativo } = await req.json()
+  const { nome, email, senha, role, ativo, comissao } = await req.json()
 
   // Admin não pode desativar a si mesmo
   if (params.id === session.user.id && ativo === false) {
@@ -22,13 +22,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (email) data.email = email
   if (role) data.role = role
   if (ativo !== undefined) data.ativo = ativo
+  if (comissao !== undefined) data.comissao = comissao
   if (senha) data.senha = await bcrypt.hash(senha, 12)
 
   const usuario = await prisma.user.update({
     where: { id: params.id },
     data,
-    select: { id: true, nome: true, email: true, role: true, ativo: true, createdAt: true },
+    select: { id: true, nome: true, email: true, role: true, ativo: true, comissao: true, createdAt: true },
   })
 
-  return NextResponse.json(usuario)
+  return NextResponse.json({ ...usuario, comissao: usuario.comissao ? Number(usuario.comissao) : null })
 }

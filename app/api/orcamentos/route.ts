@@ -199,17 +199,38 @@ export async function POST(req: NextRequest) {
 
   const resultado = calcularOrcamento(ambientes, configs)
 
+  // Buscar comissão do vendedor e verificar se cliente tem arquiteto
+  const vendedor = await prisma.user.findUnique({ where: { id: session.user.id }, select: { comissao: true } })
+  const comissaoVendedor = vendedor?.comissao ? Number(vendedor.comissao) : null
+
+  // Verificar se cliente tem arquiteto (para RT condicional)
+  let clienteTemArquiteto = false
+  if (clienteId) {
+    const clienteDb = await prisma.cliente.findUnique({ where: { id: clienteId }, select: { arquiteto: true } })
+    clienteTemArquiteto = Boolean(clienteDb?.arquiteto)
+  }
+
+  // Recalcular com comissão do vendedor e RT condicional se necessário
+  const configsAjustadas = { ...configs }
+  if (comissaoVendedor !== null) {
+    configsAjustadas.comissao_padrao = comissaoVendedor
+  }
+  if (!clienteTemArquiteto) {
+    configsAjustadas.rt_padrao = 0
+  }
+  const resultadoFinal = calcularOrcamento(ambientes, configsAjustadas)
+
   const orcamento = await prisma.orcamento.create({
     data: {
       clienteId: clienteId || null,
       vendedorId: session.user.id,
       status: 'orcamento_enviado',
-      precoFinalTotal: resultado.totalPrecoFinalVenda,
+      precoFinalTotal: resultadoFinal.totalPrecoFinalVenda,
       token,
       tokenExpiresAt,
       ambientes: {
         create: ambientes.map((a, i) => {
-          const r = resultado.ambientes[i]
+          const r = resultadoFinal.ambientes[i]
           const comprimentoTrilho = a.trilhoValorUnitario
             ? Math.ceil(a.largura * 2) / 2
             : null
@@ -252,25 +273,61 @@ export async function POST(req: NextRequest) {
       orcamentoId: orcamento.id,
       usuarioId: session.user.id,
       acao: 'orcamento_criado',
-      detalhes: { totalAmbientes: ambientes.length, precoFinalTotal: resultado.totalPrecoFinalVenda },
+      detalhes: { totalAmbientes: ambientes.length, precoFinalTotal: resultadoFinal.totalPrecoFinalVenda },
     },
   })
 
   const isAdmin = session.user.role === 'ADMIN'
 
+  // Detalhes financeiros expandidos para admin e vendedor logado
+  const detalhesFinanceiros = {
+    ambientes: resultadoFinal.ambientes.map(a => ({
+      nomeAmbiente: a.nomeAmbiente,
+      quantidadeTecido: a.quantidadeTecido,
+      quantidadeBlackout: a.quantidadeBlackout,
+      precisaTecidoExtra: a.precisaTecidoExtra,
+      bainhaDisponivel: a.bainhaDisponivel,
+      bainhaAlerta: a.bainhaAlerta,
+      precoFinalVenda: a.precoFinalVenda,
+      // Detalhes financeiros
+      custoTecido: a.custoTecido,
+      custoBlackout: a.custoBlackout,
+      custoConfeccao: a.custoConfeccao,
+      custoInstalacao: a.custoInstalacao,
+      custoTotal: a.custoTotal,
+      precoComMarkup: a.precoComMarkup,
+      valorRt: a.valorRt,
+      valorComissao: a.valorComissao,
+      markup: a.markup,
+      margem: a.margem,
+    })),
+    totalPrecoFinalVenda: resultadoFinal.totalPrecoFinalVenda,
+    totalCusto: resultadoFinal.totalCusto,
+    totalComissao: resultadoFinal.totalComissao,
+    totalRt: resultadoFinal.totalRt,
+    totalMargem: resultadoFinal.totalMargem,
+    comissaoVendedor: comissaoVendedor,
+    clienteTemArquiteto,
+  }
+
   return NextResponse.json({
     orcamento,
-    resultado: isAdmin ? resultado : {
-      ambientes: resultado.ambientes.map(a => ({
-        nomeAmbiente: a.nomeAmbiente,
-        quantidadeTecido: a.quantidadeTecido,
-        quantidadeBlackout: a.quantidadeBlackout,
-        precisaTecidoExtra: a.precisaTecidoExtra,
-        bainhaDisponivel: a.bainhaDisponivel,
-        bainhaAlerta: a.bainhaAlerta,
-        precoFinalVenda: a.precoFinalVenda,
+    resultado: isAdmin ? detalhesFinanceiros : {
+      ...detalhesFinanceiros,
+      // Vendedor vê comissão dele mas não vê margem
+      ambientes: detalhesFinanceiros.ambientes.map(a => ({
+        ...a,
+        margem: undefined,
+        custoTecido: undefined,
+        custoBlackout: undefined,
+        custoConfeccao: undefined,
+        custoInstalacao: undefined,
+        custoTotal: undefined,
+        precoComMarkup: undefined,
+        markup: undefined,
       })),
-      totalPrecoFinalVenda: resultado.totalPrecoFinalVenda,
+      totalCusto: undefined,
+      totalMargem: undefined,
     },
   }, { status: 201 })
   } catch (error) {

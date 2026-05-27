@@ -26,9 +26,17 @@ type ResultadoAmbientePublico = {
   bainhaDisponivel: number
   bainhaAlerta: string | null
   precoFinalVenda: number
+  metrosQuadrados?: number
+  quantidadeRolos?: number
+  valorRt?: number
+  valorComissao?: number
 }
 
 type ResultadoAdminAmbiente = ResultadoAmbientePublico & {
+  custoTecido: number
+  custoBlackout: number
+  custoConfeccao: number
+  custoInstalacao: number
   custoTotal: number
   precoComMarkup: number
   valorRt: number
@@ -46,6 +54,8 @@ type ResultadoAPI = {
     totalComissao?: number
     totalRt?: number
     totalMargem?: number
+    comissaoVendedor?: number | null
+    clienteTemArquiteto?: boolean
   }
 }
 
@@ -359,7 +369,7 @@ export default function ResultadoOrcamento() {
         </button>
       </div>
 
-      {/* Painel admin */}
+      {/* Painel admin — detalhes financeiros */}
       {isAdmin && res.totalCusto !== undefined && (
         <div className="rounded-xl overflow-hidden border border-brand-border">
           <button
@@ -376,20 +386,46 @@ export default function ResultadoOrcamento() {
                 <div key={i} className="space-y-2">
                   <p className="text-xs font-semibold text-text-primary">{a.nomeAmbiente || `Ambiente ${i + 1}`}</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
+                    <span className="text-text-muted">Valor do tecido: <strong className="text-text-primary">{fmt(a.custoTecido + (a.custoBlackout || 0))}</strong></span>
+                    <span className="text-text-muted">Valor da confecção: <strong className="text-text-primary">{fmt(a.custoConfeccao)}</strong></span>
+                    <span className="text-text-muted">Valor do trilho: <strong className="text-text-primary">{fmt(a.custoTotal - a.custoTecido - a.custoBlackout - a.custoConfeccao - a.custoInstalacao)}</strong></span>
+                    <span className="text-text-muted">Valor da instalação: <strong className="text-text-primary">{fmt(a.custoInstalacao)}</strong></span>
                     <span className="text-text-muted">Custo total: <strong className="text-text-primary">{fmt(a.custoTotal)}</strong></span>
                     <span className="text-text-muted">Markup ({a.markup}%): <strong className="text-text-primary">{fmt(a.precoComMarkup)}</strong></span>
-                    <span className="text-text-muted">RT: <strong className="text-text-primary">{fmt(a.valorRt)}</strong></span>
-                    <span className="text-text-muted">Comissão: <strong className="text-text-primary">{fmt(a.valorComissao)}</strong></span>
-                    <span className="text-text-muted">Margem: <strong className="text-green-600">{fmt(a.margem)}</strong></span>
+                    {res.clienteTemArquiteto && (
+                      <span className="text-text-muted">RT: <strong className="text-text-primary">{fmt(a.valorRt)}</strong></span>
+                    )}
+                    <span className="text-text-muted">Comissão{res.comissaoVendedor ? ` (${res.comissaoVendedor}%)` : ''}: <strong className="text-text-primary">{fmt(a.valorComissao)}</strong></span>
+                    <span className="text-text-muted">Margem (à vista): <strong className="text-green-600">{fmt(a.margem)}</strong></span>
+                    <span className="text-text-muted">Margem (10x cartão): <strong className="text-green-600">{fmt(a.margem - a.precoFinalVenda * 0.1106)}</strong></span>
                   </div>
                 </div>
               ))}
               <div className="pt-3 border-t border-brand-border grid grid-cols-2 gap-2 text-xs">
                 <span className="text-text-muted">Custo total geral: <strong className="text-text-primary">{fmt(res.totalCusto!)}</strong></span>
                 <span className="text-text-muted">Comissão total: <strong className="text-text-primary">{fmt(res.totalComissao!)}</strong></span>
-                <span className="text-text-muted">RT total: <strong className="text-text-primary">{fmt(res.totalRt!)}</strong></span>
-                <span className="text-text-muted">Margem total: <strong className="text-green-600">{fmt(res.totalMargem!)}</strong></span>
+                {res.clienteTemArquiteto && (
+                  <span className="text-text-muted">RT total: <strong className="text-text-primary">{fmt(res.totalRt!)}</strong></span>
+                )}
+                <span className="text-text-muted">Margem total (à vista): <strong className="text-green-600">{fmt(res.totalMargem!)}</strong></span>
+                <span className="text-text-muted">Margem total (10x cartão): <strong className="text-green-600">{fmt(res.totalMargem! - res.totalPrecoFinalVenda * 0.1106)}</strong></span>
               </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Painel vendedor — comissão */}
+      {!isAdmin && res.totalComissao !== undefined && res.totalComissao > 0 && (
+        <div className="card-base p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-text-secondary">Sua comissão neste orçamento</span>
+            <span className="text-lg font-bold text-gold-primary">{fmt(res.totalComissao)}</span>
+          </div>
+          {res.clienteTemArquiteto && res.totalRt !== undefined && res.totalRt > 0 && (
+            <div className="flex items-center justify-between mt-1">
+              <span className="text-sm text-text-secondary">RT (arquiteto)</span>
+              <span className="text-sm font-medium text-text-primary">{fmt(res.totalRt)}</span>
             </div>
           )}
         </div>

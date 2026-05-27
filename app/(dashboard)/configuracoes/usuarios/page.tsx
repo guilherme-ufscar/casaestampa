@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { UserPlus, Pencil, Check, X, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
-type Usuario = { id: string; nome: string; email: string; role: string; ativo: boolean; createdAt: string }
+type Usuario = { id: string; nome: string; email: string; role: string; ativo: boolean; comissao: number | null; createdAt: string }
 
 export default function UsuariosPage() {
   const { data: session } = useSession()
@@ -13,7 +13,7 @@ export default function UsuariosPage() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editando, setEditando] = useState<Usuario | null>(null)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ nome: '', email: '', senha: '', role: 'VENDEDOR', ativo: true })
+  const [form, setForm] = useState({ nome: '', email: '', senha: '', role: 'VENDEDOR', ativo: true, comissao: '' })
   const [erro, setErro] = useState('')
 
   const fetchUsuarios = useCallback(async () => {
@@ -27,14 +27,14 @@ export default function UsuariosPage() {
 
   function abrirNovo() {
     setEditando(null)
-    setForm({ nome: '', email: '', senha: '', role: 'VENDEDOR', ativo: true })
+    setForm({ nome: '', email: '', senha: '', role: 'VENDEDOR', ativo: true, comissao: '' })
     setErro('')
     setDrawerOpen(true)
   }
 
   function abrirEditar(u: Usuario) {
     setEditando(u)
-    setForm({ nome: u.nome, email: u.email, senha: '', role: u.role, ativo: u.ativo })
+    setForm({ nome: u.nome, email: u.email, senha: '', role: u.role, ativo: u.ativo, comissao: u.comissao != null ? String(u.comissao) : '' })
     setErro('')
     setDrawerOpen(true)
   }
@@ -47,6 +47,8 @@ export default function UsuariosPage() {
     try {
       const payload: Record<string, unknown> = { nome: form.nome, email: form.email, role: form.role, ativo: form.ativo }
       if (form.senha) payload.senha = form.senha
+      if (form.comissao) payload.comissao = parseFloat(form.comissao)
+      else payload.comissao = null
       const url = editando ? `/api/usuarios/${editando.id}` : '/api/usuarios'
       const method = editando ? 'PUT' : 'POST'
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -150,6 +152,11 @@ export default function UsuariosPage() {
                   <option value="VENDEDOR">Vendedor</option>
                   <option value="ADMIN">Admin</option>
                 </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Comissão (%)</label>
+                <input type="number" step="0.5" min="0" max="100" value={form.comissao} onChange={e => setForm(p => ({ ...p, comissao: e.target.value }))} placeholder="Ex: 8" className="input-base" />
+                <p className="text-[10px] text-text-muted">Percentual de comissão individual. Se vazio, usa o padrão do sistema.</p>
               </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm font-medium text-text-primary">Ativo</span>

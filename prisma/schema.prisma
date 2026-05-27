@@ -54,6 +54,7 @@ model User {
   email     String   @unique
   senha     String
   role      Role     @default(VENDEDOR)
+  comissao  Decimal? @db.Decimal(5, 2)
   ativo     Boolean  @default(true)
   createdAt DateTime @default(now())
 
