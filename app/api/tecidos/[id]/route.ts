@@ -10,7 +10,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const body = await req.json()
-  const { nome, larguraMaxima, valorMetro, tipo, ativo } = body
+  const { nome, larguraMaxima, valorMetro, tipo, ativo, categoria } = body
 
   const tecido = await prisma.tecido.update({
     where: { id: params.id },
@@ -20,6 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       ...(valorMetro && { valorMetro: parseFloat(valorMetro) }),
       ...(tipo && { tipo }),
       ...(ativo !== undefined && { ativo }),
+      ...(categoria !== undefined && { categoria: categoria || null }),
     },
   })
 

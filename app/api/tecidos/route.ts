@@ -21,14 +21,14 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { nome, larguraMaxima, valorMetro, tipo, ativo } = body
+  const { nome, larguraMaxima, valorMetro, tipo, ativo, categoria } = body
 
   if (!nome || !larguraMaxima || !valorMetro || !tipo) {
     return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 })
   }
 
   const tecido = await prisma.tecido.create({
-    data: { nome, larguraMaxima: parseFloat(larguraMaxima), valorMetro: parseFloat(valorMetro), tipo, ativo: ativo ?? true },
+    data: { nome, larguraMaxima: parseFloat(larguraMaxima), valorMetro: parseFloat(valorMetro), tipo, ativo: ativo ?? true, categoria: categoria || null },
   })
 
   return NextResponse.json(tecido, { status: 201 })

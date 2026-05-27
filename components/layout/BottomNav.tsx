@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { LayoutDashboard, FileText, Users, ShoppingBag, Settings } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, ShoppingBag, Settings, Table2 } from 'lucide-react'
 
 export default function BottomNav() {
   const pathname = usePathname()
@@ -15,6 +15,7 @@ export default function BottomNav() {
     { href: '/orcamentos/novo', label: 'Orçamento', icon: FileText },
     { href: '/clientes', label: 'Clientes', icon: Users },
     { href: '/painel-pedidos', label: 'Pedidos', icon: ShoppingBag },
+    { href: '/tabelas', label: 'Tabelas', icon: Table2 },
     ...(isAdmin ? [{ href: '/configuracoes', label: 'Config', icon: Settings }] : []),
   ]
 

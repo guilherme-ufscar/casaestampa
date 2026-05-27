@@ -80,6 +80,7 @@ model Tecido {
   larguraMaxima Decimal    @db.Decimal(5, 2)
   valorMetro    Decimal    @db.Decimal(10, 2)
   tipo          TipoTecido
+  categoria     String?
   ativo         Boolean    @default(true)
   favorito      Boolean    @default(false)
 

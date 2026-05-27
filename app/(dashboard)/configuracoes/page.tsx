@@ -9,6 +9,7 @@ type Tecido = {
   larguraMaxima: number
   valorMetro: number
   tipo: 'PRINCIPAL' | 'BLACKOUT' | 'DECORACAO'
+  categoria: string | null
   ativo: boolean
   favorito: boolean
 }
@@ -355,6 +356,7 @@ export default function ConfiguracoesPage() {
     valorMetro: '',
     valorUnitario: '',
     tipo: 'PRINCIPAL' as 'PRINCIPAL' | 'BLACKOUT' | 'DECORACAO',
+    categoria: '',
     ativo: true,
   })
 
@@ -388,15 +390,16 @@ export default function ConfiguracoesPage() {
           valorMetro: String(t.valorMetro),
           valorUnitario: '',
           tipo: t.tipo,
+          categoria: t.categoria ?? '',
           ativo: t.ativo,
         })
       } else {
         const tr = item as Trilho
-        setForm({ nome: tr.nome, larguraMaxima: '2.80', larguraCustom: '', valorMetro: '', valorUnitario: String(tr.valorUnitario), tipo: 'PRINCIPAL', ativo: tr.ativo })
+        setForm({ nome: tr.nome, larguraMaxima: '2.80', larguraCustom: '', valorMetro: '', valorUnitario: String(tr.valorUnitario), tipo: 'PRINCIPAL', categoria: '', ativo: tr.ativo })
       }
     } else {
       setEditingId(null)
-      setForm({ nome: '', larguraMaxima: '2.80', larguraCustom: '', valorMetro: '', valorUnitario: '', tipo: tipo === 'tecido' ? (aba === 'blackouts' ? 'BLACKOUT' : aba === 'decoracao' ? 'DECORACAO' : 'PRINCIPAL') : 'PRINCIPAL', ativo: true })
+      setForm({ nome: '', larguraMaxima: '2.80', larguraCustom: '', valorMetro: '', valorUnitario: '', tipo: tipo === 'tecido' ? (aba === 'blackouts' ? 'BLACKOUT' : aba === 'decoracao' ? 'DECORACAO' : 'PRINCIPAL') : 'PRINCIPAL', categoria: '', ativo: true })
     }
     setDrawerOpen(true)
   }
@@ -406,7 +409,7 @@ export default function ConfiguracoesPage() {
     const largura = form.larguraMaxima === 'personalizado' ? form.larguraCustom : form.larguraMaxima
     try {
       if (drawerTipo === 'tecido') {
-        const payload = { nome: form.nome, larguraMaxima: largura, valorMetro: form.valorMetro, tipo: form.tipo, ativo: form.ativo }
+        const payload = { nome: form.nome, larguraMaxima: largura, valorMetro: form.valorMetro, tipo: form.tipo, categoria: form.categoria || null, ativo: form.ativo }
         if (drawerMode === 'create') {
           await fetch('/api/tecidos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
         } else {
@@ -866,6 +869,10 @@ export default function ConfiguracoesPage() {
                       <option value="BLACKOUT">Blackout</option>
                       <option value="DECORACAO">Decoração</option>
                     </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Categoria / Fornecedor</label>
+                    <input type="text" value={form.categoria} onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))} className="input-base" placeholder="Ex: Deccor Casa, Persianas Amorim" />
                   </div>
                 </>
               )}

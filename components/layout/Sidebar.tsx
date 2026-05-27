@@ -25,7 +25,7 @@ const navVendedor = [
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/painel-pedidos', label: 'Painel de Pedidos', icon: ShoppingBag },
   { href: '/painel-pedidos?status=pronto', label: 'Instalações Agendadas', icon: CalendarCheck },
-  { href: '/configuracoes/tabelas', label: 'Tabelas de Preço', icon: Table2 },
+  { href: '/tabelas', label: 'Tabelas', icon: Table2 },
 ]
 
 const navAdmin = [
@@ -35,6 +35,7 @@ const navAdmin = [
   { href: '/arquitetos', label: 'Arquitetos', icon: Users },
   { href: '/painel-pedidos', label: 'Painel de Pedidos', icon: ShoppingBag },
   { href: '/painel-pedidos?status=pronto', label: 'Instalações Agendadas', icon: CalendarCheck },
+  { href: '/tabelas', label: 'Tabelas', icon: Table2 },
   { href: '/fornecedores', label: 'Fornecedores', icon: Truck },
 ]
 
