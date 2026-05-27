@@ -125,7 +125,6 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
   const mostrarBainha = orc.mostrarBainha !== false
   const mostrarPapelMetragem = orc.mostrarPapelMetragem !== false
   const mostrarPapelRolos = orc.mostrarPapelRolos !== false
-  const valorParcela = orc.precoFinalTotal / 10
   const condicoes = orc.condicoesComerciais || 'Prazo de 20 dias úteis para confecção. Trilho e instalação inclusos quando previstos no orçamento.'
   const telefone = orc.telefoneEmpresa || ''
 
@@ -198,7 +197,7 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
           <Text style={s.totalLabel}>Valor do Orçamento</Text>
           <Text style={s.totalValue}>{fmt(orc.precoFinalTotal)}</Text>
           <Text style={s.totalParc}>à vista</Text>
-          <Text style={[s.totalParc, { marginTop: 4 }]}>ou 10x sem juros de {fmt(valorParcela)}</Text>
+          <Text style={[s.totalParc, { marginTop: 4 }]}>ou 10x de {fmt(orc.precoFinalTotal * 1.1106 / 10)}</Text>
         </View>
 
         <Text style={s.sectionTitle}>Condições Comerciais</Text>

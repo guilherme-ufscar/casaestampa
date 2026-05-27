@@ -307,7 +307,7 @@ export default function ResultadoOrcamento() {
         <p className="text-[11px] font-semibold text-gold-dark uppercase tracking-widest mb-1">Valor do Orçamento</p>
         <p className="text-5xl font-extrabold text-text-primary">{fmt(res.totalPrecoFinalVenda)}</p>
         <p className="text-sm font-medium text-text-secondary mt-1">à vista</p>
-        <p className="text-xs text-text-muted mt-2">ou 10x sem juros de {fmt(res.totalPrecoFinalVenda / 10)}</p>
+        <p className="text-xs text-text-muted mt-2">ou 10x de {fmt(res.totalPrecoFinalVenda * 1.1106 / 10)}</p>
       </div>
 
       {/* Opções do PDF para papel de parede */}

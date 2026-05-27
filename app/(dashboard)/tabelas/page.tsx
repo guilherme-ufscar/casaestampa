@@ -77,9 +77,8 @@ export default function TabelasPage() {
 
   const abas = useMemo(() => {
     const all = [...categoriasTecido, ...categoriasPapel, 'Trilhos']
-    if (tecidosAtivos.some(t => !t.categoria)) all.splice(categoriasTecido.length, 0, 'Sem categoria')
     return all
-  }, [categoriasTecido, categoriasPapel, tecidosAtivos])
+  }, [categoriasTecido, categoriasPapel])
 
   useEffect(() => {
     if (!abaAtiva && abas.length > 0) {
@@ -90,27 +89,46 @@ export default function TabelasPage() {
   const itensFiltrados = useMemo(() => {
     const termo = busca.toLowerCase().trim()
 
+    if (termo) {
+      const tecidosMatch = tecidosAtivos.filter(t => t.nome.toLowerCase().includes(termo))
+      const trilhosMatch = trilhosAtivos.filter(t => t.nome.toLowerCase().includes(termo))
+      const papeisMatch = papeisAtivos.filter(p => p.album.toLowerCase().includes(termo) || (p.referencia?.toLowerCase().includes(termo) ?? false))
+
+      if (abaAtiva === 'Trilhos' && trilhosMatch.length > 0) {
+        return { tipo: 'trilhos' as const, items: trilhosMatch }
+      }
+      if (abaAtiva.startsWith('Papel: ') && papeisMatch.length > 0) {
+        return { tipo: 'papeis' as const, items: papeisMatch }
+      }
+      if (!abaAtiva.startsWith('Papel: ') && abaAtiva !== 'Trilhos' && tecidosMatch.length > 0) {
+        return { tipo: 'tecidos' as const, items: tecidosMatch }
+      }
+
+      if (papeisMatch.length > 0) return { tipo: 'papeis' as const, items: papeisMatch }
+      if (tecidosMatch.length > 0) return { tipo: 'tecidos' as const, items: tecidosMatch }
+      if (trilhosMatch.length > 0) return { tipo: 'trilhos' as const, items: trilhosMatch }
+
+      if (abaAtiva === 'Trilhos') return { tipo: 'trilhos' as const, items: [] }
+      if (abaAtiva.startsWith('Papel: ')) return { tipo: 'papeis' as const, items: [] }
+      return { tipo: 'tecidos' as const, items: [] }
+    }
+
     if (abaAtiva === 'Trilhos') {
-      return { tipo: 'trilhos' as const, items: trilhosAtivos.filter(t => !termo || t.nome.toLowerCase().includes(termo)) }
+      return { tipo: 'trilhos' as const, items: trilhosAtivos }
     }
 
     if (abaAtiva.startsWith('Papel: ')) {
       const catPapel = abaAtiva.replace('Papel: ', '')
-      const filtered = papeisAtivos.filter(p => {
-        const catMatch = p.categoria === catPapel
-        const buscaMatch = !termo || p.album.toLowerCase().includes(termo) || (p.referencia?.toLowerCase().includes(termo) ?? false)
-        return catMatch && buscaMatch
-      })
+      const filtered = papeisAtivos.filter(p => p.categoria === catPapel)
       return { tipo: 'papeis' as const, items: filtered }
     }
 
     const filtered = tecidosAtivos.filter(t => {
-      const catMatch = abaAtiva === 'Sem categoria' ? !t.categoria : t.categoria === abaAtiva
-      const buscaMatch = !termo || t.nome.toLowerCase().includes(termo)
-      return catMatch && buscaMatch
+      const catMatch = t.categoria === abaAtiva || (!t.categoria && abaAtiva === categoriasTecido[0])
+      return catMatch
     })
     return { tipo: 'tecidos' as const, items: filtered }
-  }, [abaAtiva, busca, tecidosAtivos, trilhosAtivos, papeisAtivos])
+  }, [abaAtiva, busca, tecidosAtivos, trilhosAtivos, papeisAtivos, categoriasTecido])
 
   if (loading) {
     return (
