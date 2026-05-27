@@ -70,7 +70,9 @@ export default function ResultadoOrcamento() {
   const { data: session } = useSession()
   const {
     cliente,
+    produto,
     ambientes,
+    ambientesPapel,
     setAmbientes,
     setAmbienteAtual,
     setEtapa,
@@ -94,9 +96,23 @@ export default function ResultadoOrcamento() {
   useEffect(() => {
     async function salvar() {
       try {
-        const payload = {
+        const payload: Record<string, unknown> = {
           clienteId: cliente?.id ?? undefined,
-          ambientes: ambientes.map(a => ({
+          produto,
+        }
+
+        if (produto === 'papel_parede') {
+          payload.ambientesPapel = ambientesPapel.map(a => ({
+            nomeAmbiente: a.nomeAmbiente,
+            papelId: a.papelId,
+            medicoes: a.medicoes
+              .filter(m => parseFloat(m.largura) > 0 && parseFloat(m.altura) > 0)
+              .map(m => ({ largura: parseFloat(m.largura), altura: parseFloat(m.altura), m2: parseFloat(m.largura) * parseFloat(m.altura) })),
+            observacoes: a.observacoes || null,
+          }))
+          payload.ambientes = []
+        } else {
+          payload.ambientes = ambientes.map(a => ({
             nomeAmbiente: a.nomeAmbiente,
             largura: parseFloat(a.largura),
             altura: parseFloat(a.altura),
@@ -120,7 +136,8 @@ export default function ResultadoOrcamento() {
             trilhoValorUnitario: a.trilhoValorUnitario || null,
             outrosValor: a.outrosValor ? parseFloat(a.outrosValor) : null,
             observacoes: a.observacoes || null,
-          })),
+          }))
+          payload.ambientesPapel = []
         }
 
         const endpoint = modoEdicao && orcamentoId ? `/api/orcamentos/${orcamentoId}` : '/api/orcamentos'
@@ -247,9 +264,18 @@ export default function ResultadoOrcamento() {
             <p className="text-2xl font-extrabold text-text-primary">{fmt(a.precoFinalVenda)}</p>
           </div>
           <div className="flex gap-4 text-sm text-text-secondary">
-            <span>Tecido: <strong className="text-text-primary">{a.quantidadeTecido.toFixed(2)}m</strong></span>
-            {a.quantidadeBlackout && (
-              <span>Blackout: <strong className="text-text-primary">{a.quantidadeBlackout.toFixed(2)}m</strong></span>
+            {produto === 'papel_parede' ? (
+              <>
+                <span>Área: <strong className="text-text-primary">{((a as Record<string, unknown>).metrosQuadrados as number)?.toFixed(2) ?? '—'} m²</strong></span>
+                <span>Rolos: <strong className="text-text-primary">{(a as Record<string, unknown>).quantidadeRolos ?? '—'}</strong></span>
+              </>
+            ) : (
+              <>
+                <span>Tecido: <strong className="text-text-primary">{a.quantidadeTecido.toFixed(2)}m</strong></span>
+                {a.quantidadeBlackout && (
+                  <span>Blackout: <strong className="text-text-primary">{a.quantidadeBlackout.toFixed(2)}m</strong></span>
+                )}
+              </>
             )}
           </div>
         </div>

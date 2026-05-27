@@ -29,6 +29,13 @@ interface OrcamentoHydrated {
     observacoes?: string | null
     blackoutExtra?: boolean
   }>
+  ambientesPapel?: Array<{
+    nomeAmbiente: string
+    papelId: string
+    papel?: { id: string; album: string; referencia: string; dimensao: string; valorRolo: string | number }
+    medicoes: Array<{ largura: number; altura: number; m2: number }>
+    observacoes?: string | null
+  }>
 }
 
 export interface ClienteOrcamento {
@@ -102,6 +109,33 @@ export const ambienteVazio: AmbienteForm = {
   observacoes: '',
 }
 
+export interface MedicaoPapelForm {
+  largura: string
+  altura: string
+}
+
+export interface AmbientePapelForm {
+  nomeAmbiente: string
+  papelId: string
+  papelAlbum: string
+  papelReferencia: string
+  papelDimensao: string
+  papelValorRolo: number
+  medicoes: MedicaoPapelForm[]
+  observacoes: string
+}
+
+export const ambientePapelVazio: AmbientePapelForm = {
+  nomeAmbiente: '',
+  papelId: '',
+  papelAlbum: '',
+  papelReferencia: '',
+  papelDimensao: '',
+  papelValorRolo: 0,
+  medicoes: [{ largura: '', altura: '' }],
+  observacoes: '',
+}
+
 interface OrcamentoContextType {
   etapa: number
   setEtapa: (e: number) => void
@@ -113,6 +147,10 @@ interface OrcamentoContextType {
   setAmbientes: (a: AmbienteForm[]) => void
   ambienteAtual: number
   setAmbienteAtual: (i: number) => void
+  ambientesPapel: AmbientePapelForm[]
+  setAmbientesPapel: (a: AmbientePapelForm[]) => void
+  ambientePapelAtual: number
+  setAmbientePapelAtual: (i: number) => void
   orcamentoId: string | null
   setOrcamentoId: (id: string | null) => void
   orcamentoNumero: number | null
@@ -134,6 +172,8 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
   const [produto, setProduto] = useState('cortina')
   const [ambientes, setAmbientes] = useState<AmbienteForm[]>([{ ...ambienteVazio }])
   const [ambienteAtual, setAmbienteAtual] = useState(0)
+  const [ambientesPapel, setAmbientesPapel] = useState<AmbientePapelForm[]>([{ ...ambientePapelVazio }])
+  const [ambientePapelAtual, setAmbientePapelAtual] = useState(0)
   const [orcamentoId, setOrcamentoId] = useState<string | null>(null)
   const [orcamentoNumero, setOrcamentoNumero] = useState<number | null>(null)
   const [orcamentoToken, setOrcamentoToken] = useState<string | null>(null)
@@ -148,6 +188,8 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
     setProduto('cortina')
     setAmbientes([{ ...ambienteVazio }])
     setAmbienteAtual(0)
+    setAmbientesPapel([{ ...ambientePapelVazio }])
+    setAmbientePapelAtual(0)
     setHidratando(false)
   }
 
@@ -188,13 +230,31 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
         }))
       : [{ ...ambienteVazio }]
 
+    const ambientesPapelHydratados: AmbientePapelForm[] = (orcamento.ambientesPapel && orcamento.ambientesPapel.length > 0)
+      ? orcamento.ambientesPapel.map(a => ({
+          ...ambientePapelVazio,
+          nomeAmbiente: a.nomeAmbiente ?? '',
+          papelId: a.papelId,
+          papelAlbum: a.papel?.album ?? '',
+          papelReferencia: a.papel?.referencia ?? '',
+          papelDimensao: a.papel?.dimensao ?? '',
+          papelValorRolo: Number(a.papel?.valorRolo ?? 0),
+          medicoes: a.medicoes.map(m => ({ largura: String(m.largura), altura: String(m.altura) })),
+          observacoes: a.observacoes ?? '',
+        }))
+      : [{ ...ambientePapelVazio }]
+
+    const temPapel = orcamento.ambientesPapel && orcamento.ambientesPapel.length > 0
+
     setOrcamentoId(orcamento.id)
     setOrcamentoNumero(orcamento.numero)
     setOrcamentoToken(orcamento.token ?? null)
     setCliente(orcamento.cliente)
-    setProduto('cortina')
+    setProduto(temPapel ? 'papel_parede' : 'cortina')
     setAmbientes(ambientesHydratados)
     setAmbienteAtual(0)
+    setAmbientesPapel(ambientesPapelHydratados)
+    setAmbientePapelAtual(0)
     setEtapa(2)
     setHidratando(false)
   }
@@ -210,6 +270,8 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
       produto, setProduto,
       ambientes, setAmbientes,
       ambienteAtual, setAmbienteAtual,
+      ambientesPapel, setAmbientesPapel,
+      ambientePapelAtual, setAmbientePapelAtual,
       orcamentoId, setOrcamentoId,
       orcamentoNumero, setOrcamentoNumero,
       orcamentoToken, setOrcamentoToken,

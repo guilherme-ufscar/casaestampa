@@ -21,7 +21,7 @@ const produtos = [
     id: 'papel_parede',
     nome: 'Papel de Parede',
     descricao: 'Papéis de parede nacionais e importados com cálculo de rolos.',
-    disponivel: false,
+    disponivel: true,
   },
 ]
 
@@ -103,10 +103,10 @@ export default function Etapa2Produto() {
           </button>
           <button
             onClick={() => setEtapa(3)}
-            disabled={produto !== 'cortina'}
+            disabled={!produto || !produtos.find(p => p.id === produto)?.disponivel}
             className="btn-gold flex items-center gap-2 px-6 py-2.5 rounded-[10px] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Próximo — Detalhes da Cortina
+            Próximo — {produto === 'papel_parede' ? 'Detalhes do Papel' : 'Detalhes da Cortina'}
             <ChevronRight size={16} />
           </button>
         </div>

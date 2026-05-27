@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { calcularOrcamento, AmbienteInput, Configuracoes } from '@/lib/calculoCortina'
+import { calcularAmbientePapel, ConfigsPapel } from '@/lib/calculoPapelParede'
 
 function ambienteValido(ambiente: AmbienteInput & { tecidoId?: string; blackoutId?: string; blackout?: { id: string } | null }) {
   return Boolean(
@@ -27,6 +28,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       ambientes: {
         include: { tecido: true, blackout: true, trilhoVarao: true, instalador: true },
       },
+      ambientesPapel: { include: { papel: true } },
     },
   })
 
@@ -55,9 +57,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const body = await req.json()
-    const { clienteId, ambientes } = body as {
+    const { clienteId, ambientes, ambientesPapel, produto } = body as {
       clienteId?: string
-      ambientes: (AmbienteInput & {
+      produto?: string
+      ambientes?: (AmbienteInput & {
         tecidoId: string
         blackoutId?: string
         trilhoTipo?: 'trilho_suico' | 'varao'
@@ -69,8 +72,100 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         blackoutExtra?: boolean
         instaladorId?: string | null
       })[]
+      ambientesPapel?: {
+        nomeAmbiente: string
+        papelId: string
+        medicoes: { largura: number; altura: number; m2: number }[]
+        observacoes?: string | null
+      }[]
     }
 
+    const configsRaw = await prisma.configuracaoCalculo.findMany()
+    const configMap: Record<string, string> = {}
+    for (const c of configsRaw) configMap[c.chave] = c.valor
+
+    // --- Papel de Parede ---
+    if (produto === 'papel_parede' && ambientesPapel?.length) {
+      const configsPapel: ConfigsPapel = {
+        markup_padrao: parseFloat(configMap.markup_padrao ?? '40'),
+        comissao_padrao: parseFloat(configMap.comissao_padrao ?? '8'),
+        rt_padrao: parseFloat(configMap.rt_padrao ?? '5'),
+      }
+
+      const papeisIds = [...new Set(ambientesPapel.map(a => a.papelId))]
+      const papeisDb = await prisma.papelParede.findMany({ where: { id: { in: papeisIds } } })
+      const papeisMap = Object.fromEntries(papeisDb.map(p => [p.id, p]))
+
+      const resultadosPapel = ambientesPapel.map(a => {
+        const papel = papeisMap[a.papelId]
+        return calcularAmbientePapel({
+          nomeAmbiente: a.nomeAmbiente,
+          dimensao: papel?.dimensao ?? '0.53x10',
+          valorRolo: Number(papel?.valorRolo ?? 0),
+          medicoes: a.medicoes,
+        }, configsPapel)
+      })
+
+      const totalPrecoFinal = resultadosPapel.reduce((s, r) => s + r.precoFinalVenda, 0)
+
+      const orcamento = await prisma.orcamento.update({
+        where: { id: params.id },
+        data: {
+          clienteId: clienteId || null,
+          precoFinalTotal: totalPrecoFinal,
+          ambientes: { deleteMany: {} },
+          ambientesPapel: {
+            deleteMany: {},
+            create: ambientesPapel.map((a, i) => {
+              const r = resultadosPapel[i]
+              return {
+                nomeAmbiente: a.nomeAmbiente,
+                papelId: a.papelId,
+                medicoes: a.medicoes,
+                metrosQuadrados: r.metrosQuadrados,
+                quantidadeRolos: r.quantidadeRolos,
+                custoTotal: r.custoTotal,
+                precoFinalVenda: r.precoFinalVenda,
+                observacoes: a.observacoes ?? null,
+              }
+            }),
+          },
+        },
+        include: { ambientesPapel: { include: { papel: true } } },
+      })
+
+      await prisma.logHistorico.create({
+        data: {
+          orcamentoId: orcamento.id,
+          usuarioId: session.user.id,
+          acao: 'orcamento_editado',
+          detalhes: { produto: 'papel_parede', totalAmbientes: ambientesPapel.length, precoFinalTotal: totalPrecoFinal },
+        },
+      })
+
+      const isAdmin = session.user.role === 'ADMIN'
+
+      return NextResponse.json({
+        orcamento,
+        resultado: {
+          ambientes: resultadosPapel.map(r => ({
+            nomeAmbiente: r.nomeAmbiente,
+            quantidadeTecido: 0,
+            quantidadeBlackout: null,
+            precisaTecidoExtra: false,
+            bainhaDisponivel: 0,
+            bainhaAlerta: null,
+            precoFinalVenda: r.precoFinalVenda,
+            metrosQuadrados: r.metrosQuadrados,
+            quantidadeRolos: r.quantidadeRolos,
+            custoTotal: isAdmin ? r.custoTotal : undefined,
+          })),
+          totalPrecoFinalVenda: totalPrecoFinal,
+        },
+      })
+    }
+
+    // --- Cortina ---
     if (!ambientes?.length) {
       return NextResponse.json({ error: 'Nenhum ambiente informado' }, { status: 400 })
     }
@@ -78,10 +173,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (ambientes.some(a => !ambienteValido(a))) {
       return NextResponse.json({ error: 'Preencha tecido, largura e altura válidos em todos os ambientes antes de calcular.' }, { status: 400 })
     }
-
-    const configsRaw = await prisma.configuracaoCalculo.findMany()
-    const configMap: Record<string, string> = {}
-    for (const c of configsRaw) configMap[c.chave] = c.valor
 
     const configs: Configuracoes = {
       markup_padrao: parseFloat(configMap.markup_padrao ?? '40'),
@@ -113,6 +204,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       data: {
         clienteId: clienteId || null,
         precoFinalTotal: resultado.totalPrecoFinalVenda,
+        ambientesPapel: { deleteMany: {} },
         ambientes: {
           deleteMany: {},
           create: ambientes.map((a, i) => {

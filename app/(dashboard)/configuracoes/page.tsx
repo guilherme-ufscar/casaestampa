@@ -201,6 +201,137 @@ function InstaladorTab() {
   )
 }
 
+type PapelParede = {
+  id: string
+  album: string
+  referencia: string
+  dimensao: string
+  valorRolo: number
+  ativo: boolean
+}
+
+const DIMENSOES_PAPEL = [
+  { value: '0.53x10', label: '0,53 × 10m' },
+  { value: '0.70x10', label: '0,70 × 10m' },
+  { value: '1.00x10', label: '1,00 × 10m' },
+]
+
+function PapeisTab() {
+  const [papeis, setPapeis] = useState<PapelParede[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [editando, setEditando] = useState<PapelParede | null>(null)
+  const [form, setForm] = useState({ album: '', referencia: '', dimensao: '0.53x10', valorRolo: '' })
+
+  async function carregar() {
+    const r = await fetch('/api/papeis-parede')
+    setPapeis(await r.json())
+    setLoading(false)
+  }
+
+  useEffect(() => { carregar() }, [])
+
+  function iniciarEdicao(p: PapelParede) {
+    setEditando(p)
+    setForm({ album: p.album, referencia: p.referencia, dimensao: p.dimensao, valorRolo: String(p.valorRolo) })
+  }
+
+  function cancelar() {
+    setEditando(null)
+    setForm({ album: '', referencia: '', dimensao: '0.53x10', valorRolo: '' })
+  }
+
+  async function salvar() {
+    if (!form.album || !form.referencia || !form.valorRolo) return
+    setSaving(true)
+    if (editando) {
+      await fetch(`/api/papeis-parede/${editando.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    } else {
+      await fetch('/api/papeis-parede', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    }
+    cancelar()
+    setSaving(false)
+    carregar()
+  }
+
+  async function excluir(id: string) {
+    if (!confirm('Excluir este papel de parede?')) return
+    await fetch(`/api/papeis-parede/${id}`, { method: 'DELETE' })
+    carregar()
+  }
+
+  return (
+    <div className="space-y-4 max-w-3xl">
+      <div className="card-base p-6 space-y-4">
+        <p className="text-sm font-semibold text-text-primary">{editando ? 'Editar Papel de Parede' : 'Novo Papel de Parede'}</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Álbum / Modelo *</label>
+            <input value={form.album} onChange={e => setForm(p => ({ ...p, album: e.target.value }))} placeholder="Ex: Sugestões, Eco, Tropical" className="input-base" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Referência *</label>
+            <input value={form.referencia} onChange={e => setForm(p => ({ ...p, referencia: e.target.value }))} placeholder="Ex: REF-001" className="input-base" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Dimensão</label>
+            <select value={form.dimensao} onChange={e => setForm(p => ({ ...p, dimensao: e.target.value }))} className="input-base">
+              {DIMENSOES_PAPEL.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Valor do Rolo (R$) *</label>
+            <input type="number" step="0.01" value={form.valorRolo} onChange={e => setForm(p => ({ ...p, valorRolo: e.target.value }))} placeholder="0,00" className="input-base" />
+          </div>
+        </div>
+        <div className="flex gap-2 justify-end">
+          {editando && <button onClick={cancelar} className="px-4 py-2 rounded-lg text-sm font-medium text-text-muted hover:bg-brand-input transition-colors">Cancelar</button>}
+          <button onClick={salvar} disabled={!form.album || !form.referencia || !form.valorRolo || saving} className="btn-gold flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm font-semibold disabled:opacity-50">
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+            {editando ? 'Salvar' : 'Adicionar'}
+          </button>
+        </div>
+      </div>
+
+      <div className="card-base overflow-hidden">
+        {loading ? (
+          <p className="p-6 text-center text-text-muted text-sm">Carregando...</p>
+        ) : papeis.length === 0 ? (
+          <p className="p-6 text-center text-text-muted text-sm">Nenhum papel de parede cadastrado</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-brand-border bg-brand-bg">
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Álbum</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Referência</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Dimensão</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Valor/Rolo</th>
+                <th className="px-4 py-3 w-20" />
+              </tr>
+            </thead>
+            <tbody>
+              {papeis.map(p => (
+                <tr key={p.id} className="border-b border-brand-border last:border-0 hover:bg-brand-bg/50">
+                  <td className="px-4 py-3 font-medium text-text-primary">{p.album}</td>
+                  <td className="px-4 py-3 text-text-secondary">{p.referencia}</td>
+                  <td className="px-4 py-3 text-text-secondary">{DIMENSOES_PAPEL.find(d => d.value === p.dimensao)?.label ?? p.dimensao}</td>
+                  <td className="px-4 py-3 text-text-secondary">R$ {Number(p.valorRolo).toFixed(2)}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1 justify-end">
+                      <button onClick={() => iniciarEdicao(p)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Pencil size={14} /></button>
+                      <button onClick={() => excluir(p.id)} className="p-1.5 rounded hover:bg-red-50 text-red-400 transition-colors"><Trash2 size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  )
+}
+
 type FornecedorCadastro = {
   id: string
   nomeEmpresa: string
@@ -338,7 +469,7 @@ function FornecedoresTab() {
 }
 
 export default function ConfiguracoesPage() {
-  const [aba, setAba] = useState<'tecidos' | 'blackouts' | 'decoracao' | 'trilhos' | 'instaladores' | 'fatores' | 'markup' | 'confeccao' | 'pdf' | 'fornecedores'>('tecidos')
+  const [aba, setAba] = useState<'tecidos' | 'blackouts' | 'decoracao' | 'trilhos' | 'papeis' | 'instaladores' | 'fatores' | 'markup' | 'confeccao' | 'pdf' | 'fornecedores'>('tecidos')
   const [tecidos, setTecidos] = useState<Tecido[]>([])
   const [trilhos, setTrilhos] = useState<Trilho[]>([])
   const [configs, setConfigs] = useState<Configs>({})
@@ -460,6 +591,7 @@ export default function ConfiguracoesPage() {
     { key: 'blackouts', label: 'Blackouts' },
     { key: 'decoracao', label: 'Decoração' },
     { key: 'trilhos', label: 'Trilhos e Varões' },
+    { key: 'papeis', label: 'Papéis de Parede' },
     { key: 'instaladores', label: 'Instaladores' },
     { key: 'fornecedores', label: 'Fornecedores' },
     { key: 'fatores', label: 'Fatores de Prega' },
@@ -739,6 +871,10 @@ export default function ConfiguracoesPage() {
 
           {aba === 'instaladores' && (
             <InstaladorTab />
+          )}
+
+          {aba === 'papeis' && (
+            <PapeisTab />
           )}
 
           {aba === 'fornecedores' && (

@@ -118,8 +118,9 @@ model Orcamento {
   cliente  Cliente? @relation(fields: [clienteId], references: [id])
   vendedor User     @relation(fields: [vendedorId], references: [id])
 
-  ambientes     AmbienteOrcamento[]
-  logsHistorico LogHistorico[]
+  ambientes      AmbienteOrcamento[]
+  ambientesPapel AmbientePapelOrcamento[]
+  logsHistorico  LogHistorico[]
 }
 
 model Instalador {
@@ -191,4 +192,31 @@ model LogHistorico {
 
   orcamento Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
   usuario   User      @relation(fields: [usuarioId], references: [id])
+}
+
+model PapelParede {
+  id         String  @id @default(cuid())
+  album      String
+  referencia String
+  dimensao   String
+  valorRolo  Decimal @db.Decimal(10, 2)
+  ativo      Boolean @default(true)
+
+  ambientes AmbientePapelOrcamento[]
+}
+
+model AmbientePapelOrcamento {
+  id              String   @id @default(cuid())
+  orcamentoId     String
+  nomeAmbiente    String
+  papelId         String
+  medicoes        Json
+  metrosQuadrados Decimal? @db.Decimal(10, 2)
+  quantidadeRolos Int?
+  custoTotal      Decimal? @db.Decimal(10, 2)
+  precoFinalVenda Decimal? @db.Decimal(10, 2)
+  observacoes     String?
+
+  orcamento Orcamento   @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  papel     PapelParede @relation(fields: [papelId], references: [id])
 }

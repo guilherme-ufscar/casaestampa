@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Home, Pencil, AlertTriangle, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { useOrcamento } from '@/context/OrcamentoContext'
 import { calcularAmbiente, Configuracoes } from '@/lib/calculoCortina'
+import { getFatorDimensao } from '@/lib/calculoPapelParede'
 
 type ConfigsRaw = Record<string, string>
 
@@ -48,18 +49,25 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function RevisaoOrcamento() {
-  const { cliente, ambientes, setAmbienteAtual, setEtapa } = useOrcamento()
+  const { cliente, produto, ambientes, ambientesPapel, setAmbienteAtual, setAmbientePapelAtual, setEtapa } = useOrcamento()
   const [configs, setConfigs] = useState<ConfigsRaw | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const ambientesIncompletos = ambientes
-    .map((a, i) => {
-      const largura = parseFloat(a.largura)
-      const altura = parseFloat(a.altura)
-      const invalido = !a.tecidoId || !Number.isFinite(largura) || largura <= 0 || !Number.isFinite(altura) || altura <= 0
-      return invalido ? (a.nomeAmbiente || `Ambiente ${i + 1}`) : null
-    })
-    .filter((nome): nome is string => Boolean(nome))
+  const ambientesIncompletos = produto === 'papel_parede'
+    ? ambientesPapel
+        .map((a, i) => {
+          const invalido = !a.papelId || !a.nomeAmbiente || !a.medicoes.some(m => parseFloat(m.largura) > 0 && parseFloat(m.altura) > 0)
+          return invalido ? (a.nomeAmbiente || `Ambiente ${i + 1}`) : null
+        })
+        .filter((nome): nome is string => Boolean(nome))
+    : ambientes
+        .map((a, i) => {
+          const largura = parseFloat(a.largura)
+          const altura = parseFloat(a.altura)
+          const invalido = !a.tecidoId || !Number.isFinite(largura) || largura <= 0 || !Number.isFinite(altura) || altura <= 0
+          return invalido ? (a.nomeAmbiente || `Ambiente ${i + 1}`) : null
+        })
+        .filter((nome): nome is string => Boolean(nome))
 
   // Carrega configs uma vez
   useState(() => {
@@ -123,6 +131,49 @@ export default function RevisaoOrcamento() {
           </div>
         )}
 
+        {/* Ambientes de Papel de Parede */}
+        {produto === 'papel_parede' && (
+          <div className="space-y-4">
+            {ambientesPapel.map((a, i) => {
+              const medicoesValidas = a.medicoes.filter(m => parseFloat(m.largura) > 0 && parseFloat(m.altura) > 0)
+              const m2Total = medicoesValidas.reduce((s, m) => s + parseFloat(m.largura) * parseFloat(m.altura), 0)
+              const fator = getFatorDimensao(a.papelDimensao)
+              const rolos = m2Total > 0 ? Math.ceil(m2Total / fator) : 0
+              const valor = rolos * a.papelValorRolo
+
+              return (
+                <div key={i} className="border border-brand-border rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 bg-brand-bg border-b border-brand-border">
+                    <div className="flex items-center gap-2">
+                      <Home size={16} className="text-gold-primary" />
+                      <span className="text-sm font-semibold text-text-primary">{a.nomeAmbiente || `Ambiente ${i + 1}`}</span>
+                    </div>
+                    <button onClick={() => { setAmbientePapelAtual(i); setEtapa(3) }} className="flex items-center gap-1 text-xs font-medium text-text-secondary hover:text-gold-primary transition-colors">
+                      <Pencil size={13} /> Editar
+                    </button>
+                  </div>
+                  <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <InfoRow label="Álbum" value={a.papelAlbum || '—'} />
+                    <InfoRow label="Referência" value={a.papelReferencia || '—'} />
+                    <InfoRow label="Dimensão" value={a.papelDimensao || '—'} />
+                    <InfoRow label="Paredes medidas" value={String(medicoesValidas.length)} />
+                    <InfoRow label="Metragem total" value={`${m2Total.toFixed(2)} m²`} />
+                    <InfoRow label="Rolos" value={String(rolos)} />
+                  </div>
+                  {valor > 0 && (
+                    <div className="mx-4 mb-4 p-3 bg-[#FFFBF2] border-l-[3px] border-l-gold-primary rounded-r-lg">
+                      <p className="text-[10px] font-semibold text-gold-primary uppercase tracking-wider mb-1">Custo material</p>
+                      <p className="text-sm font-medium text-text-primary">{rolos} rolos × R$ {a.papelValorRolo.toFixed(2)} = R$ {valor.toFixed(2)}</p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Ambientes de Cortina */}
+        {produto !== 'papel_parede' && (
         <div className="space-y-4">
           {ambientes.map((a, i) => {
             const resultado = cfgs && a.tecidoId && a.largura && a.altura
@@ -193,18 +244,35 @@ export default function RevisaoOrcamento() {
             )
           })}
         </div>
+        )}
 
         {/* Resumo total */}
         <div className="mt-4 p-4 bg-brand-bg border border-brand-border rounded-xl flex items-center justify-between">
           <div className="flex gap-6">
             <div>
               <p className="text-[11px] text-text-muted uppercase tracking-wider">Ambientes</p>
-              <p className="text-lg font-semibold text-text-primary">{ambientes.length}</p>
+              <p className="text-lg font-semibold text-text-primary">{produto === 'papel_parede' ? ambientesPapel.length : ambientes.length}</p>
             </div>
-            <div>
-              <p className="text-[11px] text-text-muted uppercase tracking-wider">Total de tecido</p>
-              <p className="text-lg font-semibold text-text-primary">{totalMetros.toFixed(2)}m</p>
-            </div>
+            {produto !== 'papel_parede' && (
+              <div>
+                <p className="text-[11px] text-text-muted uppercase tracking-wider">Total de tecido</p>
+                <p className="text-lg font-semibold text-text-primary">{totalMetros.toFixed(2)}m</p>
+              </div>
+            )}
+            {produto === 'papel_parede' && (
+              <div>
+                <p className="text-[11px] text-text-muted uppercase tracking-wider">Total de rolos</p>
+                <p className="text-lg font-semibold text-text-primary">
+                  {ambientesPapel.reduce((s, a) => {
+                    const m2 = a.medicoes.reduce((sum, m) => {
+                      const l = parseFloat(m.largura); const h = parseFloat(m.altura)
+                      return sum + (Number.isFinite(l) && Number.isFinite(h) ? l * h : 0)
+                    }, 0)
+                    return s + (m2 > 0 ? Math.ceil(m2 / getFatorDimensao(a.papelDimensao)) : 0)
+                  }, 0)}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
