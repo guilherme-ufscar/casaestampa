@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth'
 
 export async function GET() {
   try {
-    const papeis = await prisma.papelParede.findMany({ orderBy: [{ album: 'asc' }, { referencia: 'asc' }] })
+    const papeis = await prisma.papelParede.findMany({ orderBy: [{ categoria: 'asc' }, { album: 'asc' }, { referencia: 'asc' }] })
     const normalized = papeis.map(p => ({ ...p, valorRolo: Number(p.valorRolo) }))
     return NextResponse.json(normalized)
   } catch (e) {
@@ -21,14 +21,14 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { album, referencia, dimensao, valorRolo } = body
+  const { album, referencia, dimensao, valorRolo, categoria } = body
 
-  if (!album || !referencia || !dimensao || !valorRolo) {
+  if (!album || !dimensao || !valorRolo) {
     return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 })
   }
 
   const papel = await prisma.papelParede.create({
-    data: { album, referencia, dimensao, valorRolo: parseFloat(valorRolo) },
+    data: { album, referencia: referencia || null, dimensao, valorRolo: parseFloat(valorRolo), categoria: categoria || null },
   })
 
   return NextResponse.json(papel, { status: 201 })

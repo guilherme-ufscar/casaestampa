@@ -10,16 +10,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const body = await req.json()
-  const { album, referencia, dimensao, valorRolo, ativo } = body
+  const { album, referencia, dimensao, valorRolo, ativo, categoria } = body
 
   const papel = await prisma.papelParede.update({
     where: { id: params.id },
     data: {
       ...(album && { album }),
-      ...(referencia && { referencia }),
+      ...(referencia !== undefined && { referencia: referencia || null }),
       ...(dimensao && { dimensao }),
       ...(valorRolo && { valorRolo: parseFloat(valorRolo) }),
       ...(ativo !== undefined && { ativo }),
+      ...(categoria !== undefined && { categoria: categoria || null }),
     },
   })
 

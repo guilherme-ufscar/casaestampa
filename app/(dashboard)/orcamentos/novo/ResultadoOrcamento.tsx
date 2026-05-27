@@ -105,6 +105,7 @@ export default function ResultadoOrcamento() {
           payload.ambientesPapel = ambientesPapel.map(a => ({
             nomeAmbiente: a.nomeAmbiente,
             papelId: a.papelId,
+            referenciaDigitada: a.papelReferencia || null,
             medicoes: a.medicoes
               .filter(m => parseFloat(m.largura) > 0 && parseFloat(m.altura) > 0)
               .map(m => ({ largura: parseFloat(m.largura), altura: parseFloat(m.altura), m2: parseFloat(m.largura) * parseFloat(m.altura) })),

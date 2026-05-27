@@ -75,6 +75,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       ambientesPapel?: {
         nomeAmbiente: string
         papelId: string
+        referenciaDigitada?: string | null
         medicoes: { largura: number; altura: number; m2: number }[]
         observacoes?: string | null
       }[]
@@ -121,6 +122,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
               return {
                 nomeAmbiente: a.nomeAmbiente,
                 papelId: a.papelId,
+                referenciaDigitada: a.referenciaDigitada || null,
                 medicoes: a.medicoes,
                 metrosQuadrados: r.metrosQuadrados,
                 quantidadeRolos: r.quantidadeRolos,

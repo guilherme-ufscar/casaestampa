@@ -197,25 +197,27 @@ model LogHistorico {
 model PapelParede {
   id         String  @id @default(cuid())
   album      String
-  referencia String
+  referencia String?
   dimensao   String
   valorRolo  Decimal @db.Decimal(10, 2)
+  categoria  String?
   ativo      Boolean @default(true)
 
   ambientes AmbientePapelOrcamento[]
 }
 
 model AmbientePapelOrcamento {
-  id              String   @id @default(cuid())
-  orcamentoId     String
-  nomeAmbiente    String
-  papelId         String
-  medicoes        Json
-  metrosQuadrados Decimal? @db.Decimal(10, 2)
-  quantidadeRolos Int?
-  custoTotal      Decimal? @db.Decimal(10, 2)
-  precoFinalVenda Decimal? @db.Decimal(10, 2)
-  observacoes     String?
+  id                 String   @id @default(cuid())
+  orcamentoId        String
+  nomeAmbiente       String
+  papelId            String
+  referenciaDigitada String?
+  medicoes           Json
+  metrosQuadrados    Decimal? @db.Decimal(10, 2)
+  quantidadeRolos    Int?
+  custoTotal         Decimal? @db.Decimal(10, 2)
+  precoFinalVenda    Decimal? @db.Decimal(10, 2)
+  observacoes        String?
 
   orcamento Orcamento   @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
   papel     PapelParede @relation(fields: [papelId], references: [id])

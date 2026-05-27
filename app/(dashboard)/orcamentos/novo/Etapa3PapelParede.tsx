@@ -8,9 +8,10 @@ import { getFatorDimensao } from '@/lib/calculoPapelParede'
 type PapelParede = {
   id: string
   album: string
-  referencia: string
+  referencia: string | null
   dimensao: string
   valorRolo: number
+  categoria: string | null
   ativo: boolean
 }
 
@@ -49,15 +50,29 @@ export default function Etapa3PapelParede() {
     setAmbientesPapel(updated)
   }
 
-  const albums = useMemo(() => {
-    const set = new Set(papeis.map(p => p.album))
-    return Array.from(set).sort()
+  const categorias = useMemo(() => {
+    const set = new Set(papeis.map(p => p.categoria).filter(Boolean))
+    return Array.from(set).sort() as string[]
   }, [papeis])
+
+  const [categoriaAtiva, setCategoriaAtiva] = useState('')
+
+  const albumsFiltrados = useMemo(() => {
+    const filtered = categoriaAtiva ? papeis.filter(p => p.categoria === categoriaAtiva) : papeis
+    const set = new Set(filtered.map(p => p.album))
+    return Array.from(set).sort()
+  }, [papeis, categoriaAtiva])
 
   const referenciasDoAlbum = useMemo(() => {
     if (!amb.papelAlbum) return []
-    return papeis.filter(p => p.album === amb.papelAlbum)
-  }, [papeis, amb.papelAlbum])
+    return papeis.filter(p => p.album === amb.papelAlbum && (!categoriaAtiva || p.categoria === categoriaAtiva))
+  }, [papeis, amb.papelAlbum, categoriaAtiva])
+
+  const papelSelecionadoSemRef = useMemo(() => {
+    if (!amb.papelId) return false
+    const papel = papeis.find(p => p.id === amb.papelId)
+    return papel && !papel.referencia
+  }, [papeis, amb.papelId])
 
   function selecionarAlbum(album: string) {
     updateAmb({ papelAlbum: album, papelId: '', papelReferencia: '', papelDimensao: '', papelValorRolo: 0 })
@@ -68,10 +83,26 @@ export default function Etapa3PapelParede() {
     if (papel) {
       updateAmb({
         papelId: papel.id,
-        papelReferencia: papel.referencia,
+        papelReferencia: papel.referencia ?? '',
         papelDimensao: papel.dimensao,
         papelValorRolo: papel.valorRolo,
       })
+    }
+  }
+
+  function selecionarAlbumSemRef(album: string) {
+    // Para álbuns sem referência (Sugestões/Decore), selecionar direto o papel
+    const papel = papeis.find(p => p.album === album && (!categoriaAtiva || p.categoria === categoriaAtiva))
+    if (papel) {
+      updateAmb({
+        papelAlbum: album,
+        papelId: papel.id,
+        papelReferencia: '',
+        papelDimensao: papel.dimensao,
+        papelValorRolo: papel.valorRolo,
+      })
+    } else {
+      updateAmb({ papelAlbum: album, papelId: '', papelReferencia: '', papelDimensao: '', papelValorRolo: 0 })
     }
   }
 
@@ -157,31 +188,81 @@ export default function Etapa3PapelParede() {
           />
         </div>
 
-        {/* Álbum */}
-        <div className="space-y-1.5">
-          <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Álbum / Modelo</label>
-          <div className="relative">
-            <select value={amb.papelAlbum} onChange={e => selecionarAlbum(e.target.value)} className="input-base appearance-none pr-8">
-              <option value="">Selecione o álbum...</option>
-              {albums.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
-            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+        {/* Fornecedor / Categoria */}
+        {categorias.length > 0 && (
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Fornecedor</label>
+            <div className="flex gap-2 flex-wrap">
+              {categorias.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => { setCategoriaAtiva(cat); updateAmb({ papelAlbum: '', papelId: '', papelReferencia: '', papelDimensao: '', papelValorRolo: 0 }) }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    categoriaAtiva === cat ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary border border-brand-border'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Referência */}
-        {amb.papelAlbum && (
+        {/* Álbum */}
+        {categoriaAtiva && (
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Álbum / Modelo</label>
+            <div className="relative">
+              <select
+                value={amb.papelAlbum}
+                onChange={e => {
+                  const album = e.target.value
+                  // Verificar se esse álbum tem referências
+                  const papeisAlbum = papeis.filter(p => p.album === album && (!categoriaAtiva || p.categoria === categoriaAtiva))
+                  const temRef = papeisAlbum.some(p => p.referencia)
+                  if (temRef) {
+                    selecionarAlbum(album)
+                  } else {
+                    selecionarAlbumSemRef(album)
+                  }
+                }}
+                className="input-base appearance-none pr-8"
+              >
+                <option value="">Selecione o álbum...</option>
+                {albumsFiltrados.map(a => <option key={a} value={a}>{a}</option>)}
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            </div>
+          </div>
+        )}
+
+        {/* Referência — select quando tem referências cadastradas */}
+        {amb.papelAlbum && referenciasDoAlbum.length > 0 && referenciasDoAlbum.some(p => p.referencia) && (
           <div className="space-y-1.5">
             <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Referência</label>
             <div className="relative">
               <select value={amb.papelId} onChange={e => selecionarReferencia(e.target.value)} className="input-base appearance-none pr-8">
                 <option value="">Selecione a referência...</option>
-                {referenciasDoAlbum.map(p => (
+                {referenciasDoAlbum.filter(p => p.referencia).map(p => (
                   <option key={p.id} value={p.id}>{p.referencia} — {fmt(p.valorRolo)}/rolo</option>
                 ))}
               </select>
               <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
             </div>
+          </div>
+        )}
+
+        {/* Referência manual — campo texto quando não tem referência cadastrada */}
+        {amb.papelId && papelSelecionadoSemRef && (
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Referência (digitar)</label>
+            <input
+              type="text"
+              value={amb.papelReferencia}
+              onChange={e => updateAmb({ papelReferencia: e.target.value })}
+              placeholder="Digite a referência do papel..."
+              className="input-base"
+            />
           </div>
         )}
 
