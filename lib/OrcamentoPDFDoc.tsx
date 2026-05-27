@@ -83,6 +83,15 @@ export type AmbientePDF = {
   precoFinalVenda: number
 }
 
+export type AmbientePapelPDF = {
+  nomeAmbiente: string
+  album: string
+  referencia: string
+  metrosQuadrados: number
+  quantidadeRolos: number
+  precoFinalVenda: number
+}
+
 export type OrcamentoPDF = {
   numero: number
   createdAt: Date | string
@@ -93,6 +102,7 @@ export type OrcamentoPDF = {
   clienteEndereco?: string | null
   clienteArquiteto?: string | null
   ambientes: AmbientePDF[]
+  ambientesPapel?: AmbientePapelPDF[]
   precoFinalTotal: number
   condicoesComerciais?: string
   telefoneEmpresa?: string
@@ -101,6 +111,8 @@ export type OrcamentoPDF = {
   mostrarTecido?: boolean
   mostrarPrega?: boolean
   mostrarBainha?: boolean
+  mostrarPapelMetragem?: boolean
+  mostrarPapelRolos?: boolean
 }
 
 export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
@@ -111,6 +123,8 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
   const mostrarTecido = orc.mostrarTecido !== false
   const mostrarPrega = orc.mostrarPrega !== false
   const mostrarBainha = orc.mostrarBainha !== false
+  const mostrarPapelMetragem = orc.mostrarPapelMetragem !== false
+  const mostrarPapelRolos = orc.mostrarPapelRolos !== false
   const valorParcela = orc.precoFinalTotal / 10
   const valorVista = orc.precoFinalTotal * 0.95
   const condicoes = orc.condicoesComerciais || 'Prazo de 20 dias úteis para confecção. Trilho e instalação inclusos quando previstos no orçamento.'
@@ -166,6 +180,17 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
             {mostrarTecido && a.blackoutNome && <Text style={s.linha}><Text style={s.destaque}>Abertura blackout:</Text> {a.tipoAberturaBlackout === 'CENTRAL' ? 'Central' : 'Inteira'}</Text>}
             {mostrarBainha && a.bainhaDesejada != null && <Text style={s.linha}><Text style={s.destaque}>Bainha:</Text> {a.bainhaDesejada.toFixed(2)}m</Text>}
             <Text style={s.linha}><Text style={s.destaque}>Inclusos:</Text> Trilho e instalação {a.instalacao ? 'incluídos' : 'conforme orçamento'}</Text>
+            <Text style={s.linha}><Text style={s.destaque}>Valor do ambiente:</Text> {fmt(a.precoFinalVenda)}</Text>
+          </View>
+        ))}
+
+        {orc.ambientesPapel && orc.ambientesPapel.length > 0 && orc.ambientesPapel.map((a, i) => (
+          <View key={`papel-${i}`} style={s.ambienteCard} wrap={false}>
+            <Text style={s.ambienteNome}>{a.nomeAmbiente} — Papel de Parede</Text>
+            <Text style={s.linha}><Text style={s.destaque}>Álbum:</Text> {a.album}</Text>
+            {a.referencia && <Text style={s.linha}><Text style={s.destaque}>Referência:</Text> {a.referencia}</Text>}
+            {mostrarPapelMetragem && <Text style={s.linha}><Text style={s.destaque}>Metragem:</Text> {a.metrosQuadrados.toFixed(2)} m²</Text>}
+            {mostrarPapelRolos && <Text style={s.linha}><Text style={s.destaque}>Quantidade de rolos:</Text> {a.quantidadeRolos}</Text>}
             <Text style={s.linha}><Text style={s.destaque}>Valor do ambiente:</Text> {fmt(a.precoFinalVenda)}</Text>
           </View>
         ))}

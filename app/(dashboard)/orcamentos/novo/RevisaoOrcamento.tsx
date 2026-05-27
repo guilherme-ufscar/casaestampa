@@ -139,7 +139,6 @@ export default function RevisaoOrcamento() {
               const m2Total = medicoesValidas.reduce((s, m) => s + parseFloat(m.largura) * parseFloat(m.altura), 0)
               const fator = getFatorDimensao(a.papelDimensao)
               const rolos = m2Total > 0 ? Math.ceil(m2Total / fator) : 0
-              const valor = rolos * a.papelValorRolo
 
               return (
                 <div key={i} className="border border-brand-border rounded-xl overflow-hidden">
@@ -160,12 +159,6 @@ export default function RevisaoOrcamento() {
                     <InfoRow label="Metragem total" value={`${m2Total.toFixed(2)} m²`} />
                     <InfoRow label="Rolos" value={String(rolos)} />
                   </div>
-                  {valor > 0 && (
-                    <div className="mx-4 mb-4 p-3 bg-[#FFFBF2] border-l-[3px] border-l-gold-primary rounded-r-lg">
-                      <p className="text-[10px] font-semibold text-gold-primary uppercase tracking-wider mb-1">Custo material</p>
-                      <p className="text-sm font-medium text-text-primary">{rolos} rolos × R$ {a.papelValorRolo.toFixed(2)} = R$ {valor.toFixed(2)}</p>
-                    </div>
-                  )}
                 </div>
               )
             })}

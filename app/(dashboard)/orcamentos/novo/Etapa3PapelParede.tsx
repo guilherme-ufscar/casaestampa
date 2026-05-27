@@ -19,10 +19,7 @@ const DIMENSAO_LABELS: Record<string, string> = {
   '0.53x10': '0,53 × 10m (4,5 m²/rolo)',
   '0.70x10': '0,70 × 10m (6,5 m²/rolo)',
   '1.00x10': '1,00 × 10m (9,0 m²/rolo)',
-}
-
-function fmt(v: number) {
-  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  '1.06x10': '1,06 × 10m (9,0 m²/rolo)',
 }
 
 export default function Etapa3PapelParede() {
@@ -50,23 +47,15 @@ export default function Etapa3PapelParede() {
     setAmbientesPapel(updated)
   }
 
-  const categorias = useMemo(() => {
-    const set = new Set(papeis.map(p => p.categoria).filter(Boolean))
-    return Array.from(set).sort() as string[]
-  }, [papeis])
-
-  const [categoriaAtiva, setCategoriaAtiva] = useState('')
-
   const albumsFiltrados = useMemo(() => {
-    const filtered = categoriaAtiva ? papeis.filter(p => p.categoria === categoriaAtiva) : papeis
-    const set = new Set(filtered.map(p => p.album))
+    const set = new Set(papeis.map(p => p.album))
     return Array.from(set).sort()
-  }, [papeis, categoriaAtiva])
+  }, [papeis])
 
   const referenciasDoAlbum = useMemo(() => {
     if (!amb.papelAlbum) return []
-    return papeis.filter(p => p.album === amb.papelAlbum && (!categoriaAtiva || p.categoria === categoriaAtiva))
-  }, [papeis, amb.papelAlbum, categoriaAtiva])
+    return papeis.filter(p => p.album === amb.papelAlbum)
+  }, [papeis, amb.papelAlbum])
 
   const papelSelecionadoSemRef = useMemo(() => {
     if (!amb.papelId) return false
@@ -91,8 +80,7 @@ export default function Etapa3PapelParede() {
   }
 
   function selecionarAlbumSemRef(album: string) {
-    // Para álbuns sem referência (Sugestões/Decore), selecionar direto o papel
-    const papel = papeis.find(p => p.album === album && (!categoriaAtiva || p.categoria === categoriaAtiva))
+    const papel = papeis.find(p => p.album === album)
     if (papel) {
       updateAmb({
         papelAlbum: album,
@@ -142,7 +130,6 @@ export default function Etapa3PapelParede() {
 
   const fator = getFatorDimensao(amb.papelDimensao)
   const rolos = metrosQuadrados > 0 ? Math.ceil(metrosQuadrados / fator) : 0
-  const valorTotal = rolos * amb.papelValorRolo
 
   const podeAvancar = ambientesPapel.every(a =>
     a.nomeAmbiente && a.papelId && a.medicoes.some(m => parseFloat(m.largura) > 0 && parseFloat(m.altura) > 0)
@@ -188,53 +175,30 @@ export default function Etapa3PapelParede() {
           />
         </div>
 
-        {/* Fornecedor / Categoria */}
-        {categorias.length > 0 && (
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Fornecedor</label>
-            <div className="flex gap-2 flex-wrap">
-              {categorias.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => { setCategoriaAtiva(cat); updateAmb({ papelAlbum: '', papelId: '', papelReferencia: '', papelDimensao: '', papelValorRolo: 0 }) }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    categoriaAtiva === cat ? 'bg-gold-primary text-white' : 'bg-brand-input text-text-secondary border border-brand-border'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Álbum */}
-        {categoriaAtiva && (
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Álbum / Modelo</label>
-            <div className="relative">
-              <select
-                value={amb.papelAlbum}
-                onChange={e => {
-                  const album = e.target.value
-                  // Verificar se esse álbum tem referências
-                  const papeisAlbum = papeis.filter(p => p.album === album && (!categoriaAtiva || p.categoria === categoriaAtiva))
-                  const temRef = papeisAlbum.some(p => p.referencia)
-                  if (temRef) {
-                    selecionarAlbum(album)
-                  } else {
-                    selecionarAlbumSemRef(album)
-                  }
-                }}
-                className="input-base appearance-none pr-8"
-              >
-                <option value="">Selecione o álbum...</option>
-                {albumsFiltrados.map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
-            </div>
+        <div className="space-y-1.5">
+          <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Álbum / Modelo</label>
+          <div className="relative">
+            <select
+              value={amb.papelAlbum}
+              onChange={e => {
+                const album = e.target.value
+                const papeisAlbum = papeis.filter(p => p.album === album)
+                const temRef = papeisAlbum.some(p => p.referencia)
+                if (temRef) {
+                  selecionarAlbum(album)
+                } else {
+                  selecionarAlbumSemRef(album)
+                }
+              }}
+              className="input-base appearance-none pr-8"
+            >
+              <option value="">Selecione o álbum...</option>
+              {albumsFiltrados.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
           </div>
-        )}
+        </div>
 
         {/* Referência — select quando tem referências cadastradas */}
         {amb.papelAlbum && referenciasDoAlbum.length > 0 && referenciasDoAlbum.some(p => p.referencia) && (
@@ -244,7 +208,7 @@ export default function Etapa3PapelParede() {
               <select value={amb.papelId} onChange={e => selecionarReferencia(e.target.value)} className="input-base appearance-none pr-8">
                 <option value="">Selecione a referência...</option>
                 {referenciasDoAlbum.filter(p => p.referencia).map(p => (
-                  <option key={p.id} value={p.id}>{p.referencia} — {fmt(p.valorRolo)}/rolo</option>
+                  <option key={p.id} value={p.id}>{p.referencia}</option>
                 ))}
               </select>
               <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
@@ -272,7 +236,6 @@ export default function Etapa3PapelParede() {
             <Calculator size={16} className="text-gold-primary" />
             <div>
               <p className="text-xs font-medium text-text-primary">Dimensão: {DIMENSAO_LABELS[amb.papelDimensao] ?? amb.papelDimensao}</p>
-              <p className="text-xs text-text-muted">Valor do rolo: {fmt(amb.papelValorRolo)}</p>
             </div>
           </div>
         )}
@@ -333,10 +296,6 @@ export default function Etapa3PapelParede() {
             <div className="flex justify-between text-sm">
               <span className="text-text-secondary">Quantidade de rolos</span>
               <span className="font-semibold text-gold-primary">{rolos} {rolos === 1 ? 'rolo' : 'rolos'}</span>
-            </div>
-            <div className="border-t border-brand-border pt-2 flex justify-between text-sm">
-              <span className="text-text-secondary">Valor ({rolos} × {fmt(amb.papelValorRolo)})</span>
-              <span className="font-bold text-text-primary">{fmt(valorTotal)}</span>
             </div>
           </div>
         )}

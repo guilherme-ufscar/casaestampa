@@ -34,6 +34,7 @@ const FATORES: Record<string, number> = {
   '0.53x10': 4.5,
   '0.70x10': 6.5,
   '1.00x10': 9.0,
+  '1.06x10': 9.0,
 }
 
 export function getFatorDimensao(dimensao: string): number {

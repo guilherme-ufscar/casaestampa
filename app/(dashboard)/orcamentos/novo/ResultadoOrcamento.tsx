@@ -101,6 +101,8 @@ export default function ResultadoOrcamento() {
   const [adminExpanded, setAdminExpanded] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
   const [toast, setToast] = useState('')
+  const [pdfMostrarMetragem, setPdfMostrarMetragem] = useState(true)
+  const [pdfMostrarRolos, setPdfMostrarRolos] = useState(true)
   const isAdmin = session?.user?.role === 'ADMIN'
 
   useEffect(() => {
@@ -185,7 +187,13 @@ export default function ResultadoOrcamento() {
     if (!resultado) return
     setPdfLoading(true)
     try {
-      const res = await fetch(`/api/orcamentos/${resultado.orcamento.id}/pdf`)
+      const params = new URLSearchParams()
+      if (produto === 'papel_parede') {
+        params.set('papelMetragem', pdfMostrarMetragem ? '1' : '0')
+        params.set('papelRolos', pdfMostrarRolos ? '1' : '0')
+      }
+      const qs = params.toString() ? `?${params.toString()}` : ''
+      const res = await fetch(`/api/orcamentos/${resultado.orcamento.id}/pdf${qs}`)
       if (!res.ok) throw new Error('Erro ao gerar PDF')
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
@@ -298,6 +306,21 @@ export default function ResultadoOrcamento() {
         <p className="text-5xl font-extrabold text-text-primary">{fmt(res.totalPrecoFinalVenda)}</p>
         <p className="text-xs text-text-muted mt-2">em até 10x sem juros</p>
       </div>
+
+      {/* Opções do PDF para papel de parede */}
+      {produto === 'papel_parede' && (
+        <div className="card-base p-4 space-y-2">
+          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Opções do PDF</p>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={pdfMostrarMetragem} onChange={e => setPdfMostrarMetragem(e.target.checked)} className="w-4 h-4 rounded border-brand-border text-gold-primary focus:ring-gold-primary" />
+            <span className="text-sm text-text-primary">Incluir metragem</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={pdfMostrarRolos} onChange={e => setPdfMostrarRolos(e.target.checked)} className="w-4 h-4 rounded border-brand-border text-gold-primary focus:ring-gold-primary" />
+            <span className="text-sm text-text-primary">Incluir quantidade de rolos</span>
+          </label>
+        </div>
+      )}
 
       {/* Botões primários */}
       <div className="grid grid-cols-2 gap-3">

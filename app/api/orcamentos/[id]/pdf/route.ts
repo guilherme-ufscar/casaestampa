@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { renderToBuffer } from '@react-pdf/renderer'
-import OrcamentoPDFDoc, { OrcamentoPDF, AmbientePDF } from '@/lib/OrcamentoPDFDoc'
+import OrcamentoPDFDoc, { OrcamentoPDF, AmbientePDF, AmbientePapelPDF } from '@/lib/OrcamentoPDFDoc'
 import React from 'react'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -16,6 +16,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const mostrarPrega = searchParams.get('prega') !== '0'
   const mostrarBainha = searchParams.get('bainha') !== '0'
   const mostrarMedida = searchParams.get('medida') !== '0'
+  const mostrarPapelMetragem = searchParams.get('papelMetragem') !== '0'
+  const mostrarPapelRolos = searchParams.get('papelRolos') !== '0'
 
   const orc = await prisma.orcamento.findUnique({
     where: { id: params.id },
@@ -26,6 +28,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         include: {
           tecido: true,
           blackout: true,
+        },
+      },
+      ambientesPapel: {
+        include: {
+          papel: true,
         },
       },
     },
@@ -54,6 +61,15 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     precoFinalVenda: Number(a.precoFinalVenda ?? 0),
   }))
 
+  const ambientesPapelPDF: AmbientePapelPDF[] = orc.ambientesPapel.map(a => ({
+    nomeAmbiente: a.nomeAmbiente,
+    album: a.papel.album,
+    referencia: a.referenciaDigitada || a.papel.referencia || '',
+    metrosQuadrados: Number(a.metrosQuadrados ?? 0),
+    quantidadeRolos: a.quantidadeRolos ?? 0,
+    precoFinalVenda: Number(a.precoFinalVenda ?? 0),
+  }))
+
   const orcPDF: OrcamentoPDF = {
     numero: orc.numero,
     createdAt: orc.createdAt,
@@ -64,6 +80,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     clienteEndereco: orc.cliente?.endereco ?? null,
     clienteArquiteto: orc.cliente?.arquiteto ?? null,
     ambientes: ambientesPDF,
+    ambientesPapel: ambientesPapelPDF,
     precoFinalTotal: Number(orc.precoFinalTotal ?? 0),
     condicoesComerciais: cfg.condicoes_comerciais,
     telefoneEmpresa: cfg.telefone_empresa,
@@ -72,6 +89,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     mostrarTecido: mostrarTecido,
     mostrarPrega: mostrarPrega,
     mostrarBainha: mostrarBainha,
+    mostrarPapelMetragem: mostrarPapelMetragem,
+    mostrarPapelRolos: mostrarPapelRolos,
   }
 
   const doc = React.createElement(OrcamentoPDFDoc, { orc: orcPDF })
