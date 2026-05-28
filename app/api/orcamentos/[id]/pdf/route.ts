@@ -68,6 +68,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     metrosQuadrados: Number(a.metrosQuadrados ?? 0),
     quantidadeRolos: a.quantidadeRolos ?? 0,
     precoFinalVenda: Number(a.precoFinalVenda ?? 0),
+    instalacao: a.instalacao,
+    custoInstalacao: Number(a.custoInstalacao ?? 0),
   }))
 
   const orcPDF: OrcamentoPDF = {

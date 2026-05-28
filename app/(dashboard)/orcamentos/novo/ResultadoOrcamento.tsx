@@ -30,6 +30,8 @@ type ResultadoAmbientePublico = {
   quantidadeRolos?: number
   valorRt?: number
   valorComissao?: number
+  instalacaoPapel?: boolean
+  custoInstalacaoPapel?: number
 }
 
 type ResultadoAdminAmbiente = ResultadoAmbientePublico & {
@@ -118,6 +120,7 @@ export default function ResultadoOrcamento() {
             nomeAmbiente: a.nomeAmbiente,
             papelId: a.papelId,
             referenciaDigitada: a.papelReferencia || null,
+            instalacao: a.instalacao,
             medicoes: a.medicoes
               .filter(m => parseFloat(m.largura) > 0 && parseFloat(m.altura) > 0)
               .map(m => ({ largura: parseFloat(m.largura), altura: parseFloat(m.altura), m2: parseFloat(m.largura) * parseFloat(m.altura) })),
@@ -284,11 +287,16 @@ export default function ResultadoOrcamento() {
               <p className="text-2xl font-extrabold text-text-primary">{fmt(a.precoFinalVenda)}</p>
             )}
           </div>
-          <div className="flex gap-4 text-sm text-text-secondary">
+          <div className="flex flex-wrap gap-4 text-sm text-text-secondary">
             {produto === 'papel_parede' ? (
               <>
                 <span>Área: <strong className="text-text-primary">{((a as Record<string, unknown>).metrosQuadrados as number)?.toFixed(2) ?? '—'} m²</strong></span>
-                <span>Rolos: <strong className="text-text-primary">{(a as Record<string, unknown>).quantidadeRolos ?? '—'}</strong></span>
+                <span>Rolos: <strong className="text-text-primary">{String((a as Record<string, unknown>).quantidadeRolos ?? '—')}</strong></span>
+                {!a.instalacaoPapel && a.custoInstalacaoPapel !== undefined && a.custoInstalacaoPapel > 0 && (
+                  <span className="w-full text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-1">
+                    Instalação: <strong>{fmt(a.custoInstalacaoPapel)}</strong> — paga diretamente ao instalador
+                  </span>
+                )}
               </>
             ) : (
               <>

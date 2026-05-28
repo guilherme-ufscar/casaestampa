@@ -90,6 +90,8 @@ export type AmbientePapelPDF = {
   metrosQuadrados: number
   quantidadeRolos: number
   precoFinalVenda: number
+  instalacao: boolean
+  custoInstalacao: number
 }
 
 export type OrcamentoPDF = {
@@ -189,7 +191,19 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
             {a.referencia && <Text style={s.linha}><Text style={s.destaque}>Referência:</Text> {a.referencia}</Text>}
             {mostrarPapelMetragem && <Text style={s.linha}><Text style={s.destaque}>Metragem:</Text> {a.metrosQuadrados.toFixed(2)} m²</Text>}
             {mostrarPapelRolos && <Text style={s.linha}><Text style={s.destaque}>Quantidade de rolos:</Text> {a.quantidadeRolos}</Text>}
-            <Text style={s.linha}><Text style={s.destaque}>Valor do ambiente:</Text> {fmt(a.precoFinalVenda)}</Text>
+            {a.instalacao ? (
+              <Text style={s.linha}><Text style={s.destaque}>Valor total:</Text> {fmt(a.precoFinalVenda)}</Text>
+            ) : (
+              <>
+                <Text style={s.linha}><Text style={s.destaque}>Valor do papel de parede:</Text> {fmt(a.precoFinalVenda)}</Text>
+                {a.custoInstalacao > 0 && (
+                  <>
+                    <Text style={s.linha}><Text style={s.destaque}>Valor da instalação:</Text> {fmt(a.custoInstalacao)}</Text>
+                    <Text style={[s.linha, { fontStyle: 'italic', color: MUTED }]}>(Instalação paga diretamente ao instalador após a finalização do serviço.)</Text>
+                  </>
+                )}
+              </>
+            )}
           </View>
         ))}
 

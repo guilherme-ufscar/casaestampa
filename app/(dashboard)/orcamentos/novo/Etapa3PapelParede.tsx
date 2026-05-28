@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { ChevronLeft, ChevronDown, Plus, Trash2, Calculator } from 'lucide-react'
+import { ChevronLeft, ChevronDown, Plus, Trash2, Calculator, ToggleLeft, ToggleRight } from 'lucide-react'
 import { useOrcamento, AmbientePapelForm, ambientePapelVazio } from '@/context/OrcamentoContext'
-import { getFatorDimensao } from '@/lib/calculoPapelParede'
+import { getFatorDimensao, calcularInstalacaoPapel } from '@/lib/calculoPapelParede'
 
 type PapelParede = {
   id: string
@@ -31,6 +31,17 @@ export default function Etapa3PapelParede() {
 
   const [papeis, setPapeis] = useState<PapelParede[]>([])
   const [loading, setLoading] = useState(true)
+  const [configInstalacao, setConfigInstalacao] = useState({ por1: 150, por2: 200, porRolo: 90 })
+
+  useEffect(() => {
+    fetch('/api/configuracoes').then(r => r.json()).then((cfg: Record<string, string>) => {
+      setConfigInstalacao({
+        por1: parseFloat(cfg.instalacao_papel_1rolo ?? '150'),
+        por2: parseFloat(cfg.instalacao_papel_2rolos ?? '200'),
+        porRolo: parseFloat(cfg.instalacao_papel_por_rolo ?? '90'),
+      })
+    })
+  }, [])
 
   useEffect(() => {
     fetch('/api/papeis-parede').then(r => r.json()).then(data => {
@@ -297,8 +308,27 @@ export default function Etapa3PapelParede() {
               <span className="text-text-secondary">Quantidade de rolos</span>
               <span className="font-semibold text-gold-primary">{rolos} {rolos === 1 ? 'rolo' : 'rolos'}</span>
             </div>
+            {rolos > 0 && (
+              <div className="flex justify-between text-sm pt-1 border-t border-brand-border">
+                <span className="text-text-secondary">Instalação estimada</span>
+                <span className="font-medium text-text-primary">
+                  R$ {calcularInstalacaoPapel(rolos, { instalacao_papel_1rolo: configInstalacao.por1, instalacao_papel_2rolos: configInstalacao.por2, instalacao_papel_por_rolo: configInstalacao.porRolo }).toFixed(2).replace('.', ',')}
+                </span>
+              </div>
+            )}
           </div>
         )}
+
+        {/* Instalação */}
+        <div className="flex items-center justify-between py-2 px-3 bg-brand-input rounded-xl border border-brand-border">
+          <div>
+            <p className="text-sm font-medium text-text-primary">Instalação</p>
+            <p className="text-xs text-text-muted">SIM = entra no total · NÃO = cobrado direto ao instalador</p>
+          </div>
+          <button onClick={() => updateAmb({ instalacao: !amb.instalacao })} className="text-gold-primary">
+            {amb.instalacao ? <ToggleRight size={30} /> : <ToggleLeft size={30} className="text-text-muted" />}
+          </button>
+        </div>
 
         {/* Observações */}
         <div className="space-y-1.5">

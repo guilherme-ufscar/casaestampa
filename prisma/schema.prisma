@@ -217,6 +217,8 @@ model AmbientePapelOrcamento {
   metrosQuadrados    Decimal? @db.Decimal(10, 2)
   quantidadeRolos    Int?
   custoTotal         Decimal? @db.Decimal(10, 2)
+  custoInstalacao    Decimal? @db.Decimal(10, 2)
+  instalacao         Boolean  @default(false)
   precoFinalVenda    Decimal? @db.Decimal(10, 2)
   observacoes        String?
 

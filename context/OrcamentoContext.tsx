@@ -34,6 +34,7 @@ interface OrcamentoHydrated {
     papelId: string
     papel?: { id: string; album: string; referencia: string; dimensao: string; valorRolo: string | number }
     medicoes: Array<{ largura: number; altura: number; m2: number }>
+    instalacao?: boolean
     observacoes?: string | null
   }>
 }
@@ -121,6 +122,7 @@ export interface AmbientePapelForm {
   papelReferencia: string
   papelDimensao: string
   papelValorRolo: number
+  instalacao: boolean
   medicoes: MedicaoPapelForm[]
   observacoes: string
 }
@@ -132,6 +134,7 @@ export const ambientePapelVazio: AmbientePapelForm = {
   papelReferencia: '',
   papelDimensao: '',
   papelValorRolo: 0,
+  instalacao: false,
   medicoes: [{ largura: '', altura: '' }],
   observacoes: '',
 }
@@ -239,6 +242,7 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
           papelReferencia: a.papel?.referencia ?? '',
           papelDimensao: a.papel?.dimensao ?? '',
           papelValorRolo: Number(a.papel?.valorRolo ?? 0),
+          instalacao: a.instalacao ?? false,
           medicoes: a.medicoes.map(m => ({ largura: String(m.largura), altura: String(m.altura) })),
           observacoes: a.observacoes ?? '',
         }))

@@ -78,22 +78,26 @@ export async function POST(req: NextRequest) {
   // --- Papel de Parede ---
   if (produto === 'papel_parede' && ambientesPapel?.length) {
     const configsPapel: ConfigsPapel = {
-      markup_padrao: parseFloat(configMap.markup_padrao ?? '40'),
+      markup_papel_parede: parseFloat(configMap.markup_papel_parede ?? configMap.markup_padrao ?? '50'),
       comissao_padrao: parseFloat(configMap.comissao_padrao ?? '8'),
       rt_padrao: parseFloat(configMap.rt_padrao ?? '5'),
+      instalacao_papel_1rolo: parseFloat(configMap.instalacao_papel_1rolo ?? '150'),
+      instalacao_papel_2rolos: parseFloat(configMap.instalacao_papel_2rolos ?? '200'),
+      instalacao_papel_por_rolo: parseFloat(configMap.instalacao_papel_por_rolo ?? '90'),
     }
 
     const papeisIds = [...new Set(ambientesPapel.map(a => a.papelId))]
     const papeisDb = await prisma.papelParede.findMany({ where: { id: { in: papeisIds } } })
     const papeisMap = Object.fromEntries(papeisDb.map(p => [p.id, p]))
 
-    const resultadosPapel = ambientesPapel.map(a => {
+    const resultadosPapel = (ambientesPapel as Array<typeof ambientesPapel[0] & { instalacao?: boolean }>).map(a => {
       const papel = papeisMap[a.papelId]
       return calcularAmbientePapel({
         nomeAmbiente: a.nomeAmbiente,
         dimensao: papel?.dimensao ?? '0.53x10',
         valorRolo: Number(papel?.valorRolo ?? 0),
         medicoes: a.medicoes,
+        instalacao: a.instalacao ?? false,
       }, configsPapel)
     })
 
@@ -108,7 +112,7 @@ export async function POST(req: NextRequest) {
         token,
         tokenExpiresAt,
         ambientesPapel: {
-          create: ambientesPapel.map((a, i) => {
+          create: (ambientesPapel as Array<typeof ambientesPapel[0] & { instalacao?: boolean }>).map((a, i) => {
             const r = resultadosPapel[i]
             return {
               nomeAmbiente: a.nomeAmbiente,
@@ -118,6 +122,8 @@ export async function POST(req: NextRequest) {
               metrosQuadrados: r.metrosQuadrados,
               quantidadeRolos: r.quantidadeRolos,
               custoTotal: r.custoTotal,
+              custoInstalacao: r.custoInstalacao,
+              instalacao: r.instalacao,
               precoFinalVenda: r.precoFinalVenda,
               observacoes: a.observacoes ?? null,
             }
@@ -151,6 +157,8 @@ export async function POST(req: NextRequest) {
           precoFinalVenda: r.precoFinalVenda,
           metrosQuadrados: r.metrosQuadrados,
           quantidadeRolos: r.quantidadeRolos,
+          instalacaoPapel: r.instalacao,
+          custoInstalacaoPapel: r.custoInstalacao,
           custoTotal: isAdmin ? r.custoTotal : undefined,
           valorComissao: isAdmin ? r.valorComissao : undefined,
           valorRt: isAdmin ? r.valorRt : undefined,
@@ -175,7 +183,7 @@ export async function POST(req: NextRequest) {
   }
 
   const configs: Configuracoes = {
-    markup_padrao: parseFloat(configMap.markup_padrao ?? '40'),
+    markup_padrao: parseFloat(configMap.markup_cortina ?? configMap.markup_padrao ?? '50'),
     comissao_padrao: parseFloat(configMap.comissao_padrao ?? '8'),
     rt_padrao: parseFloat(configMap.rt_padrao ?? '5'),
     confeccao_prega_macho: parseFloat(configMap.confeccao_prega_macho ?? '27'),

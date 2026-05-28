@@ -9,12 +9,16 @@ export interface PapelInput {
   dimensao: string
   valorRolo: number
   medicoes: Medicao[]
+  instalacao: boolean
 }
 
 export interface ConfigsPapel {
-  markup_padrao: number
+  markup_papel_parede: number
   comissao_padrao: number
   rt_padrao: number
+  instalacao_papel_1rolo: number
+  instalacao_papel_2rolos: number
+  instalacao_papel_por_rolo: number
 }
 
 export interface ResultadoPapel {
@@ -23,7 +27,10 @@ export interface ResultadoPapel {
   metrosQuadrados: number
   fatorDivisao: number
   quantidadeRolos: number
+  custoMaterial: number
+  custoInstalacao: number
   custoTotal: number
+  instalacao: boolean
   precoComMarkup: number
   valorRt: number
   valorComissao: number
@@ -41,13 +48,25 @@ export function getFatorDimensao(dimensao: string): number {
   return FATORES[dimensao] ?? 4.5
 }
 
+export function calcularInstalacaoPapel(rolos: number, configs: Pick<ConfigsPapel, 'instalacao_papel_1rolo' | 'instalacao_papel_2rolos' | 'instalacao_papel_por_rolo'>): number {
+  if (rolos <= 0) return 0
+  if (rolos === 1) return configs.instalacao_papel_1rolo
+  if (rolos === 2) return configs.instalacao_papel_2rolos
+  return rolos * configs.instalacao_papel_por_rolo
+}
+
 export function calcularAmbientePapel(input: PapelInput, configs: ConfigsPapel): ResultadoPapel {
   const metrosQuadrados = input.medicoes.reduce((sum, m) => sum + m.largura * m.altura, 0)
   const fator = getFatorDimensao(input.dimensao)
   const quantidadeRolos = Math.ceil(metrosQuadrados / fator)
-  const custoTotal = quantidadeRolos * input.valorRolo
+  const custoMaterial = quantidadeRolos * input.valorRolo
+  const custoInstalacao = calcularInstalacaoPapel(quantidadeRolos, configs)
 
-  const precoComMarkup = custoTotal / (1 - configs.markup_padrao / 100)
+  // Se instalação = SIM, entra no custo total (markup sobre material + instalação)
+  // Se instalação = NÃO, instalação é exibida separada, apenas material entra no markup
+  const custoTotal = input.instalacao ? custoMaterial + custoInstalacao : custoMaterial
+
+  const precoComMarkup = custoTotal / (1 - configs.markup_papel_parede / 100)
   const valorRt = precoComMarkup * (configs.rt_padrao / 100)
   const valorComissao = precoComMarkup * (configs.comissao_padrao / 100)
   const precoFinalVenda = precoComMarkup + valorRt + valorComissao
@@ -58,7 +77,10 @@ export function calcularAmbientePapel(input: PapelInput, configs: ConfigsPapel):
     metrosQuadrados,
     fatorDivisao: fator,
     quantidadeRolos,
+    custoMaterial,
+    custoInstalacao,
     custoTotal,
+    instalacao: input.instalacao,
     precoComMarkup,
     valorRt,
     valorComissao,

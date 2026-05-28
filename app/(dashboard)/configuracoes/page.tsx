@@ -783,10 +783,12 @@ export default function ConfiguracoesPage() {
           {aba === 'markup' && (
             <div className="space-y-4 max-w-md">
               <div className="card-base p-6 space-y-5">
+                <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest">Markup por Produto</p>
                 {[
-                  { chave: 'markup_padrao', label: 'Markup Padrão', suffix: '%' },
-                  { chave: 'comissao_padrao', label: 'Comissão Vendedor', suffix: '%' },
-                  { chave: 'rt_padrao', label: 'RT / Arquiteto', suffix: '%' },
+                  { chave: 'markup_cortina', label: 'Markup Cortinas', suffix: '%' },
+                  { chave: 'markup_papel_parede', label: 'Markup Papel de Parede', suffix: '%' },
+                  { chave: 'markup_persiana', label: 'Markup Persianas', suffix: '%' },
+                  { chave: 'markup_piso', label: 'Markup Piso', suffix: '%' },
                 ].map(({ chave, label, suffix }) => (
                   <div key={chave} className="space-y-1.5">
                     <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
@@ -803,6 +805,28 @@ export default function ConfiguracoesPage() {
                     </div>
                   </div>
                 ))}
+                <div className="pt-2 border-t border-brand-border space-y-5">
+                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest">Comissão e RT</p>
+                  {[
+                    { chave: 'comissao_padrao', label: 'Comissão Vendedor', suffix: '%' },
+                    { chave: 'rt_padrao', label: 'RT / Arquiteto', suffix: '%' },
+                  ].map(({ chave, label, suffix }) => (
+                    <div key={chave} className="space-y-1.5">
+                      <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          value={configs[chave] ?? ''}
+                          onChange={e => setConfigs(prev => ({ ...prev, [chave]: e.target.value }))}
+                          className="input-base pr-10"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">{suffix}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="flex justify-end">
                 <button onClick={saveConfigs} disabled={saving} className="btn-gold flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-sm font-semibold disabled:opacity-70">
@@ -842,10 +866,10 @@ export default function ConfiguracoesPage() {
                     </div>
                   </div>
                 ))}
-                <div className="pt-2 border-t border-brand-border">
-                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest mb-4">Instalação</p>
+                <div className="pt-4 border-t border-brand-border space-y-4">
+                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest">Instalação — Cortina</p>
                   <div className="space-y-1.5">
-                    <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Instalação (R$/m²)</label>
+                    <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Instalação cortina (R$/m²)</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm leading-none pointer-events-none">R$</span>
                       <input
@@ -858,6 +882,30 @@ export default function ConfiguracoesPage() {
                       />
                     </div>
                   </div>
+                </div>
+
+                <div className="pt-4 border-t border-brand-border space-y-4">
+                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest">Instalação — Papel de Parede</p>
+                  {[
+                    { chave: 'instalacao_papel_1rolo', label: '1 rolo (R$ fixo)' },
+                    { chave: 'instalacao_papel_2rolos', label: '2 rolos (R$ fixo)' },
+                    { chave: 'instalacao_papel_por_rolo', label: 'A partir de 3 rolos (R$/rolo)' },
+                  ].map(({ chave, label }) => (
+                    <div key={chave} className="space-y-1.5">
+                      <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm leading-none pointer-events-none">R$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={configs[chave] ?? ''}
+                          onChange={e => setConfigs(prev => ({ ...prev, [chave]: e.target.value }))}
+                          className="input-base pl-12"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
               <div className="flex justify-end">
