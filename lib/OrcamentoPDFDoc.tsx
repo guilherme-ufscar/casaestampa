@@ -236,7 +236,12 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
           <View key={`persiana-${i}`} style={s.ambienteCard} wrap={false}>
             <Text style={s.ambienteNome}>{a.nomeAmbiente} — Persiana {TIPO_PDF[a.tipo] ?? a.tipo}</Text>
             <Text style={s.linha}><Text style={s.destaque}>Modelo:</Text> {a.colecao} {a.modelo}</Text>
-            <Text style={s.linha}><Text style={s.destaque}>Medidas:</Text> {a.largura.toFixed(2)} × {a.altura.toFixed(2)} m · {a.quantidade} {a.quantidade === 1 ? 'peça' : 'peças'} · {a.m2Cobrado.toFixed(2)} m²</Text>
+            {orc.mostrarMedidas !== false && (
+              <Text style={s.linha}><Text style={s.destaque}>Medidas:</Text> {a.largura.toFixed(2)} × {a.altura.toFixed(2)} m · {a.quantidade} {a.quantidade === 1 ? 'peça' : 'peças'} · {a.m2Cobrado.toFixed(2)} m²</Text>
+            )}
+            {orc.mostrarMedidas === false && (
+              <Text style={s.linha}><Text style={s.destaque}>Quantidade:</Text> {a.quantidade} {a.quantidade === 1 ? 'peça' : 'peças'}</Text>
+            )}
             <Text style={s.linha}><Text style={s.destaque}>Acionamento:</Text> {a.acionamento === 'motorizada' ? 'Motorizado' : 'Manual'}</Text>
             {a.bandoNome && <Text style={s.linha}><Text style={s.destaque}>Bandô:</Text> {a.bandoNome}</Text>}
             {a.guiaLateralNome && <Text style={s.linha}><Text style={s.destaque}>Guia lateral:</Text> {a.guiaLateralNome}</Text>}

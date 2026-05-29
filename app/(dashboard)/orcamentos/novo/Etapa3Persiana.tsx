@@ -289,6 +289,34 @@ export default function Etapa3Persiana() {
           </div>
         </div>
 
+        {/* Lado a lado / transpassada + Instalação local */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Disposição</label>
+            <div className="relative">
+              <select value={amb.lado} onChange={e => updateAmb({ lado: e.target.value })} className="input-base appearance-none pr-8">
+                <option value="">—</option>
+                <option value="lado_a_lado">Lado a lado</option>
+                <option value="transpassada">Transpassada</option>
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Local de instalação</label>
+            <div className="relative">
+              <select value={amb.instalacaoLocal} onChange={e => updateAmb({ instalacaoLocal: e.target.value })} className="input-base appearance-none pr-8">
+                <option value="">—</option>
+                <option value="teto">Teto</option>
+                <option value="parede">Parede</option>
+                <option value="dentro_vao">Dentro do vão</option>
+                <option value="fora_vao">Fora do vão</option>
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            </div>
+          </div>
+        </div>
+
         {/* Acionamento */}
         <div className="space-y-1.5">
           <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Acionamento</label>
