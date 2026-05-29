@@ -32,6 +32,18 @@ type PapelParede = {
   ativo: boolean
 }
 
+type Persiana = {
+  id: string
+  fornecedor: string
+  tipo: string
+  colecao: string
+  modelo: string
+  valorM2: number
+  minM2: number
+  larguraMaxima: number | null
+  ativo: boolean
+}
+
 function fmt(v: number) {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
@@ -42,6 +54,7 @@ export default function TabelasPage() {
   const [tecidos, setTecidos] = useState<Tecido[]>([])
   const [trilhos, setTrilhos] = useState<Trilho[]>([])
   const [papeis, setPapeis] = useState<PapelParede[]>([])
+  const [persianas, setPersianas] = useState<Persiana[]>([])
   const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState('')
   const [abaAtiva, setAbaAtiva] = useState<string>('')
@@ -51,10 +64,12 @@ export default function TabelasPage() {
       fetch('/api/tecidos').then(r => r.json()),
       fetch('/api/trilhos').then(r => r.json()),
       fetch('/api/papeis-parede').then(r => r.json()),
-    ]).then(([t, tr, p]) => {
+      fetch('/api/persianas').then(r => r.json()),
+    ]).then(([t, tr, p, ps]) => {
       setTecidos(t)
       setTrilhos(tr)
       setPapeis(p)
+      setPersianas(ps.map((x: Persiana) => ({ ...x, valorM2: Number(x.valorM2) })))
       setLoading(false)
     })
   }, [])
@@ -75,10 +90,15 @@ export default function TabelasPage() {
     return Array.from(cats).sort()
   }, [papeisAtivos])
 
+  const fornecedoresPersianas = useMemo(() => {
+    const fns = new Set(persianas.filter(p => p.ativo).map(p => p.fornecedor))
+    return Array.from(fns).sort().map(f => `Persiana: ${f}`)
+  }, [persianas])
+
   const abas = useMemo(() => {
-    const all = [...categoriasTecido, ...categoriasPapel, 'Trilhos']
+    const all = [...categoriasTecido, ...categoriasPapel, 'Trilhos', ...fornecedoresPersianas]
     return all
-  }, [categoriasTecido, categoriasPapel])
+  }, [categoriasTecido, categoriasPapel, fornecedoresPersianas])
 
   useEffect(() => {
     if (!abaAtiva && abas.length > 0) {
@@ -93,6 +113,7 @@ export default function TabelasPage() {
       const tecidosMatch = tecidosAtivos.filter(t => t.nome.toLowerCase().includes(termo))
       const trilhosMatch = trilhosAtivos.filter(t => t.nome.toLowerCase().includes(termo))
       const papeisMatch = papeisAtivos.filter(p => p.album.toLowerCase().includes(termo) || (p.referencia?.toLowerCase().includes(termo) ?? false))
+      const persianasMatch = persianas.filter(p => p.ativo && (p.colecao.toLowerCase().includes(termo) || p.modelo.toLowerCase().includes(termo)))
 
       if (abaAtiva === 'Trilhos' && trilhosMatch.length > 0) {
         return { tipo: 'trilhos' as const, items: trilhosMatch }
@@ -100,16 +121,21 @@ export default function TabelasPage() {
       if (abaAtiva.startsWith('Papel: ') && papeisMatch.length > 0) {
         return { tipo: 'papeis' as const, items: papeisMatch }
       }
-      if (!abaAtiva.startsWith('Papel: ') && abaAtiva !== 'Trilhos' && tecidosMatch.length > 0) {
+      if (abaAtiva.startsWith('Persiana: ') && persianasMatch.length > 0) {
+        return { tipo: 'persianas' as const, items: persianasMatch }
+      }
+      if (!abaAtiva.startsWith('Papel: ') && !abaAtiva.startsWith('Persiana: ') && abaAtiva !== 'Trilhos' && tecidosMatch.length > 0) {
         return { tipo: 'tecidos' as const, items: tecidosMatch }
       }
 
       if (papeisMatch.length > 0) return { tipo: 'papeis' as const, items: papeisMatch }
+      if (persianasMatch.length > 0) return { tipo: 'persianas' as const, items: persianasMatch }
       if (tecidosMatch.length > 0) return { tipo: 'tecidos' as const, items: tecidosMatch }
       if (trilhosMatch.length > 0) return { tipo: 'trilhos' as const, items: trilhosMatch }
 
       if (abaAtiva === 'Trilhos') return { tipo: 'trilhos' as const, items: [] }
       if (abaAtiva.startsWith('Papel: ')) return { tipo: 'papeis' as const, items: [] }
+      if (abaAtiva.startsWith('Persiana: ')) return { tipo: 'persianas' as const, items: [] }
       return { tipo: 'tecidos' as const, items: [] }
     }
 
@@ -123,12 +149,18 @@ export default function TabelasPage() {
       return { tipo: 'papeis' as const, items: filtered }
     }
 
+    if (abaAtiva.startsWith('Persiana: ')) {
+      const fornecedor = abaAtiva.replace('Persiana: ', '')
+      const filtered = persianas.filter(p => p.ativo && p.fornecedor === fornecedor)
+      return { tipo: 'persianas' as const, items: filtered }
+    }
+
     const filtered = tecidosAtivos.filter(t => {
       const catMatch = t.categoria === abaAtiva || (!t.categoria && abaAtiva === categoriasTecido[0])
       return catMatch
     })
     return { tipo: 'tecidos' as const, items: filtered }
-  }, [abaAtiva, busca, tecidosAtivos, trilhosAtivos, papeisAtivos, categoriasTecido])
+  }, [abaAtiva, busca, tecidosAtivos, trilhosAtivos, papeisAtivos, persianas, categoriasTecido])
 
   if (loading) {
     return (
@@ -227,6 +259,34 @@ export default function TabelasPage() {
               ))}
               {itensFiltrados.items.length === 0 && (
                 <tr><td colSpan={4} className="px-4 py-8 text-center text-text-muted text-sm">Nenhum item encontrado</td></tr>
+              )}
+            </tbody>
+          </table>
+        )}
+
+        {itensFiltrados.tipo === 'persianas' && (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-brand-border bg-brand-bg">
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Tipo</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Coleção</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Modelo</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">Larg. Máx.</th>
+                <th className="text-left px-4 py-3 text-[11px] font-medium text-text-muted uppercase tracking-wider">R$/m²</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(itensFiltrados.items as Persiana[]).map((p, i) => (
+                <tr key={p.id} className={`border-b border-brand-border last:border-0 ${i % 2 === 0 ? '' : 'bg-brand-bg/50'}`}>
+                  <td className="px-4 py-3 text-text-secondary">{p.tipo}</td>
+                  <td className="px-4 py-3 font-medium text-text-primary">{p.colecao}</td>
+                  <td className="px-4 py-3 text-text-secondary">{p.modelo}</td>
+                  <td className="px-4 py-3 text-text-secondary">{p.larguraMaxima ? `${p.larguraMaxima}m` : '—'}</td>
+                  <td className="px-4 py-3 text-text-secondary">{fmt(p.valorM2)}</td>
+                </tr>
+              ))}
+              {itensFiltrados.items.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-text-muted text-sm">Nenhum item encontrado</td></tr>
               )}
             </tbody>
           </table>

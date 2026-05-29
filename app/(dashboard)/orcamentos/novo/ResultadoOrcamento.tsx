@@ -85,6 +85,7 @@ export default function ResultadoOrcamento() {
     produto,
     ambientes,
     ambientesPapel,
+    ambientesPersiana,
     setAmbientes,
     setAmbienteAtual,
     setEtapa,
@@ -127,6 +128,32 @@ export default function ResultadoOrcamento() {
             observacoes: a.observacoes || null,
           }))
           payload.ambientes = []
+        } else if (produto === 'persiana') {
+          payload.ambientesPersiana = ambientesPersiana.map(a => ({
+            nomeAmbiente: a.nomeAmbiente,
+            persianaId: a.persianaId,
+            fornecedor: a.fornecedor,
+            tipo: a.tipo,
+            colecao: a.colecao,
+            modelo: a.modelo,
+            largura: parseFloat(a.largura),
+            altura: parseFloat(a.altura),
+            quantidade: a.quantidade,
+            lado: a.lado || null,
+            acionamento: a.acionamento,
+            instalacaoLocal: a.instalacaoLocal || null,
+            instalacao: a.instalacao,
+            valorM2: a.valorM2,
+            minM2: a.minM2,
+            bando: a.bandoAtivo && a.bandoId ? { id: a.bandoId, nome: a.bandoNome, valorMetro: a.bandoValorMetro, lado: a.bandoLado } : null,
+            guiaLateral: a.guiaLateralAtivo && a.guiaLateralId ? { id: a.guiaLateralId, nome: a.guiaLateralNome, valorMetro: a.guiaLateralValorMetro, fator: a.guiaLateralFator } : null,
+            guiaBase: a.guiaBaseAtivo && a.guiaBaseId ? { id: a.guiaBaseId, nome: a.guiaBaseNome, valorMetro: a.guiaBaseValorMetro } : null,
+            motor: a.acionamento === 'motorizada' && a.motorId ? { id: a.motorId, nome: a.motorNome, valor: a.motorValor } : null,
+            controle: a.acionamento === 'motorizada' && a.controleRemotoId ? { id: a.controleRemotoId, nome: a.controleRemotoNome, valor: a.controleRemotoValor } : null,
+            observacoes: a.observacoes || null,
+          }))
+          payload.ambientes = []
+          payload.ambientesPapel = []
         } else {
           payload.ambientes = ambientes.map(a => ({
             nomeAmbiente: a.nomeAmbiente,
@@ -297,6 +324,11 @@ export default function ResultadoOrcamento() {
                     Instalação: <strong>{fmt(a.custoInstalacaoPapel)}</strong> — paga diretamente ao instalador
                   </span>
                 )}
+              </>
+            ) : produto === 'persiana' ? (
+              <>
+                <span>m² cobrado: <strong className="text-text-primary">{((a as Record<string, unknown>).m2Cobrado as number)?.toFixed(2) ?? '—'} m²</strong></span>
+                <span>Peças: <strong className="text-text-primary">{String((a as Record<string, unknown>).quantidade ?? '—')}</strong></span>
               </>
             ) : (
               <>

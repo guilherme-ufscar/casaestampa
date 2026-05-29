@@ -49,7 +49,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function RevisaoOrcamento() {
-  const { cliente, produto, ambientes, ambientesPapel, setAmbienteAtual, setAmbientePapelAtual, setEtapa } = useOrcamento()
+  const { cliente, produto, ambientes, ambientesPapel, ambientesPersiana, setAmbienteAtual, setAmbientePapelAtual, setAmbientePersianaAtual, setEtapa } = useOrcamento()
   const [configs, setConfigs] = useState<ConfigsRaw | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -57,6 +57,13 @@ export default function RevisaoOrcamento() {
     ? ambientesPapel
         .map((a, i) => {
           const invalido = !a.papelId || !a.nomeAmbiente || !a.medicoes.some(m => parseFloat(m.largura) > 0 && parseFloat(m.altura) > 0)
+          return invalido ? (a.nomeAmbiente || `Ambiente ${i + 1}`) : null
+        })
+        .filter((nome): nome is string => Boolean(nome))
+    : produto === 'persiana'
+    ? ambientesPersiana
+        .map((a, i) => {
+          const invalido = !a.persianaId || !a.nomeAmbiente || parseFloat(a.largura) <= 0 || parseFloat(a.altura) <= 0
           return invalido ? (a.nomeAmbiente || `Ambiente ${i + 1}`) : null
         })
         .filter((nome): nome is string => Boolean(nome))
@@ -165,8 +172,40 @@ export default function RevisaoOrcamento() {
           </div>
         )}
 
+        {/* Ambientes de Persiana */}
+        {produto === 'persiana' && (
+          <div className="space-y-4">
+            {ambientesPersiana.map((a, i) => (
+              <div key={i} className="border border-brand-border rounded-xl overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 bg-brand-bg border-b border-brand-border">
+                  <div className="flex items-center gap-2">
+                    <Home size={16} className="text-gold-primary" />
+                    <span className="text-sm font-semibold text-text-primary">{a.nomeAmbiente || `Ambiente ${i + 1}`}</span>
+                  </div>
+                  <button onClick={() => { setAmbientePersianaAtual(i); setEtapa(3) }} className="flex items-center gap-1 text-xs font-medium text-text-secondary hover:text-gold-primary transition-colors">
+                    <Pencil size={13} /> Editar
+                  </button>
+                </div>
+                <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <InfoRow label="Tipo" value={a.tipo || '—'} />
+                  <InfoRow label="Coleção" value={a.colecao || '—'} />
+                  <InfoRow label="Modelo" value={a.modelo || '—'} />
+                  <InfoRow label="Largura" value={a.largura ? `${a.largura}m` : '—'} />
+                  <InfoRow label="Altura" value={a.altura ? `${a.altura}m` : '—'} />
+                  <InfoRow label="Qtd" value={String(a.quantidade)} />
+                  <InfoRow label="Acionamento" value={a.acionamento === 'motorizada' ? 'Motorizada' : 'Manual'} />
+                  <InfoRow label="Bandô" value={a.bandoAtivo ? (a.bandoNome || 'Sim') : 'Não'} />
+                  <InfoRow label="Guia Lateral" value={a.guiaLateralAtivo ? (a.guiaLateralNome || 'Sim') : 'Não'} />
+                  <InfoRow label="Instalação" value={a.instalacao ? 'Sim' : 'Não'} />
+                  {a.acionamento === 'motorizada' && <InfoRow label="Motor" value={a.motorNome || '—'} />}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Ambientes de Cortina */}
-        {produto !== 'papel_parede' && (
+        {produto !== 'papel_parede' && produto !== 'persiana' && (
         <div className="space-y-4">
           {ambientes.map((a, i) => {
             const resultado = cfgs && a.tecidoId && a.largura && a.altura
@@ -244,12 +283,18 @@ export default function RevisaoOrcamento() {
           <div className="flex gap-6">
             <div>
               <p className="text-[11px] text-text-muted uppercase tracking-wider">Ambientes</p>
-              <p className="text-lg font-semibold text-text-primary">{produto === 'papel_parede' ? ambientesPapel.length : ambientes.length}</p>
+              <p className="text-lg font-semibold text-text-primary">{produto === 'papel_parede' ? ambientesPapel.length : produto === 'persiana' ? ambientesPersiana.length : ambientes.length}</p>
             </div>
-            {produto !== 'papel_parede' && (
+            {produto !== 'papel_parede' && produto !== 'persiana' && (
               <div>
                 <p className="text-[11px] text-text-muted uppercase tracking-wider">Total de tecido</p>
                 <p className="text-lg font-semibold text-text-primary">{totalMetros.toFixed(2)}m</p>
+              </div>
+            )}
+            {produto === 'persiana' && (
+              <div>
+                <p className="text-[11px] text-text-muted uppercase tracking-wider">Total de peças</p>
+                <p className="text-lg font-semibold text-text-primary">{ambientesPersiana.reduce((s, a) => s + a.quantidade, 0)}</p>
               </div>
             )}
             {produto === 'papel_parede' && (

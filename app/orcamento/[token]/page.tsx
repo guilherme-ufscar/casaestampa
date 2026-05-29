@@ -13,6 +13,7 @@ export default async function OrcamentoPublicoPage({ params }: { params: { token
       cliente: true,
       vendedor: { select: { nome: true } },
       ambientes: { include: { tecido: true, blackout: true } },
+      ambientesPersiana: true,
     },
   })
 
@@ -97,6 +98,48 @@ export default async function OrcamentoPublicoPage({ params }: { params: { token
                 <div className="flex justify-between py-2 border-b border-brand-border">
                   <span className="text-text-secondary">Blackout</span>
                   <span className="font-medium text-text-primary">{a.blackout.nome} · {Number(a.quantidadeBlackout ?? 0).toFixed(2)}m</span>
+                </div>
+              )}
+              {a.instalacao && (
+                <div className="flex justify-between py-2 border-b border-brand-border">
+                  <span className="text-text-secondary">Instalação</span>
+                  <span className="font-medium text-text-primary">Inclusa</span>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-between items-center mt-4 pt-3 border-t border-brand-border">
+              <span className="text-xs text-text-muted uppercase tracking-wider">Valor do ambiente</span>
+              <span className="text-xl font-bold text-text-primary">{fmt(Number(a.precoFinalVenda ?? 0))}</span>
+            </div>
+          </div>
+        ))}
+
+        {/* Ambientes Persiana */}
+        {orc.ambientesPersiana.map((a, i) => (
+          <div key={`p-${i}`} className="card-base p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Home size={16} className="text-gold-primary" />
+              <p className="text-sm font-semibold text-text-primary">{a.nomeAmbiente || `Ambiente ${i + 1}`} — Persiana {a.tipo}</p>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between py-2 border-b border-brand-border">
+                <span className="text-text-secondary">Modelo</span>
+                <span className="font-medium text-text-primary">{a.colecao} {a.modelo}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-brand-border">
+                <span className="text-text-secondary">Medidas</span>
+                <span className="font-medium text-text-primary">{Number(a.largura).toFixed(2)} × {Number(a.altura).toFixed(2)} m · {a.quantidade} {a.quantidade === 1 ? 'peça' : 'peças'}</span>
+              </div>
+              {a.bandoNome && (
+                <div className="flex justify-between py-2 border-b border-brand-border">
+                  <span className="text-text-secondary">Bandô</span>
+                  <span className="font-medium text-text-primary">{a.bandoNome}</span>
+                </div>
+              )}
+              {a.motorNome && (
+                <div className="flex justify-between py-2 border-b border-brand-border">
+                  <span className="text-text-secondary">Motorização</span>
+                  <span className="font-medium text-text-primary">{a.motorNome}</span>
                 </div>
               )}
               {a.instalacao && (

@@ -1,0 +1,675 @@
+
+
+########## FILE: TABELA GABRIEL AUTOMAÇÃO.xlsx
+
+===SHEET: Automação — Motores
+PERSIANAS GABRIEL — LINHA AUTOMAÇÃO GP — MOTORES||||
+Lançamento: 28/11/2025  |  Valores promocionais enquanto durar o estoque  |  Preço por módulo (motor) — emissor separado||||
+DESCRIÇÃO DO MOTOR|MARCA / LINHA|CAPACIDADE / LARGURA|APLICAÇÃO / OBSERVAÇÃO|PREÇO (unid.)
+SEÇÃO: MOTORES SOMFY LSN (COM FIO)||||
+Motor LSN (Eletrônico) RTS 6/33 — 120V/60Hz — Fio 1,35m
+Compatível com sistema de automação
+NÃO acompanha emissor|SOMFY LSN|Larg. mín. 0,68m
+Larg. máx. sob consulta|Cortina ROLO (com base chata 3,5 x 1,0)
+Somente motor / sem emissor|R$ 950,00
+(Romana: R$ 1.015,00)
+Motor LSN (Eletrônico) RTS 6/33 — 120V/60Hz — Fio 1,35m
+Compatível com sistema de automação
+Emissor de 01 canal incluso|SOMFY LSN|Larg. mín. 0,68m
+Larg. máx. sob consulta|Cortina ROLO (com base chata 3,5 x 1,0)
+Emissor de 01 canal incluso|R$ 1.035,00
+Motor LSN (Eletrônico) RTS 6/33 — 120V/60Hz — Fio 1,35m
+Compatível com sistema de automação
+Emissor de 01 canal incluso|SOMFY LSN|Larg. mín. 0,68m
+Larg. máx. sob consulta|Cortina ROMANA e HZ 50mm
+Este motor NÃO permite direcionamento da luminosidade nas lâminas|R$ 1.170,00
+SEÇÃO: MOTORES SOMFY (COM FIO)||||
+Rollux — RTS 510R2 10/38 110V
+Receptor embutido ao tubo da Rollux
+Fio 1,35m|SOMFY|Até 23kg|Cortina ROLO (com base chata 3,5 x 1,0)|R$ 1.215,00
+Romana — Sonesse RTS 409 R2 / RTS 9/14V/60Hz
+Receptor interno — Fio 1,35m|SOMFY|Até 35kg|Cortina ROMANA e HZ 50mm (com base chata 3,5 x 10)
+⚠ SOMENTE ESTE MOTOR permite basculamento das lâminas (direcionamento da luminosidade)|R$ 1.640,00
+SEÇÃO: MOTOR SOMFY SEM FIO (BATERIA)||||
+Motor Altus 28 WireFree RTS Li-ion — 12V sem fio
+Bateria 12V/2600mAh
+Autonomia: 1 recarga/ano (5h recarga total) com 1 subida e 1 descida diária
+Garantia: 04 anos|SOMFY|Área máx. 10m² ou 5kg|Somente cortinas ROLO e ROMANA (base chata 3,5 x 1,0)
+Sem emissor / sem carregador
+NÃO usar com Bando Caixa Box 70|R$ 1.080,00
+SEÇÃO: MOTOR ROMANA DE TETO (ENTECO)||||
+Motor Romana de Teto — Frequência 433,92 MHz
+Fio 1,00m — Torque 1,2Nm — 100 rpm
+Emissor de até 06 canais incluso|ENTECO|---|Romana de Teto
+Emissor incluso de até 06 canais|R$ 1.350,00
+SEÇÃO: MOTORES AUTOMAÇÃO GP COM FIO||||
+Motor GP Elétrico Bivolt — Torque 2Nm — 25rpm
+Frequência 50/60Hz — Fio 0,75cm
+Garantia: 02 anos|AUTOMAÇÃO GP COM FIO|Até 10kg|Cortina ROLO
+Somente motor / sem emissor|R$ 380,00
+Motor GP Elétrico Bivolt — Torque 10Nm — 17rpm
+Frequência 51W/DC 12V — Fio 0,75cm
+Garantia: 02 anos|AUTOMAÇÃO GP COM FIO|Até 20kg|Cortina ROLO
+Somente motor / sem emissor|R$ 480,00
+Motor GP Elétrico Bivolt — Torque 2Nm — 25rpm
+Frequência 50/60Hz — Fio 0,75cm
+Garantia: 02 anos|AUTOMAÇÃO GP COM FIO|Até 10kg|Cortina ROMANA / HZ 50mm (consultar limite de tamanho)
+Somente motor / sem emissor|R$ 500,00
+Motor GP Elétrico Bivolt — Torque 10Nm — 17rpm
+Frequência 51W/DC 12V — Fio 0,75cm
+Garantia: 02 anos|AUTOMAÇÃO GP COM FIO|Até 20kg|Cortina ROMANA / HZ 50mm (consultar limite de tamanho)
+Somente motor / sem emissor|R$ 600,00
+SEÇÃO: MOTORES AUTOMAÇÃO GP A BATERIA||||
+Motor GP a Bateria Bivolt — Torque 2Nm — 25rpm
+4000mAh / 12.6V/1A
+Garantia: 02 anos|AUTOMAÇÃO GP BATERIA|Até 10kg|Cortina ROLO
+Não compatível com Bando Caixa Box
+Somente motor / sem emissor|R$ 480,00
+Motor GP a Bateria Bivolt — Torque 13Nm — 13rpm
+2,1A / 4,8Ah / 25,2W / DC 12W
+Garantia: 02 anos|AUTOMAÇÃO GP BATERIA|Até 26kg|Cortina ROLO
+Não compatível com Bando Caixa Box
+Somente motor / sem emissor|R$ 720,00
+Motor GP a Bateria Bivolt — Torque 2Nm — 25rpm
+4000mAh / 12.6V/1A
+Garantia: 02 anos|AUTOMAÇÃO GP BATERIA|Até 10kg|Cortina ROMANA / HZ 50mm (consultar limite de tamanho)
+Somente motor / sem emissor|R$ 600,00
+Motor GP a Bateria Bivolt — Torque 13Nm — 13rpm
+2,1A / 4,8Ah / 25,2W / DC 12W
+Garantia: 02 anos|AUTOMAÇÃO GP BATERIA|Até 26kg|Cortina ROMANA / HZ 50mm (consultar limite de tamanho)
+Somente motor / sem emissor|R$ 820,00
+SEÇÃO: EMISSORES SOMFY||||
+Emissor Rádio Frequência Telis 1 Canal (aciona somente 1 módulo)|SOMFY|Branco/Cinza||R$ 180,00
+Emissor Rádio Frequência Telis 5 Canais (aciona até 5 módulos)|SOMFY|Branco/Cinza||R$ 290,00
+Emissor Rádio Frequência Telis 16 Canais (aciona até 16 módulos)|SOMFY|Branco/Cinza||R$ 840,00
+Emissor Situo 1 Variation Pure — Compatível com: Motor Sonesse, Motor Altus 28 (Bateria) e Sistema Inteo|SOMFY|Branco||R$ 435,00
+Emissor Situo 5 Variation Pure — Compatível com: Motor Sonesse, Motor Altus 28 (Bateria) e Sistema Inteo|SOMFY|Branco||R$ 549,00
+Emissor Smoove 1 Canal RTS Shine Pure (somente por encomenda)|SOMFY|Branco||R$ 280,00
+Emissor Smoove 4 Canais RTS Shine Pure (somente por encomenda) — inclui moldura|SOMFY|Branco||R$ 600,00
+SEÇÃO: EMISSORES AUTOMAÇÃO GP||||
+Emissor GP 01 Canal|AUTOMAÇÃO GP|Branco||R$ 70,00
+Emissor GP 15 Canais|AUTOMAÇÃO GP|Branco||R$ 98,00
+SEÇÃO: EMISSORES ENTECO||||
+Emissor Enteco 01 Canal|ENTECO|Preto||R$ 127,00
+Emissor Enteco 06 Canais|ENTECO|Preto||R$ 170,00
+Emissor Enteco 16 Canais|ENTECO|Preto||R$ 225,00
+SEÇÃO: ACESSÓRIOS E COMPLEMENTOS||||
+Carregador para Motor Altus 28 WireFree RTS (recarga em 4/5 horas)|SOMFY|Branco||R$ 99,00
+Carregador para Automação GP Bivolt|GP|Branco||R$ 40,00
+Sistema Inteo de Automação — 100-24Vac / 50-60Hz / Conexão WiFi|SOMFY|Branco||R$ 590,00
+Moldura Smoove Pure|SOMFY|Branco||R$ 20,00
+Painel Solar Altus 28 WF — substitui o carregador (somente sob encomenda)|SOMFY|---||R$ 325,00/unid.
+
+
+########## FILE: TABELA GABRIEL HORIZONTAL.xlsx
+
+===SHEET: Tecidos e Acessórios
+PERSIANAS GABRIEL DE MARICÁ — TABELA ROLLUX E PAINEL EUROPA|||||
+Tabela em vigor a partir de 03/03/2025 — Atualização: 03/03/2025|||||
+CÓDIGO GP|COLEÇÃO|LARGURA|OBSERVAÇÃO|PREÇO ROLLUX / PAINEL EUROPA|PAINEL ROMANA (+20%)
+SEÇÃO: TECIDOS COM PREÇOS IMPERDÍVEIS|||||
+315 e 317|ANGKOR|LARG 2,80m||R$ 99,00|R$ 118,80
+368|ALT. VISION|LARG 2,20m|SOMENTE ROLLUX|R$ 110,00|---
+363|ALT. VISION|LARG 2,70m|SEMI BLACKOUT|R$ 98,00|---
+365 e 366|ALT. VISION|LARG 2,70m|SOMENTE ROLLUX|R$ 98,00|---
+235|MIAMI BK|LARG 2,50m|BLACKOUT|R$ 100,00|R$ 120,00
+SEÇÃO: ACESSÓRIOS E COMANDOS|||||
+Comando Stop Plus 40|STOP PLUS 40|LARG 2,50m*|Tubo de 40. *Altura máxima varia conforme peso do tecido.|R$ 47,90|---
+Comando Stop Plus 50|STOP PLUS 50|LARG 3,10m*|Tubo de 50. *Altura máxima varia conforme peso do tecido.|R$ 52,90|---
+Redutor de Peso de 38 com Mola Rollux|---|---|---|SOB CONSULTA|---
+Redutor de Peso de 50 com Mola Rollux|---|---|---|SOB CONSULTA|---
+Mola de Tração de 38/50mm para Rollux|MANUAL|---|---|SOB CONSULTA|---
+Trilho 03 Vias Deslizante (Cortina de Vidro)|TRILHO DESLIZANTE|LARG 6,00m|Cálculo em Metro Linear|R$ 49,50|---
+Haste Acrílica Painéis Romana/Europa (Manual)|PAINEL ROMANA/EUROPA|Até 1,50m altura|Para manuseio de Painéis Romana/Europa|R$ 5,00/unid.|--
+SEÇÃO: DÖHLER|||||
+035, *142, *210, *213, *228, *229, 231, *291, *292, 293, 294, *307, *408, *410, *413, 433, 495, 496, 497 e 498|DÖHLER *|LARG 2,00m / *2,80m|SEM BLACKOUT|R$ 106,50|R$ 127,80
+076 e 077|DÖHLER TP PALHA *|LARG 2,00m|SEM BLACKOUT|R$ 98,00|R$ 117,60
+133|DÖHLER C/ PROTEÇÃO *|LARG 2,00m|Proteção contra água e óleo|R$ 99,00|R$ 118,80
+*081, *216, *217, 387, 389, *392, *393, 396, *400, *401, *402, *403, 420-426, *435, 437, *438-*440, *483, *485, 490-494, *508-*511, *552, *553, *557 E *558|DOHLER BLACK *|LARG 2,00m / *2,80m||R$ 117,50|R$ 141,00
+520-542, 544-551, 560-566|DOHLER BLACK DIGITAL *|LARG 3,00m|BLACKOUT|R$ 124,00|R$ 148,80
+416, 418, 419 E 559|DOHLER BLACK INFANTIL DIGITAL *|LARG 3,00m|BLACKOUT|R$ 126,50|R$ 151,80
+SEÇÃO: PINPOINT / FLORENÇA|||||
+001(BL BRANCO), 002(BL MARFIM), 003(BL BEGE), 006(BL CINZA) e 090(PRETO)|PINPOINT **|LARG 3,00m|BLACKOUT|R$ 134,50|R$ 161,40
+335 E 336|PINPOINT MATTE|LARG 1,83m|||
+190 e 191|FLORENÇA RUSTIC **|LARG 1,80m||R$ 95,50|R$ 114,60
+331, 332, 333 E 334|FLORENCE BLACKOUT **|LARG 1,80m|BLACKOUT|R$ 146,00|R$ 175,20
+SEÇÃO: SCREEN E TELA SOLAR|||||
+467, 469, 472, 473, 475, 477, 479, 481 e 482|JS SCREEN 5% *|LARG 2,50m||R$ 112,00|R$ 134,40
+460, 461, 462, *463, *464, *465, 466, *487, *513-*519|JS SCREEN 5% *|LARG 2,50m / *3,00m||R$ 112,00|R$ 134,40
+589 e 591|SCREEN 1% (PVC + POLIÉSTER)|LARG 3,00m||R$ 122,00|R$ 146,40
+590 e 592|SCREEN 3% (PVC + POLIÉSTER)|LARG 3,00m||R$ 117,00|R$ 140,40
+578, 579, 580, 581 E 582|SCREEN 5% * (PVC + POLIÉSTER)|LARG 3,00m||R$ 112,00|R$ 134,40
+568, 569, 570, 571 E 572|TELA SOLAR 1% * (PVC + FIBRA DE VIDRO)|LARG 3,00m||R$ 134,50|R$ 161,40
+583, 584, 585, 586 E 587|TELA SOLAR 3% * (PVC + FIBRA DE VIDRO)|LARG 3,00m||R$ 128,50|R$ 154,20
+573, 574, 575, 576 E 577|TELA SOLAR 5% * (PVC + FIBRA DE VIDRO)|LARG 3,00m||R$ 122,50|R$ 147,00
+083 (GRAFITE)|TELA SOLAR 5% * (PVC + FIBRA DE VIDRO)|LARG 3,10m||R$ 122,50|R$ 147,00
+444, 448 e 449|TELA SOLAR 8% * (PVC + POLIÉSTER)|LARG 3,10m||R$ 117,50|R$ 141,00
+095|SCREEN RUSTIC **|LARG 2,43m||R$ 171,00|NÃO FAZ
+SEÇÃO: TECIDOS ESPECIAIS|||||
+110(EVER), 111(EVER), 112(EVER), 116(PAULET)|MONTES **|LARG 2,25m||R$ 86,00|R$ 103,20
+160, 161, 162, 163|CETIM **|LARG 2,80m||R$ 143,00|NÃO FAZ
+168, 169 e 170|LONDRES **|LARG 2,80m||R$ 148,00|R$ 177,60
+226 e 227|NOBLETTE I **|LARG 2,80m||R$ 163,00|R$ 195,60
+273, 274, 275, 276 e 277|NOBLETTE II **|LARG 2,60m||R$ 163,00|R$ 195,60
+222, 223 e 506|NAPOLES **|LARG 2,40m|BLACKOUT|R$ 128,50|R$ 154,50
+281, 282, 283, 284, 507 e 512|TORONTO **|LARG 2,40m|BLACKOUT|R$ 135,00|R$ 162,00
+381, 382, 383 e 384|STUCCO BK **|LARG 2,80m|BLACKOUT|R$ 160,00|R$ 192,00
+100 e 101|MONTEVIDEU BK **|LARG 2,00m|ESTOQUE SOB CONSULTA|R$ 132,00|R$ 158,40
+069, 070 e 145|FIBRAS SINTÉTICAS **|LARG 1,75m||R$ 154,00|NÃO FAZ
+SEÇÃO: ALT. VISION|||||
+488 (PARALELOGRAMA) e 489 (RETÂNGULO)|ALT. VISION ** (DOHLER) *|LARG 2,25m|Usar bando c/ frente 0,15 ou bando de alumínio boleado|R$ 210,00|NÃO FAZ
+456, 458|JS ALT. VISION *|LARG 2,50m||R$ 110,00|----
+084(BR), 085(CR), 086(NAT), 087(PRETO), 221(PR), 376, 432, 499-502, 554 E 555|ALT. VISION (DOHLER) *|LARG 2,20m||R$ 148,00|----
+593(BRANCO), 594(PALHA), 595(CREME), 596(PRATA) E 597(GRAFITE)|ALT. VISION SOFT (TRANSLÚCIDO)|LARG 2,95m||R$ 160,00|----
+504|ALT. VISION SEMI BLACK (DOHLER) *|LARG 2,20m||R$ 182,00|----
+427, 428, 429, 430 e 431|ALT. VISION **|LARG 2,50m|ALT VISION EM SCREEN (TELA SOLAR)|R$ 220,00|----
+171, 176 e 177|ALT. VISION **|LARG 2,80m|SONATURA|R$ 168,00|----
+299, 300, 302, 303 e 367 / 450, 451, 452 e 453|ALT. VISION **|LARG 2,80m|SEMI BLACK|R$ 265,00|----
+SEÇÃO: SONATINE / ECOLUX / LUXURY / BLINDS TOP|||||
+PRETO 243, CINZA 244, 250 E 251|SONATINE II **|LARG 2,70m||R$ 296,00|----
+PRETO 258, 260, BRANCO 261, 285-290|ECOLUX **|LARG 2,80m||R$ 225,00|----
+311 BRANCO, 312 AREIA, 313 NATURAL E 314 MARROM|LUXURY ** (M²)|LARG 2,60m|SOMENTE BANDO EM ALUMÍNIO|R$ 225,00/m²|----
+326 BRANCO, 327 MARFIM, 328 BEGE, 329 CASTANHO E 330 TABACO|BLINDS TOP ** (M²)|LARG 2,80m|SOMENTE BANDO EM ALUMÍNIO|R$ 225,00/m²|----
+SEÇÃO: GUIAS LATERAIS|||||
+Guia Lateral Cor Branca (cores opcionais disponíveis)|GUIA LATERAL - METRO LINEAR|3,0cm x 2,2cm|Vedação lateral do vão. Escova preta. SÓ ATÉ 1,50m DE ALTURA|R$ 35,00/ml|----
+Guia Lateral Cor Branca (cores opcionais disponíveis)|GUIA LATERAL - METRO LINEAR|5,5cm x 2,2cm|Vedação lateral do vão. Escova preta.|R$ 50,00/ml|----
+Guia Lateral Cor Branca (cores opcionais disponíveis)|GUIA LATERAL - METRO LINEAR|8,0cm x 2,2cm|Vedação lateral do vão. Escova preta.|R$ 60,00/ml|----
+
+===SHEET: Bandos e Serviços
+PERSIANAS GABRIEL DE MARICÁ — BANDOS E SERVIÇOS||||||
+DESCRIÇÃO|COLEÇÃO/TIPO|LARGURA/ALT.|OBSERVAÇÃO|PREÇO|TODO FORRADO 50%|FORRADO NO SENTIDO 100%
+SEÇÃO: BANDOS EM MDF||||||
+Cor do MDF de acordo com o tecido|BANDO RETO MDF - METRO LINEAR|10cm|Forrado no mesmo tecido. Alt. da frente 10cm|R$ 45,00|R$ 67,50|R$ 90,00
+Cor do MDF de acordo com o tecido|BANDO RETO MDF - METRO LINEAR|15cm|Forrado no mesmo tecido. Alt. da frente 15cm|R$ 51,50|R$ 77,20|R$ 103,00
+Cor do MDF de acordo com o tecido|BANDO RETO MDF - METRO LINEAR|20cm|Forrado no mesmo tecido. Alt. da frente 20cm|R$ 60,50|R$ 90,70|R$ 121,00
+SEÇÃO: BANDOS EM ALUMÍNIO||||||
+Branco 005, Areia 031, Preto 233, Marrom 060 e Cinza 034|BANDO ALUMÍNIO PINTADO - METRO LINEAR|8,0cm|Acomoda somente uma Rollux. Sem transpasses. Profundidade 7,5cm.|R$ 65,90/ml|---|---
+Branco 005, Areia 031, Preto 233, Marrom 060 e Cinza 034|CAIXA BOX 70 (MINI) **ALTURA LIMITADA**|7,0cm|Frente removível 7,0cm. Profund. 6,5cm. Tubo 28 (ml). Para Rollux único.|R$ 88,90/ml|---|---
+Branco 005, Areia 031, Preto 233, Marrom 060 e Cinza 034|CAIXA BOX 90 (MAXI)|9,0cm|Frente removível 9,0cm. Profund. 8,0cm (ml). Para até 02 Rollux.|R$ 109,90/ml|---|---
+SEÇÃO: SERVIÇOS||||||
+Cantoneiras Brancas ou Zincadas|CANTONEIRAS|5 / 10 e 15cm|---|---|---|---
+Remontagem de Produtos|TODOS|---||R$ 40,00/peça|---|---
+Corte / Ajuste na Largura|ROLLUX|||R$ 50,00/peça|---|---
+Corte / Ajuste|BANDO MDF|||R$ 25,00/peça|---|---
+Corte|BANDO ALUMÍNIO / CAIXA BOX|||R$ 18,00/peça|---|---
+Corte / Ajuste na Altura|PAINEL EUROPA / ROMANA|||R$ 15,00/peça|---|---
+Corte / Ajuste na Largura|PAINEL EUROPA / ROMANA|||R$ 45,00/peça|---|---
+
+===SHEET: Persiana HZ 16 e 25mm
+PERSIANAS GABRIEL DE MARICÁ — TABELA HZ 16/25mm|||
+Tabela em vigor a partir de 03/03/2025  |  Preço calculado em m²  |  Mínimo cobrado: 1,00 m²|||
+CÓDIGO GP / CORES|COLEÇÃO|OBSERVAÇÃO|PREÇO HZ (m²)
+SEÇÃO: PERSIANA HZ 25mm|||
+005(BRANCO), 026(CINZA), 027(PÉROLA), 031(AREIA), 034(ALUMÍNIO), 057(ROYAL), 060(CAFÉ), 064(PRATA BRILHO), 095(CINZA ESCURO), 100(CREME), 112(MARFIM), 131(OURO), 233(PRETO), 544(BRANCO NEVE), 771(CHUMBO), 928(VERDE ÁGUA) E 958(CELESTE)|HZ 25mm / 0.18mm|Espessura da lâmina 0,18mm|R$ 75,90
+LISA: 005(BRANCO), 009(AMARELO), 020(VERMELHO), 026(CINZA), 031(AREIA), 034(ALUMÍNIO), 057(ROYAL), 064(PRATA BRILHO), 067(LILÁS), 095(CINZA ESCURO), 100(CREME), 104(MOSTARDA), 110(PRATA), 112(MARFIM), 140(PÊSSEGO), 163(AZUL CLARO), 233(PRETO), 544(BRANCO NEVE), 706(UVA), 712(AMETISTA), 722(VIOLETA), 771(CHUMBO), 778(CINZA CLARO) E 958(CELESTE)
+
+METALIZADA: 131(OURO), 144(AZUL), 202(DOURADO), 212(MARROM)|HZ 25mm LISA e METALIZADA|25mm / 0.21mm|R$ 87,00
+655(OURO), 658(AZUL), 659(OCRE), 765(CREME) e 768(AMARELO)|HZ 25mm TEXTURIZADO|25mm / 0.21mm|R$ 94,00
+101(BRANCO), 137(ALUMÍNIO), 164(PRETO) E 538(BEGE)|HZ 25mm PERFURADA|25mm / 0.21mm|R$ 107,00
+301(CEREJEIRA), 302(MOGNO) e 303(IMBUIA)|HZ 25mm IMITANDO MADEIRA|25mm / 0.21mm
+Limpeza somente com água (sem produtos químicos)|R$ 120,00
+SEÇÃO: PERSIANA HZ 16mm|||
+LISA: 005(BRANCO), 009(AMARELO), 020(VERMELHO), 026(CINZA), 031(AREIA), 034(ALUMÍNIO), 039(VERDE), 057(ROYAL), 060(CAFÉ), 061(VERDE ESC.), 064(PRATA BRILHO), 090(TURQUEZA), 095(CINZA ESC.), 100(CREME), 104(MOSTARDA), 108(MARROM), 110(PRATA), 112(MARFIM), 140(PÊSSEGO), 163(AZUL CLARO), 233(PRETO), 544(BRANCO NEVE), 771(CHUMBO), 778(CINZA CLARO), 928(VERDE ÁGUA) E 958(CELESTE)
+
+METALIZADA: 131(OURO), 144(AZUL), 202(DOURADO)|HZ 16mm LISA e METALIZADA|16mm / 0.21mm
+Largura máxima possível inteira: 2,20m|R$ 103,50
+655(OURO), 658(AZUL), 659(OCRE), 755(OLIVA), 765(CREME) e 773(AMAR NOVO)|HZ 16mm TEXTURIZADO|16mm / 0.21mm|R$ 110,50
+SEÇÃO: ACESSÓRIOS E ADICIONAIS|||
+Bando para Acabamento Frontal|CORES: Branco, Bege, Cinza, Preto e Marrom|Disponível em 16mm e 25mm|R$ 28,00
+Cores: Branco, Bege, Cinza, Preto e Marrom|MONOCONTROLE (METRO LINEAR)|Sistema de corrente contínua em PVC Bola 10. Elimina cordas no recolhimento. Deve ser manuseado delicadamente.|R$ 67,50/ml
+Mecanismo de Acionamento para Entre Vidros (unid.)|ACESSÓRIOS|Com botão prata (cabo 1,10m) ou bastão padrão (1,20m). Acrescentar a cada persiana.|R$ 70,00/unid.
+Persiana de 25mm com Cabo de Aço na Extremidade das Lâminas|ACESSÓRIOS|Acrescentar esta porcentagem ao valor total da persiana.|+ 15%
+Persiana Horizontal Duplex|ADICIONAL|Quando duplex, acrescentar 10% ao preço.|+ 10%
+Persiana Horizontal Mista|ADICIONAL|Acrescentar 10% + 5% por cada cor adicional. Seguem somente lâminas mistas; cabeçote e base de uma única cor.|+ 10% + 5%/cor
+Black-Out (escurecimento) — somente lâminas 25mm exceto perfurada|ADICIONAL|Fechamento voltado para frente (não fecha ao contrário).|+ 12%
+
+===SHEET: Persiana HZ 50 mm
+PERSIANAS GABRIEL DE MARICÁ — TABELA HZ 50mm|||||
+Tabela em vigor a partir de 03/03/2025  |  Preço calculado em m²  |  Mínimo: 1,00 m²  |  Largura máx. recomendada: 1,60m (acima indicar Monocontrole)|||||
+CÓDIGO GP / CORES|COLEÇÃO 50mm|LARG. (metros)|OBSERVAÇÃO|HZ 50mm CADARÇO (m²)|HZ 50mm FITA (m²)
+SEÇÃO: ALUMÍNIO|||||
+034(ALUMÍNIO), 057(AZUL), 100(CREME), 112(MARFIM), 233(PRETO), 544(BRANCO NEVE), 202(DOURADO METALIZADO)|ALUMÍNIO / METALIZADA|---||R$ 130,00|R$ 165,00
+034(PRATA PERFURADA), 233(PRETO PERFURADA) e 544(BRANCA PERFURADA)|PERFURADA|---||R$ 160,00|R$ 195,00
+AL 301, AL 302 e AL 303|ALUM. IMITANDO MADEIRA|---||R$ 190,00|R$ 225,00
+BANDO PARA ACABAMENTO FRONTAL|COLEÇÃO HZ ALUMÍNIO|---|METRO LINEAR|R$ 28,00|---
+SEÇÃO: TECIDO (LANTEX)|||||
+GP 50, GP 51, GP 52, GP 53, GP 54, GP 55, GP 56, GP 57, GP 58, GP 59, GP 61 e GP 62|TECIDO (LANTEX)|---|** PROMOÇÃO **|R$ 110,00|R$ 140,00
+SEÇÃO: MADEIRA SINTÉTICA|||||
+ST 30(MARFIM), ST 60(CEREJEIRA), ST 80(IMBUIA), ST 100(NEVE), ST 120(TABACO), ST 130(MARROM), ST 140(CAPUCCINO), ST 150(CAFÉ), ST 160(CHOCOLATE), ST LISA 913(GELO) e ST LISA 917(PÉROLA)|MADEIRA SINTÉTICA|---||R$ 245,00|R$ 280,00
+ST 170 BRANCO BRILHO, ST 180 NATURAL, ST 200 CEREJEIRA, ST 210 MOGNO e ST 220 CARVALHO|SINTÉTICA PADRÃO MADEIRA|2,40m||R$ 280,00|R$ 315,00
+ST 30(MARFIM), ST 60(CEREJEIRA), ST 80(IMBUIA), ST 100(NEVE), ST 120(TABACO), ST 130(MARROM), ST 140(CAPUCCINO), ST 150(CAFÉ), ST 160(CHOCOLATE), ST LISA 913(GELO) e ST LISA 917(PÉROLA)|MADEIRA SINTÉTICA — BANDO|3,00m|Bando p/ Acabamento Frente 6,3cm (Metro Linear)|R$ 35,00|---
+ST 170 BRANCO BRILHO, ST 180 NATURAL, ST 200 CEREJEIRA, ST 210 MOGNO e ST 220 CARVALHO|PADRÃO MADEIRA — BANDO|3,00m|Bando p/ Acabamento Frente 6,3cm (Metro Linear)|R$ 42,00|---
+SEÇÃO: MADEIRA NATURAL|||||
+MD 050, 051|MADEIRA|---||R$ 365,00|R$ 400,00
+001, 050 e 051|MADEIRA NATURAL — BANDO|2,44m|Bando p/ Acabamento Frente 6,3cm (Metro Linear)|R$ 50,00|---
+SEÇÃO: PVC|||||
+22(BRANCO), 23(BEGE), 24(CAMURÇA), 26(CINZA), 27(VERDE), 28(AZUL), 29(PRATA)|PVC LISO|3,00m||R$ 160,00|R$ 195,00
+18(BRANCO), 19(MARFIM), 21(BEGE)|PVC ARIZONA|3,00m||R$ 175,00|R$ 209,00
+14(IPÊ)|PVC MADEIRA|3,00m||R$ 175,00|R$ 209,00
+15(BEGE), 16(CAMURÇA), 17(AMARELO)|PVC RUSTIC|3,00m||R$ 175,00|R$ 209,00
+73(BRANCO), 74(BEGE)|PVC VINTAGE|3,00m||R$ 175,00|R$ 209,00
+63(PRETO), 66(BEGE)|PVC COURO|3,00m||R$ 189,00|R$ 224,00
+72(BRANCO), 71(BEGE)|PVC KOBE|3,00m||R$ 189,00|R$ 224,00
+70(BRANCO)|PVC WOOD|3,00m||R$ 189,00|R$ 224,00
+69|PVC CRISTAL|3,00m||R$ 189,00|R$ 224,00
+44(BRANCO BRILHO), 45(BRILHO MARFIM), 46(BRILHO BEGE)|PVC LISO BRILHO|3,00m||R$ 189,00|R$ 224,00
+SEÇÃO: ACESSÓRIOS|||||
+Bandô até 3,00m sem emenda (lâmina PVC)|BANDO (PVC)|Até 3,00m|Lâmina fixada com suportes na parte superior da persiana. Com laterais. Alt. da frente 5,0cm (Metro Linear)|R$ 28,50|---
+Cores: Branco, Bege, Cinza, Preto e Marrom|MONOCONTROLE (METRO LINEAR)|---|Sistema de corrente contínua em PVC Bola 10. Elimina cordas no recolhimento. Deve ser manuseado delicadamente.|R$ 125,00|---
+Quando DUPLEX|ADICIONAL|---|Acrescentar ao preço final.|+ 10%|+ 10%
+Quando em 2 cores + cor adicional|ADICIONAL MISTA|---|Acrescentar 10% + 5% por cada cor adicional. Só lâminas mistas; cabeçote e base em uma cor.|+ 10% + 5%/cor|+ 10% + 5%/cor
+
+
+########## FILE: TABELA GABRIEL ROLO - ROMANA - PAINEL COM E SEM HASTES.xlsx
+
+===SHEET: ROLO E PAINEL SEM HASTES E COM
+PERSIANAS GABRIEL DE MARICÁ — TABELA ROLLUX E PAINEL EUROPA|||||
+Tabela em vigor a partir de 03/03/2025 — Atualização: 03/03/2025|||||
+CÓDIGO GP|COLEÇÃO|LARGURA|OBSERVAÇÃO|PREÇO ROLO / PAINEL SEM HASTES|PAINEL COM HASTES 
+SEÇÃO: TECIDOS COM PREÇOS IMPERDÍVEIS|||||
+315 e 317|ANGKOR|LARG 2,80m||R$ 99,00|R$ 118,80
+368|ALT. VISION|LARG 2,20m|SOMENTE ROLLUX|R$ 110,00|---
+363|ALT. VISION|LARG 2,70m|SEMI BLACKOUT|R$ 98,00|---
+365 e 366|ALT. VISION|LARG 2,70m|SOMENTE ROLLUX|R$ 98,00|---
+235|MIAMI BK|LARG 2,50m|BLACKOUT|R$ 100,00|R$ 120,00
+SEÇÃO: DÖHLER|||||
+035, *142, *210, *213, *228, *229, 231, *291, *292, 293, 294, *307, *408, *410, *413, 433, 495, 496, 497 e 498|DÖHLER *|LARG 2,00m / *2,80m|SEM BLACKOUT|R$ 106,50|R$ 127,80
+076 e 077|DÖHLER TP PALHA *|LARG 2,00m|SEM BLACKOUT|R$ 98,00|R$ 117,60
+133|DÖHLER C/ PROTEÇÃO *|LARG 2,00m|Proteção contra água e óleo|R$ 99,00|R$ 118,80
+*081, *216, *217, 387, 389, *392, *393, 396, *400, *401, *402, *403, 420, 421, 422, 424, 425, 426, *435, 437, *438, *439, *440, *483, *485, 490, 491, *492, 493, 494, *508, *509, *510 e *511, *552, *553, *557 E *558|DOHLER BLACK *|LARG 2,00m / *2,80m||R$ 117,50|R$ 141,00
+520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 544, 545, 546, 547, 548, 549, 550, 551, 560, 561, 562, 563, 564, 565, 566|DOHLER BLACK DIGITAL *|LARG 3,00m|BLACKOUT|R$ 124,00|R$ 148,80
+416, 418, 419 E 559|DOHLER BLACK INFANTIL DIGITAL *|LARG 3,00m|BLACKOUT|R$ 126,50|R$ 151,80
+SEÇÃO: PINPOINT / FLORENÇA|||||
+001(BL BRANCO), 002(BL MARFIM), 003(BL BEGE), 006(BL CINZA) e 090(PRETO)|PINPOINT **|LARG 3,00m|BLACKOUT|R$ 134,50|R$ 161,40
+335 E 336|PINPOINT MATTE|LARG 1,83m|||
+190 e 191|FLORENÇA RUSTIC **|LARG 1,80m||R$ 95,50|R$ 114,60
+331, 332, 333 E 334|FLORENCE BLACKOUT **|LARG 1,80m|BLACKOUT|R$ 146,00|R$ 175,20
+SEÇÃO: SCREEN E TELA SOLAR|||||
+467, 469, 472, 473, 475, 477, 479, 481 e 482|JS SCREEN 5% *|LARG 2,50m||R$ 112,00|R$ 134,40
+460, 461, 462, *463, *464, *465, 466, *487, *513, *514, *515, *516, *517, *518 E *519|JS SCREEN 5% *|LARG 2,50m / *3,00m||R$ 112,00|R$ 134,40
+589 e 591|SCREEN 1% (PVC + POLIÉSTER)|LARG 3,00m||R$ 122,00|R$ 146,40
+590 e 592|SCREEN 3% (PVC + POLIÉSTER)|LARG 3,00m||R$ 117,00|R$ 140,40
+578, 579, 580, 581 E 582|SCREEN 5% * (PVC + POLIÉSTER)|LARG 3,00m||R$ 112,00|R$ 134,40
+568, 569, 570, 571 E 572|TELA SOLAR 1% * (PVC + FIBRA DE VIDRO)|LARG 3,00m||R$ 134,50|R$ 161,40
+583, 584, 585, 586 E 587|TELA SOLAR 3% * (PVC + FIBRA DE VIDRO)|LARG 3,00m||R$ 128,50|R$ 154,20
+573, 574, 575, 576 E 577|TELA SOLAR 5% * (PVC + FIBRA DE VIDRO)|LARG 3,00m||R$ 122,50|R$ 147,00
+083 (GRAFITE)|TELA SOLAR 5% * (PVC + FIBRA DE VIDRO)|LARG 3,10m||R$ 122,50|R$ 147,00
+444, 448 e 449|TELA SOLAR 8% * (PVC + POLIÉSTER)|LARG 3,10m||R$ 117,50|R$ 141,00
+095|SCREEN RUSTIC **|LARG 2,43m||R$ 171,00|NÃO FAZ
+SEÇÃO: TECIDOS ESPECIAIS|||||
+110(EVER), 111(EVER), 112(EVER), 116(PAULET)|MONTES **|LARG 2,25m||R$ 86,00|R$ 103,20
+160, 161, 162, 163|CETIM **|LARG 2,80m||R$ 143,00|NÃO FAZ
+168, 169 e 170|LONDRES **|LARG 2,80m||R$ 148,00|R$ 177,60
+226 e 227|NOBLETTE I **|LARG 2,80m||R$ 163,00|R$ 195,60
+273, 274, 275, 276 e 277|NOBLETTE II **|LARG 2,60m||R$ 163,00|R$ 195,60
+222, 223 e 506|NAPOLES **|LARG 2,40m|BLACKOUT|R$ 128,50|R$ 154,50
+281, 282, 283, 284, 507 e 512|TORONTO **|LARG 2,40m|BLACKOUT|R$ 135,00|R$ 162,00
+381, 382, 383 e 384|STUCCO BK **|LARG 2,80m|BLACKOUT|R$ 160,00|R$ 192,00
+100 e 101|MONTEVIDEU BK **|LARG 2,00m|ESTOQUE SOB CONSULTA|R$ 132,00|R$ 158,40
+069, 070 e 145|FIBRAS SINTÉTICAS **|LARG 1,75m||R$ 154,00|NÃO FAZ
+SEÇÃO: ALT. VISION|||||
+488 (PARALELOGRAMA) e 489 (RETÂNGULO)|ALT. VISION ** (DOHLER) *|LARG 2,25m|Utilizar preferencialmente bando com frente de 0,15 ou bando de alumínio boleado|R$ 210,00|NÃO FAZ
+456, 458|JS ALT. VISION *|LARG 2,50m||R$ 110,00|----
+084(BR), 085(CR), 086(NAT), 087(PRETO), 221(PR), 376, 432, 499, 500, 501, 502, 554 E 555|ALT. VISION (DOHLER) *|LARG 2,20m||R$ 148,00|----
+593(BRANCO), 594(PALHA), 595(CREME), 596(PRATA) E 597(GRAFITE)|ALT. VISION SOFT (TRANSLÚCIDO)|LARG 2,95m||R$ 160,00|----
+504|ALT. VISION SEMI BLACK (DOHLER) *|LARG 2,20m||R$ 182,00|----
+427, 428, 429, 430 e 431|ALT. VISION **|LARG 2,50m|ALT VISION EM SCREEN (TELA SOLAR)|R$ 220,00|----
+171, 176 e 177|ALT. VISION **|LARG 2,80m|SONATURA|R$ 168,00|----
+299, 300, 302, 303 e 367 / 450, 451, 452 e 453|ALT. VISION **|LARG 2,80m|SEMI BLACK|R$ 265,00|----
+SEÇÃO: SONATINE / ECOLUX / LUXURY / BLINDS TOP|||||
+PRETO 243, CINZA 244, 250 E 251|SONATINE II **|LARG 2,70m||R$ 296,00|----
+PRETO 258, 260, BRANCO 261, 285, 286, 287, 288, 289 e 290|ECOLUX **|LARG 2,80m||R$ 225,00|----
+311 BRANCO, 312 AREIA, 313 NATURAL E 314 MARROM|LUXURY ** (M²)|LARG 2,60m|SOMENTE BANDO EM ALUMÍNIO|R$ 225,00/m²|----
+326 BRANCO, 327 MARFIM, 328 BEGE, 329 CASTANHO E 330 TABACO|BLINDS TOP ** (M²)|LARG 2,80m|SOMENTE BANDO EM ALUMÍNIO|R$ 225,00/m²|----
+
+===SHEET: ROMANA
+PERSIANAS GABRIEL DE MARICÁ — TABELA ROMANA||||
+Tabela em vigor a partir de 03/03/2025  |  Para Romana de Teto de Vidro/Clarabóia: acrescentar +30% ao valor do m²||||
+CÓDIGO GP|COLEÇÃO|LARGURA DO TECIDO|OBSERVAÇÃO|PREÇO ROMANA (m²)
+SEÇÃO: DÖHLER||||
+035, 041, 050, 052, 061, 063-066, 103, 104, 138-140, 142, 210, 213, 228-231, 291-294, 307, 378, 408-410, 413, 433, 495-498|DÖHLER SEM BLACKOUT|LARG 2,00m / 2,80m||R$ 120,00
+076 e 077|DÖHLER TIPO PALHA|LARG 2,00m||R$ 107,00
+133|DOHLER C/ PROTEÇÃO|LARG 2,00m|Proteção contra água e óleo|R$ 94,00
+081, 216, 217, 386, 387, 389, 392, 393, 396, 400-403, 420-422, 424-426, 435, 438-440, 483, 485, 490-494, 508-511, 552, 553, E 558|DOHLER BLACK|LARG 2,00m / 2,80m|BLACKOUT|R$ 123,00
+520-542, 544-551, 560-566|DOHLER BLACK DIGITAL|LARG 3,00m|BLACKOUT|R$ 130,00
+416, 418, 419 E 559|DOHLER BLACK DIGITAL INFANTIL|LARG 3,00m|BLACKOUT|R$ 128,00
+295 (LARG 1,48), 296 (LARG 2,00) e 297 (LARG 1,48)|DOHLER BLACK ESTAMPADO|LARG 1,48m|BLACKOUT|R$ 115,00
+SEÇÃO: SCREEN E TELA SOLAR||||
+467, 469, 470, 472, 473, 474, 475, 477, 479, 481 e 482|JS SCREEN 5|LARG 2,50m||R$ 125,00
+460, 461, 462, 466, *513-*519|JS SCREEN 5%|LARG 2,50m||R$ 122,00
+463, 464, 465 e 487|JS SCREEN 5%|LARG 3,00m||R$ 128,00
+589 / 591|SCREEN 1% (PVC + POLIÉSTER)|LARG 3,00m||R$ 147,00
+590 / 592|SCREEN 3% (PVC + POLIÉSTER)|LARG 3,00m||R$ 142,00
+578, 579, 580, 581 E 582|SCREEN 5% (PVC + POLIÉSTER)|LARG 3,00m||R$ 140,00
+568, 569, 570, 571 E 572|TELA SOLAR 1% (PVC + FIBRA DE VIDRO)|LARG 3,00m||R$ 159,00
+583, 584, 585, 586 E 587|TELA SOLAR 3% (PVC + FIBRA DE VIDRO)|LARG 3,00m||R$ 155,00
+573, 574, 575, 576 E 577|TELA SOLAR 5% (PVC + FIBRA DE VIDRO)|LARG 3,00m||R$ 150,00
+083 (GRAFITE)|TELA SOLAR 5%|LARG 3,20m||R$ 135,00
+448 e 449|TELA SOLAR 8%|LARG 3,20m||R$ 138,00
+093 RUSTIC|TELA SOLAR RUSTIC|LARG 2,43m||R$ 195,00
+SEÇÃO: TECIDOS ESPECIAIS||||
+BALI 270 E BALI 271|BALI|LARG 1,83m||R$ 99,00
+110(EVER), 111(EVER), 112(EVER), 116(PAULET)|MONTES|LARG 2,25m|SOB CONSULTA|R$ 90,00
+160, 161, 162 e 163|CETIM|LARG 2,80m||R$ 180,00
+235|MIAMI|LARG 2,50m|BLACKOUT|R$ 120,00
+381, 382, 383 e 384|STUCCO|LARG 2,80m|BLACKOUT|R$ 163,00
+165 e 167|HOUS|LARG 2,80m||R$ 162,00
+168, 169 e 170|LONDRES|LARG 2,80m||R$ 175,00
+194, 195, 196, 197, 198, 199 e 200|IMETEXTIL|LARG 2,80m||R$ 150,00
+224, 225, 226 e 227|NOBLETTE I|LARG 2,80m||R$ 184,00
+273, 274, 275, 276 e 277|NOBLETTE II|LARG 2,80m||R$ 184,00
+323|HUSTON|LARG 2,80m|BLACKOUT|R$ 195,00
+315 e 317|ANGKOR|LARG 2,80m|BLACKOUT|R$ 198,00
+222, 223 e 506|NAPOLES BK|LARG 1,40m|BLACKOUT|R$ 168,00
+281, 282, 283, 284, 507 e 512|TORONTO BK|LARG 2,40m|BLACKOUT|R$ 168,00
+SEÇÃO: PINPOINT / FLORENCE||||
+001(BRANCO), 002(MARFIM), 003(BEGE), 006(CINZA), 090(PRETO), 335(LARG 1,83) e 336(LARG 1,83)|PIMPOINT|ATÉ LARG 3,00m|BLACKOUT|R$ 162,00
+331, 332, 333 e 334|FLORENCE BK|LARG 1,83m|BLACKOUT|R$ 160,00
+SEÇÃO: OUTROS / ACESSÓRIOS||||
+FIBRA 145|FIBRAS SINTÉTICAS|LARG 1,75m||R$ 143,00
+CORES VARIADAS|MAQUETE ROMANA|0,50 x 1,00m|Maquete Romana Largura 0,50 x 1,00 Alt.|R$ 95,00
+ACABAMENTO FRONTAL (TIPO BANDO)|COM GARRAS ACRÍLICAS|Metro Linear (Larg. máx. 3,00m)|Forrado na mesma cor da Romana com frente 0,05cm|R$ 39,00/ml
+
+===SHEET: Bandos e Serviços
+PERSIANAS GABRIEL DE MARICÁ — BANDOS E SERVIÇOS||||||
+DESCRIÇÃO|COLEÇÃO/TIPO|LARGURA/ALT.|OBSERVAÇÃO|PREÇO|TODO FORRADO 50%|FORRADO NO SENTIDO 100%
+SEÇÃO: BANDOS EM MDF||||||
+Cor do MDF de acordo com o tecido|BANDO RETO MDF - METRO LINEAR|10cm|Forrado no mesmo tecido. Alt. da frente 10cm|R$ 45,00|R$ 67,50|R$ 90,00
+Cor do MDF de acordo com o tecido|BANDO RETO MDF - METRO LINEAR|15cm|Forrado no mesmo tecido. Alt. da frente 15cm|R$ 51,50|R$ 77,20|R$ 103,00
+Cor do MDF de acordo com o tecido|BANDO RETO MDF - METRO LINEAR|20cm|Forrado no mesmo tecido. Alt. da frente 20cm|R$ 60,50|R$ 90,70|R$ 121,00
+SEÇÃO: BANDOS EM ALUMÍNIO||||||
+Branco 005, Areia 031, Preto 233, Marrom 060 e Cinza 034|BANDO ALUMÍNIO PINTADO - METRO LINEAR|8,0cm|Acomoda somente uma Rollux. Não permite transpasses. Profundidade 7,5cm.|R$ 65,90/ml|---|---
+Branco 005, Areia 031, Preto 233, Marrom 060 e Cinza 034|CAIXA BOX 70 (MINI) **ALTURA LIMITADA**|7,0cm|Frente removível 7,0cm. Profundidade 6,5cm. Somente Tubo de 28 (ml). Para Rollux único.|R$ 88,90/ml|---|---
+Branco 005, Areia 031, Preto 233, Marrom 060 e Cinza 034|CAIXA BOX 90 (MAXI)|9,0cm|Frente removível 9,0cm. Profundidade 8,0cm (ml). Para até 02 Rollux.|R$ 109,90/ml|---|---
+SEÇÃO: GUIAS LATERAIS||||||
+Guia Lateral Cor Branca (disponível nas cores opcionais)|GUIA LATERAL - METRO LINEAR|3,0cm x 2,2cm|Para vedação lateral do vão. Com escova de vedação na cor preta. SÓ FUNCIONA ATÉ 1,50m DE ALTURA|R$ 35,00/ml|----|
+Guia Lateral Cor Branca (disponível nas cores opcionais)|GUIA LATERAL - METRO LINEAR|5,5cm x 2,2cm|Para vedação lateral do vão. Com escova de vedação na cor preta.|R$ 50,00/ml|----|
+Guia Lateral Cor Branca (disponível nas cores opcionais)|GUIA LATERAL - METRO LINEAR|8,0cm x 2,2cm|Para vedação lateral do vão. Com escova de vedação na cor preta.|R$ 60,00/ml|----|
+SEÇÃO: ACESSÓRIOS E COMANDOS||||||
+Comando Stop Plus 40|STOP PLUS 40|LARG 2,50m*|Utilizado em Tubo de 40. *Altura máxima varia conforme peso do tecido.|R$ 47,90|---|
+Comando Stop Plus 50|STOP PLUS 50|LARG 3,10m*|Utilizado em Tubo de 50. *Altura máxima varia conforme peso do tecido.|R$ 52,90|---|
+Redutor de Peso de 38 com Mola Rollux|---|---|---|SOB CONSULTA|---|
+Redutor de Peso de 50 com Mola Rollux|---|---|---|SOB CONSULTA|---|
+Mola de Tração de 38/50mm para Rollux|MANUAL|---|---|SOB CONSULTA|---|
+Trilho 03 Vias Deslizante (Cortina de Vidro)|TRILHO DESLIZANTE|LARG 6,00m|Utilizado em Cortinas de Vidro (Cálculo em Metro Linear)|R$ 49,50|---|
+Haste Acrílica Painéis Romana/Europa (Manual)|PAINEL ROMANA/EUROPA|Até 1,50m altura|Para manuseio de Painéis Romana/Europa (Manual)|R$ 5,00/unid.|--|
+SEÇÃO: SERVIÇOS||||||
+Cantoneiras Brancas ou Zincadas|CANTONEIRAS|5 / 10 e 15cm|---|---|---|---
+Remontagem de Produtos|TODOS|---||R$ 40,00/peça|---|---
+Corte / Ajuste na Largura|ROLLUX|||R$ 50,00/peça|---|---
+Corte / Ajuste|BANDO MDF|||R$ 25,00/peça|---|---
+Corte|BANDO ALUMÍNIO / CAIXA BOX|||R$ 18,00/peça|---|---
+Corte / Ajuste na Altura|PAINEL EUROPA / ROMANA|||R$ 15,00/peça|---|---
+Corte / Ajuste na Largura|PAINEL EUROPA / ROMANA|||R$ 45,00/peça|---|---
+
+
+########## FILE: TABELA PERSIANA RIOFLEX.xlsx
+
+===SHEET: Persiana Rolo
+RIO FLEX — TABELA DE PREÇOS 09/2025|||
+TABELA DE PERSIANA ROLO|||
+COLEÇÃO|COR|LARGURA MÁXIMA|VALOR À VISTA M²
+PINPOINT COM FIBRA|01-BRANCO / 02-BEGE / 03-CINZA / 04-PRETO / 05-CREME / 09-CHUMBO / 14-MARROM|3,00m (2,50m Chumbo)|R$110,00
+TIJUCA BK (Dohler BK)|06 / 07 / 08|2,00m|R$110,00
+COPACABANA BK (Tecido Poliéster)|10 / 11 / 12 / 13|2,00m|R$100,00
+GÁVEA BK|21 / 22 / 23 / 24|2,40m|R$120,00
+JOÁ TRANSLÚCIDO (Dohler transl)|24 / 25 / 26 / 27 / 28 / 29|2,00m|R$90,00
+LEBLON BK (Dohler BK)|40/41/43/45/46/47/48/49/50/51/52/53/54/55/56/57/58/124/125/126/127/128/129|2,00m|R$110,00
+LEBLON BK (Napoles BK)|42/44/50/59/120/121/122/123|2,40m|R$120,00
+URCA TRANSLÚC.|30/31/32/33/34/35/36/37/38/39/135/136|2,00m|R$90,00
+BARRA (Tela Solar 5%)|60-BRANCA / 61-BEGE / 62-CINZA / 63-PRETA (larg 3,00m)
+64-RÚSTICA / 65-RÚSTICA / 66-MARROM / 67-RÚSTICA / 68-CINZA (larg 2,50m)|3,00m / 2,50m|R$100,00 / R$120,00
+RECREIO (Tela Solar 3%)|70-BRANCO / 71-BEGE / 72-CINZA / 73-PRETA|3,00m|R$110,00
+BOTAFOGO BK (Brisk/Miami)|75/76/77/78/79/80|2,20m|R$100,00
+FLAMENGO BK (Toronto/Shantung)|81/82/83/84/85/86|2,40m|R$130,00
+CATETE (Tela Solar 1%)|91-BRANCO / 92-BEGE / 93-CINZA / 94-PRETA / 95-LANÇAMENTO / 96-LANÇAMENTO / 97-LANÇAMENTO|3,00m|R$120,00
+VIANNA (Alt Vision SEM BK)|100-BRANCA / 101-BEGE / 102-CINZA / 103-MESCLA / 104-PRETA / 105-MESCLA 2 / 106-MARROM / 107-CHUMBO / 108-LANÇAMENTO|2,25m|R$130,00
+VIANNA SEMI BK (Alt Vision SEMI BK)|140/141/142/143/144/145/146/147|Até 3,00m|R$190,00
+HUMAITÁ TRANSLÚC.|131/132/133/134/135/136/137|2,20m|R$90,00
+CORCOVADO TRANSLÚC.|150/151/152/153/154/155/156/157|2,20m|R$100,00
+ICARAÍ BK|160/161/162/163 (2,80m) / 164 (2,00m) / 165|2,00m/2,80m|R$110,00
+GRUMARI BK|170/171/172/173/174|2,40m|R$120,00
+MARACANÃ BK|180/181|2,40m|R$130,00
+PIRATININGA BK (LANÇAMENTO)|190/191/192|2,50m|R$120,00
+CACHAMBI BK (LANÇAMENTO)|200/201/202/203|2,50m|R$120,00
+MÉIER BK (LANÇAMENTO)|230/231/232/233/234|2,50m|R$110,00
+IPANEMA (LANÇAMENTO)|210/211/212/213|2,20m|R$90,00
+INHAUMA (LANÇAMENTO)|220/221/222/223|2,20m|R$90,00
+DISNEY (LANÇAMENTO)|240/241/242|2,50m|R$120,00
+1  Todas as cortinas irão com base chata, barra niveladora e redução de peso sem inclusão de valores.|||
+2  Metragem mínima cobrada por peça – 1,50 m²|||
+   Prazo de entrega – 5 a 7 dias úteis.|||
+
+===SHEET: Persiana Romana
+RIO FLEX — TABELA DE PREÇOS 09/2025|||
+TABELA DE PERSIANA ROMANA|||
+COLEÇÃO|COR|LARGURA MÁXIMA|VALOR À VISTA M²
+PINPOINT COM FIBRA|01-BRANCO / 02-BEGE / 03-CINZA / 04-PRETO / 05-CREME / 09-CHUMBO / 14-MARROM|3,00m (2,50m Chumbo)|R$130,00
+TIJUCA BK (Dohler BK)|06 / 07 / 08|2,00m|R$130,00
+COPACABANA BK (Tecido Poliéster)|10 / 11 / 12 / 13|2,00m|R$120,00
+GÁVEA BK|21 / 22 / 23 / 24|2,40m|R$140,00
+JOÁ TRANSLÚCIDO (Dohler transl)|24 / 25 / 26 / 27 / 28 / 29|2,00m|R$110,00
+LEBLON BK (Dohler BK)|40/41/43/45/46/47/48/49/50/51/52/53/54/55/56/57/58/124/125/126/127/128/129|2,00m|R$130,00
+LEBLON BK (Napoles BK)|42/44/50/59/120/121/122/123|2,40m|R$140,00
+BARRA (Tela Solar 5%)|60-BRANCA/61-BEGE/62-CINZA/63-PRETA (3,00m) → R$120,00
+64-RÚSTICA/65-RÚSTICA (2,50m) → R$140,00
+66-MARROM/67-RÚSTICA/68-CINZA (3,00m) → R$120,00|3,00m / 2,50m|R$120,00 / R$140,00
+RECREIO (Tela Solar 3%)|70-BRANCO / 71-BEGE / 72-CINZA / 73-PRETA|3,00m|R$130,00
+BOTAFOGO BK (Brisk/Miami)|75/76/77/78/79/80|2,20m|R$120,00
+FLAMENGO BK (Toronto/Shantung)|81/82/83/84/85/86|2,40m|R$150,00
+CATETE (Tela Solar 1%)|91-BRANCO / 92-BEGE / 93-CINZA / 94-PRETA / 95-LANÇAMENTO / 96-LANÇAMENTO / 97|3,00m|R$140,00
+HUMAITÁ TRANSLÚC.|131/132/133/134/135/136/137|2,20m|R$110,00
+URCA TRANSLÚC.|30/31/32/33/34/35/36/37/38/39/135/136|2,00m|R$110,00
+CORCOVADO TRANSLÚC.|150/151/152/153/154/155/156/157|2,20m|R$120,00
+ICARAÍ BK|160/161/162/163/164/165|2,00m|R$130,00
+GRUMARI BK|170/171/172/173/174|2,40m|R$140,00
+MARACANÃ BK|180/181|2,40m|R$140,00
+PIRATININGA BK (LANÇAMENTO)|190/191/192|2,50m|R$140,00
+CACHAMBI BK (LANÇAMENTO)|200/201/202/203|2,50m|R$140,00
+MÉIER BK (LANÇAMENTO)|230/231/232/233/234|2,50m|R$130,00
+IPANEMA (LANÇAMENTO)|210/211/212/213|2,20m|R$110,00
+INHAUMA (LANÇAMENTO)|220/221/222/223|2,20m|R$110,00
+DISNEY (LANÇAMENTO)|240/241/242|2,50m|R$140,00
+
+===SHEET: Acessórios Rolo
+RIO FLEX — TABELA DE PREÇOS 09/2025||
+ACESSÓRIOS — ROLO||
+PRODUTO|ESPECIFICAÇÃO|VALOR À VISTA
+BANDO CONJUGADO PARA ROLO (ALUMÍNIO)|BRANCO|R$65,00 / ML
+BANDO CONJUGADO PARA ROLO (ALUMÍNIO)|PRETO / BEGE / CINZA|R$70,00 / ML
+GALERIA DE MADEIRA REVESTIDA EM MDF (AVULSA)|10cm, 13 ou 15cm|R$60,00 / ML
+GALERIA DE MADEIRA REVESTIDA EM MDF|10cm, 13 ou 15cm|R$50,00 / ML
+BANDO BOX MINI|ML|R$90,00 / ML
+BANDO BOX MAX|ML|R$100,00 / ML
+TRILHO DESLIZANTE ROLO|ML|R$60,00 / ML
+GUIA LATERAL PAR|BRANCA 5,5cm|R$80,00 / PAR
+GUIA LATERAL PAR|PRETA / BEGE / CINZA 5,5cm|R$90,00 / PAR
+GUIA LATERAL PAR (ESTRELINHA)|8,0cm — somente branca|R$100,00 / PAR
+BANDO DE VERTICAL ALUMÍNIO COM FRISO|ML|R$35,00 / ML
+TUBO REFORÇADO C/ REDUTOR DE PESO|Rolo acima de 2,40m de larg|R$80,00 / UN
+SUPORTE DE JUNÇÃO|—|R$25,00 / UN
+1  Todas as cortinas irão com base chata, barra niveladora e redução de peso sem inclusão de valores.||
+2  Metragem mínima cobrada por peça – 1,50 m²||
+   Prazo de entrega – 5 a 7 dias úteis.||
+
+===SHEET: Motorização Rolo
+RIO FLEX — TABELA DE PREÇOS 09/2025||
+TABELA DE MOTORIZAÇÃO PARA ROLO||
+MODELO|TAMANHO / CAPACIDADE|VALOR À VISTA
+MOTOR EMTECO BIVOLT WiFi + CONTROLE REMOTO 6N|Largura máxima 2,50m|R$600,00
+MOTOR EMTECO BIVOLT WiFi + CONTROLE REMOTO 13N|Largura de 2,51m até 3,20m|R$800,00
+MOTOR EMTECO BIVOLT WiFi + CONTROLE REMOTO 20N|Largura de 3,20m a 4,50m|R$1.200,00
+CONTROLE REMOTO 6 CANAIS — EMTECO|—|R$180,00
+CONTROLE REMOTO 15 CANAIS — EMTECO|—|R$300,00
+
+===SHEET: Acessórios Romana
+RIO FLEX — TABELA DE PREÇOS 09/2025||
+ACESSÓRIOS PARA ROMANA||
+PRODUTO|ESPECIFICAÇÃO|VALOR À VISTA ML
+MOLDURA PARA ROMANA|Forrada no tecido|R$30,00 / ML
+GALERIA DE MADEIRA REVESTIDA EM MDF (AVULSA)|10cm, 13 ou 15cm|R$60,00 / ML
+GALERIA DE MADEIRA REVESTIDA EM MDF|10cm, 13 ou 15cm|R$50,00 / ML
+
+===SHEET: Cortinas de Teto
+RIO FLEX — TABELA DE PREÇOS 09/2025||
+ROMANAS DE TETO COM BASTÃO — COM TRILHOS INCLUSO||
+COLEÇÃO|CORES|VALOR À VISTA M²
+PINPOINT|01 / 02 / 03 / 04 / 05 / 09 / 14|R$170,00
+CATETE (TELA 1%)|91 / 92 / 93 / 94 / 95 / 96 / 97|R$190,00
+RECREIO (TELA 3%)|70 / 71 / 72 / 73|R$180,00
+BARRA (TELA 5%)|60 / 61 / 62 / 63 / 66 / 67 / 68|R$170,00
+1  Padrão de acessórios brancos. Para cores Bege/Preto/Cinza, informar no ato do pedido com inclusão de 5% no m².||
+2  Metragem mínima cobrada – 1,50 m²||
+3  Garantia de 1 ano.||
+4  Prazo de entrega – 7 dias.||
+5  Acionamento monocontrole com corrente contínua.||
+
+===SHEET: Cortina Painel
+RIO FLEX — TABELA DE PREÇOS 09/2025|||
+TABELA CORTINA PAINEL|||
+COLEÇÃO|COR|PAINEL SEM HASTES  M²|PAINEL COM HASTE  M²
+PINPOINT COM FIBRA|01-BRANCO / 02-BEGE / 03-CINZA / 04-PRETO / 05-CREME / 09-CHUMBO / 14-MARROM|R$110,00|R$130,00
+TIJUCA BK (Dohler BK)|06 / 07 / 08|R$110,00|R$130,00
+COPACABANA BK (Tecido Poliéster)|10 / 11 / 12 / 13|R$100,00|R$120,00
+GÁVEA BK|21 / 22 / 23 / 24|R$120,00|R$140,00
+JOÁ TRANSLÚCIDO (Dohler transl)|24 / 25 / 26 / 27 / 28 / 29|R$90,00|R$110,00
+LEBLON BK (Dohler BK)|40/41/43/45/46/47/48/49/50/51/52/53/54/55/56/57/58/124/125/126/127/128/129|R$110,00|R$130,00
+LEBLON BK (Napoles BK)|42/44/50/59/120/121/122/123|R$120,00|R$140,00
+BARRA (Tela Solar 5%)|60-BRANCA/61-BEGE/62-CINZA/63-PRETA → R$100,00/R$120,00
+64-RÚSTICA/65-RÚSTICA → R$120,00/R$140,00|R$100,00–R$120,00|R$120,00–R$140,00
+RECREIO (Tela Solar 3%)|70-BRANCO/71-BEGE/72-CINZA/73-PRETA|R$110,00|R$120,00
+BOTAFOGO BK (Brisk/Miami)|75/76/77/78/79/80|R$100,00|R$120,00
+FLAMENGO BK (Toronto/Shantung)|81/82/83/84|R$130,00|R$150,00
+CATETE (Tela Solar 1%)|91-BRANCO/92-BEGE/93-CINZA/94-PRETA|R$120,00|R$140,00
+HUMAITÁ TRANSLÚC.|131/132/133/134|R$90,00|R$110,00
+CORCOVADO TRANSLÚC.|150/151/152/153/154/155/156/157|R$100,00|R$120,00
+ICARAÍ BK|160/161/162/163/164/165|R$110,00|R$130,00
+GRUMARI BK|170/171/172/173/174|R$120,00|R$140,00
+MARACANÃ BK|180/181|R$130,00|R$140,00
+URCA TRANSLÚC.|30/31/32/33/34/35/36/37/38/39|R$90,00|R$110,00
+PIRATININGA BK (LANÇAMENTO)|190/191/192|R$120,00|R$140,00
+CACHAMBI BK (LANÇAMENTO)|200/201/202/203|R$120,00|R$140,00
+MÉIER BK (LANÇAMENTO)|230/231/232/233/234|R$110,00|R$130,00
+IPANEMA (LANÇAMENTO)|210/211/212/213|R$90,00|R$110,00
+INHAUMA (LANÇAMENTO)|220/221/222/223|R$90,00|R$110,00
+DISNEY (LANÇAMENTO)|240/241/242|R$120,00|R$140,00
+ACESSÓRIOS DO PAINEL|||
+TRILHO INCLUSO NO VALOR DO PAINEL|M²|R$0,00|—
+GALERIA DE MADEIRA (forrada no próprio tecido)|10cm, 13 ou 15cm|R$50,00 / ML|—
+BANDO DE ALUMÍNIO C/ FRISO REVESTIDO|M²|R$35,00|—
+1  Ao passar o pedido, informar tamanho e quantidade das folhas e do trilho com acréscimos/descontos devidos.|||
+2  Prazo de entrega – até 7 dias úteis.|||
+
+===SHEET: Vertical Dohler
+RIO FLEX — TABELA DE PREÇOS 09/2025||
+TABELA PERSIANA VERTICAL DOHLER||
+COLEÇÃO|CORES|VALOR À VISTA M²
+COLEÇÃO BK||
+AM 5069 BK|5689 D – CORES A,B,C,D,E,F / 5942 D – COR A / 5941 D – COR A / 5940 D – COR A / 5939 D – CORES A,B,C,D,E,F / 5938 D – CORES A,B,C,D|R$100,00
+AM 5036 BK|S/ESTAMPA – CORES A, B, C|R$100,00
+TJ 5719 BK|S/ESTAMPA – CORES A, B|R$100,00
+TJ 5653 BK|S/ESTAMPA – CORES A, B|R$100,00
+AM 4502 BK|S/ESTAMPA – CORES 5432, 11670, 9834, 9835, 9878|R$100,00
+AM 4657 BK|S/ESTAMPA – COR NATURAL|R$100,00
+TJ 4700 BK|S/ESTAMPA – COR NATURAL|R$100,00
+JACQUARD BK / TJ 1054|CORES I, B|R$100,00
+E 37 BK|COR ÚNICA|R$100,00
+SP 34 BK|S/ESTAMPA – CORES 11670, 4156|R$100,00
+JACQUARD BK / TJ 4677|CORES 4000, 5432, 9834, 10655|R$100,00
+TJ 4681 BK|S/ESTAMPA – CORES A, B, C, D, E|R$100,00
+COLEÇÃO SEM BK||
+E 37 SEM BK|S/ESTAMPA – ÚNICA|R$80,00
+SP 34 SEM BK|S/ESTAMPA – CORES BRANCO, PALHA|R$80,00
+TJ 5974 SEM BK|S/ESTAMPA – CORES A, B, C|R$80,00
+TJ 4681 SEM BK|S/ESTAMPA – CORES A, B, C, D, E|R$80,00
+
+===SHEET: Vertical G-Textil
+RIO FLEX — TABELA DE PREÇOS 09/2025||
+TABELA PERSIANA VERTICAL G-TEXTIL||
+COLEÇÃO|CORES|VALOR À VISTA M²
+COLEÇÃO BK — R$95,00/m²||
+TURQUIA BK|NATURAL|R$95,00
+AZARRO BK|MERENGUE / CIMENT / BEIGE|R$95,00
+PANDORA BK|BLACK / FLINT / NAVY / OCEANO / PLATINUM / BEIGE / SALMÃO / PALHA / BRANCO|R$95,00
+ANGRA BK|FLINT / PLATINUM|R$95,00
+PAPYROS BK|RAMI / TOFFE / NIEBLA / FLAKES / MOUSSE / MERENGUE|R$95,00
+MACEDONIA BK|NATURAL|R$95,00
+AMSTERDAN BK|NATURAL|R$95,00
+ESPANHA BK|JUTA / 110 / CEMENT|R$95,00
+LINEN BK|AVELLANA / JUTA / LINHO / CEMENT / MERENGUE|R$95,00
+BARCELONA BK|BEIGE / NATURAL / PALHA|R$95,00
+BERGAMO BK|PALHA / BEIGE|R$95,00
+FELICIA BK|AREIA / MERENGUE / NATURAL / MACADAMIA|R$95,00
+COLEÇÃO SEM BK — R$75,00/m²||
+CROACIA|BRANCO/NATURAL/OCEANO/NAVY/MILHO/PEACH/AMBER/BEIGE/PALHA/FLINT/MINT/PLATINUM/GARDEN|R$75,00
+PAPYROS|NIEBLA / FLAKES / AVELLANA / RAMI|R$75,00
+LENEN|LINHO / JUTA / CEMENT / AVELLANA|R$75,00
+MACEDONIA|NATURAL|R$75,00
+ANGRA|CAFÉ / BEIGE / OCEANO / GARDEN / AMBER / PALHA|R$75,00
+AMSTERDAN|NATURAL|R$75,00
+ILUSION|NATURAL|R$75,00
+BARCELONA|NATURAL|R$75,00
+DUBAI|BRANCO / PALHA / BEIGE / NATURAL / MACADAMIA / MERENGUE|R$75,00
+SIRIA|MACADAMIA / MERENGUE / BRANCO / NATURAL|R$75,00
+HUNGRIA|BEIGE / PALHA / BRANCO|R$75,00
+ESPANHA|JUTA / CEMENT / COR110 / P00 / P03|R$75,00
+TURQUIA|MERENGUE|R$75,00
+AZARRO|MERENGUE / CEMENT / OSTRA|R$75,00
+VENEZA|BEIGE / BRANCO / MILHO / FLINT|R$75,00
+
+===SHEET: Vertical PVC
+RIO FLEX — TABELA DE PREÇOS 09/2025|||
+TABELA PERSIANA VERTICAL PVC|||
+COLEÇÃO|COR|LISO À VISTA M²|TEXTURIZADO À VISTA M²
+VERTICAL PVC|BLACK|—|R$125,00
+VERTICAL PVC|GOLDEN|—|R$125,00
+VERTICAL PVC|GRAPHITE|—|R$125,00
+VERTICAL PVC|ACQUA|R$95,00|—
+VERTICAL PVC|ROSA|R$95,00|—
+VERTICAL PVC|AMENDOA|R$95,00|—
+VERTICAL PVC|CAFÉ|R$95,00|—
+VERTICAL PVC|TAN|R$95,00|—
+VERTICAL PVC|MINT|R$95,00|—
+VERTICAL PVC|DARK GRAY|R$95,00|—
+VERTICAL PVC|WHITE|R$95,00|R$125,00
+VERTICAL PVC|BRANCO OPTICO|R$95,00|—
+VERTICAL PVC|IVORY|R$95,00|—
+VERTICAL PVC|PRETO|R$95,00|—
+
+===SHEET: Trilhos Motorizados
+RIO FLEX — TABELA DE PREÇOS 09/2025||
+TABELA DE TRILHOS MOTORIZADOS PARA CORTINA||
+MODELO|TAMANHO|VALOR À VISTA
+TRILHO MOTORIZADO PREGA COM MOTOR WiFi + CONTROLE DE 1 CANAL|De 1,00m até 3,00m|R$1.350,00
+TRILHO MOTORIZADO PREGA COM MOTOR WiFi + CONTROLE DE 1 CANAL|De 3,00m até 6,00m|R$1.600,00
+TRILHO MOTORIZADO WAVE COM MOTOR WiFi + CONTROLE DE 1 CANAL|De 1,00m até 3,00m|R$1.500,00
+TRILHO MOTORIZADO WAVE COM MOTOR WiFi + CONTROLE DE 1 CANAL|De 3,00m até 6,00m|R$1.800,00
+TABELA DE TRILHOS MAX PARA CORTINA||
+MODELO|TAMANHO|VALOR À VISTA ML
+TRILHO MAX 1 VIA|Metro Linear|R$10,00
+TRILHO MAX 1 VIA|Vara|R$55,00
+TRILHO MAX 2 VIAS SIMPLES|Metro Linear|R$20,00
+TRILHO MAX 2 VIAS SIMPLES|Vara|R$110,00
+TRILHO MAX 2 VIAS LARGO|Metro Linear|R$25,00
+TRILHO MAX 2 VIAS LARGO|Vara|R$140,00
+TRILHO MAX 3 VIAS SIMPLES|Metro Linear|R$26,00
+TRILHO MAX 3 VIAS SIMPLES|Vara|R$145,00
+TRILHO MAX 3 VIAS COM TRANSPASSE|Metro Linear|R$30,00
+TRILHO MAX 3 VIAS COM TRANSPASSE|Vara|R$160,00
+
+===SHEET: Informações Adicionais
+RIO FLEX — INFORMAÇÕES ADICIONAIS / TABELA DE PREÇOS 09/2025|
+WhatsApp: (21) 99347-7957 / (21) 97444-0393 / (21) 99599-1352  |  PIX: 21 97012-3319|
+1|Metragem mínima cobrada por persiana – 1,50 m²
+2|Metragem mínima cobrada para trilho montado – 1,50 m
+3|Metragem mínima cobrada para galeria – 1,20 m
+4|Espaçadores utilizados são de 7,5cm. Espaçadores com medidas inferiores ao padrão, com objetivo de maior transpasse, sofrerão acréscimo de 10% no preço.
+5|Para aquisição de trilhos MAX, o efeito de cobrança é de 0,5 metro acima do solicitado.
+6|Medida máxima de galerias com laterais – 5,74m / e sem laterais – 6,00m.
+7|Para conjunto de lâminas completas em PVC ou tecido, serão cobrados 90% do valor da persiana pronta.
+8|Pedidos de conjunto de lâminas deverão ser informados se a medida é exata; caso contrário será dado o desconto do trilho.
+9|Os pedidos deverão ser enviados por e-mail ou WhatsApp nos números de atendimento: (21) 99347-7957 / (21) 97444-0393 / (21) 99599-1352
+10|Após a aprovação do pedido, o sinal deverá ser depositado. O comprovante deve ser encaminhado para o e-mail ou WhatsApp. Banco Itaú – AG 9166 – C/c 99738-8 | CHAVE PIX – 21 97012-3319
+11|Todos os materiais estão sujeitos à disponibilidade de estoque. Consulte-nos!
+12|Toda assistência técnica deverá ser notificada por escrito e a peça deverá ser devidamente embalada e encaminhada para a fábrica.
+13|Defeito ocasionado por mau uso ou má instalação indiciará na perda da garantia. Acessórios com cores que não são BRANCA têm cobrança adicional de 5% sobre o valor de m² do produto.

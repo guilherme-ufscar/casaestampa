@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { calcularOrcamento, AmbienteInput, Configuracoes } from '@/lib/calculoCortina'
 import { calcularAmbientePapel, getFatorDimensao, ConfigsPapel } from '@/lib/calculoPapelParede'
+import { calcularAmbientePersiana, ConfigsPersiana } from '@/lib/calculoPersiana'
 import { gerarToken, tokenExpiracao } from '@/lib/token'
 
 function ambienteValido(ambiente: AmbienteInput & { tecidoId?: string; blackoutId?: string; blackout?: { id: string } | null }) {
@@ -32,6 +33,7 @@ export async function GET() {
       vendedor: { select: { nome: true } },
       ambientes: true,
       ambientesPapel: { include: { papel: true } },
+      ambientesPersiana: { include: { persiana: true } },
     },
     orderBy: { createdAt: 'desc' },
   })
@@ -45,7 +47,7 @@ export async function POST(req: NextRequest) {
 
   try {
   const body = await req.json()
-  const { clienteId, ambientes, ambientesPapel, produto } = body as {
+  const { clienteId, ambientes, ambientesPapel, ambientesPersiana, produto } = body as {
     clienteId?: string
     produto?: string
     ambientes?: (AmbienteInput & {
@@ -64,6 +66,28 @@ export async function POST(req: NextRequest) {
       papelId: string
       referenciaDigitada?: string | null
       medicoes: { largura: number; altura: number; m2: number }[]
+      observacoes?: string | null
+    }[]
+    ambientesPersiana?: {
+      nomeAmbiente: string
+      persianaId: string
+      fornecedor: string
+      tipo: string
+      colecao: string
+      modelo: string
+      largura: number
+      altura: number
+      quantidade: number
+      lado?: string | null
+      acionamento: string
+      instalacaoLocal?: string | null
+      trilhoLargura?: number | null
+      bando?: { id: string; nome: string; valorMetro: number; lado: string } | null
+      guiaLateral?: { id: string; nome: string; valorMetro: number; fator: number } | null
+      guiaBase?: { id: string; nome: string; valorMetro: number } | null
+      motor?: { id: string; nome: string; valor: number } | null
+      controle?: { id: string; nome: string; valor: number } | null
+      instalacao: boolean
       observacoes?: string | null
     }[]
   }
@@ -169,6 +193,188 @@ export async function POST(req: NextRequest) {
           totalComissao: resultadosPapel.reduce((s, r) => s + r.valorComissao, 0),
           totalRt: resultadosPapel.reduce((s, r) => s + r.valorRt, 0),
         } : {}),
+      },
+    }, { status: 201 })
+  }
+
+  // --- Persiana ---
+  if (produto === 'persiana' && ambientesPersiana?.length) {
+    const vendedor = await prisma.user.findUnique({ where: { id: session.user.id }, select: { comissao: true } })
+    const comissaoVendedor = vendedor?.comissao ? Number(vendedor.comissao) : null
+    let clienteTemArquiteto = false
+    if (clienteId) {
+      const clienteDb = await prisma.cliente.findUnique({ where: { id: clienteId }, select: { arquiteto: true } })
+      clienteTemArquiteto = Boolean(clienteDb?.arquiteto)
+    }
+
+    const cfgPersiana: ConfigsPersiana = {
+      markup_persiana: parseFloat(configMap.markup_persiana ?? configMap.markup_padrao ?? '40'),
+      comissao_padrao: comissaoVendedor ?? parseFloat(configMap.comissao_padrao ?? '8'),
+      rt_padrao: clienteTemArquiteto ? parseFloat(configMap.rt_padrao ?? '5') : 0,
+      instalacao_persiana_rolo: parseFloat(configMap.instalacao_persiana_rolo ?? '60'),
+      instalacao_persiana_romana: parseFloat(configMap.instalacao_persiana_romana ?? '60'),
+      instalacao_persiana_horizontal: parseFloat(configMap.instalacao_persiana_horizontal ?? '60'),
+      instalacao_persiana_painel: parseFloat(configMap.instalacao_persiana_painel ?? '120'),
+      instalacao_motor_persiana: parseFloat(configMap.instalacao_motor_persiana ?? '120'),
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resultadosPersiana = ambientesPersiana.map((a: any) =>
+      calcularAmbientePersiana({
+        nomeAmbiente: a.nomeAmbiente,
+        tipo: a.tipo as import('@/lib/calculoPersiana').TipoPersiana,
+        largura: a.largura,
+        altura: a.altura,
+        quantidade: a.quantidade,
+        valorM2: 0, // overridden below via persiana catalog
+        minM2: 1.5,
+        acionamento: a.acionamento,
+        instalacao: a.instalacao,
+        bando: a.bando ? { ...a.bando, valorMetro: a.bando.valorMetro } : null,
+        guiaLateral: a.guiaLateral ? { ...a.guiaLateral, valorMetro: a.guiaLateral.valorMetro, fator: a.guiaLateral.fator } : null,
+        guiaBase: a.guiaBase ? { ...a.guiaBase, valorMetro: a.guiaBase.valorMetro } : null,
+        motor: a.acionamento === 'motorizada' && a.motor ? a.motor : null,
+        controle: a.acionamento === 'motorizada' && a.controle ? a.controle : null,
+      }, cfgPersiana)
+    )
+
+    // Recalculate with actual valorM2 from payload (client sends it)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resultadosFinais = ambientesPersiana.map((a: any, idx: number) => {
+      void resultadosPersiana[idx]
+      return calcularAmbientePersiana({
+        nomeAmbiente: a.nomeAmbiente,
+        tipo: a.tipo as import('@/lib/calculoPersiana').TipoPersiana,
+        largura: a.largura,
+        altura: a.altura,
+        quantidade: a.quantidade,
+        valorM2: a.valorM2,
+        minM2: a.minM2 ?? 1.5,
+        acionamento: a.acionamento,
+        instalacao: a.instalacao,
+        bando: a.bando ? { ...a.bando } : null,
+        guiaLateral: a.guiaLateral ? { ...a.guiaLateral } : null,
+        guiaBase: a.guiaBase ? { ...a.guiaBase } : null,
+        motor: a.acionamento === 'motorizada' && a.motor ? a.motor : null,
+        controle: a.acionamento === 'motorizada' && a.controle ? a.controle : null,
+      }, cfgPersiana)
+    })
+
+    const totalPrecoFinal = resultadosFinais.reduce((s, r) => s + r.precoFinalVenda, 0)
+
+    const orcamento = await prisma.orcamento.create({
+      data: {
+        clienteId: clienteId || null,
+        vendedorId: session.user.id,
+        status: 'orcamento_enviado',
+        precoFinalTotal: totalPrecoFinal,
+        token,
+        tokenExpiresAt,
+        ambientesPersiana: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          create: ambientesPersiana.map((a: any, i: number) => {
+            const r = resultadosFinais[i]
+            return {
+              nomeAmbiente: a.nomeAmbiente,
+              persianaId: a.persianaId,
+              fornecedor: a.fornecedor,
+              tipo: a.tipo,
+              colecao: a.colecao,
+              modelo: a.modelo,
+              largura: a.largura,
+              altura: a.altura,
+              quantidade: a.quantidade,
+              lado: a.lado || null,
+              acionamento: a.acionamento,
+              instalacaoLocal: a.instalacaoLocal || null,
+              trilhoLargura: a.trilhoLargura || null,
+              bandoId: a.bando?.id || null,
+              bandoNome: a.bando?.nome || null,
+              bandoValorMetro: a.bando?.valorMetro || null,
+              bandoLado: a.bando?.lado || null,
+              guiaLateralId: a.guiaLateral?.id || null,
+              guiaLateralNome: a.guiaLateral?.nome || null,
+              guiaLateralValorMetro: a.guiaLateral?.valorMetro || null,
+              guiaLateralFator: a.guiaLateral?.fator || null,
+              guiaBaseId: a.guiaBase?.id || null,
+              guiaBaseNome: a.guiaBase?.nome || null,
+              guiaBaseValorMetro: a.guiaBase?.valorMetro || null,
+              motorId: a.motor?.id || null,
+              motorNome: a.motor?.nome || null,
+              motorValor: a.motor?.valor || null,
+              controleRemotoId: a.controle?.id || null,
+              controleRemotoNome: a.controle?.nome || null,
+              controleRemotoValor: a.controle?.valor || null,
+              m2Calculado: r.m2Calculado,
+              m2Cobrado: r.m2Cobrado,
+              custoPersiana: r.custoPersiana,
+              custoBando: r.custoBando,
+              custoGuiaLateral: r.custoGuiaLateral,
+              custoGuiaBase: r.custoGuiaBase,
+              custoMotor: r.custoMotor,
+              custoControle: r.custoControle,
+              custoInstalacaoMotor: r.custoInstalacaoMotor,
+              custoInstalacao: r.custoInstalacao,
+              custoTotal: r.custoTotal,
+              precoFinalVenda: r.precoFinalVenda,
+              instalacao: a.instalacao,
+              observacoes: a.observacoes || null,
+            }
+          }),
+        },
+      },
+      include: { ambientesPersiana: true },
+    })
+
+    await prisma.logHistorico.create({
+      data: {
+        orcamentoId: orcamento.id,
+        usuarioId: session.user.id,
+        acao: 'orcamento_criado',
+        detalhes: { produto: 'persiana', totalAmbientes: ambientesPersiana.length, precoFinalTotal: totalPrecoFinal },
+      },
+    })
+
+    const isAdminP = session.user.role === 'ADMIN'
+
+    return NextResponse.json({
+      orcamento,
+      resultado: {
+        ambientes: resultadosFinais.map(r => ({
+          nomeAmbiente: r.nomeAmbiente,
+          quantidadeTecido: 0,
+          quantidadeBlackout: null,
+          precisaTecidoExtra: false,
+          bainhaDisponivel: 0,
+          bainhaAlerta: null,
+          precoFinalVenda: r.precoFinalVenda,
+          m2Cobrado: r.m2Cobrado,
+          quantidade: r.quantidade,
+          tipo: r.tipo,
+          custoTotal: isAdminP ? r.custoTotal : undefined,
+          custoDetalhes: isAdminP ? {
+            custoPersiana: r.custoPersiana,
+            custoBando: r.custoBando,
+            custoGuiaLateral: r.custoGuiaLateral,
+            custoGuiaBase: r.custoGuiaBase,
+            custoMotor: r.custoMotor,
+            custoControle: r.custoControle,
+            custoInstalacaoMotor: r.custoInstalacaoMotor,
+            custoInstalacao: r.custoInstalacao,
+          } : undefined,
+          precoComMarkup: isAdminP ? r.precoComMarkup : undefined,
+          valorRt: isAdminP ? r.valorRt : undefined,
+          valorComissao: r.valorComissao,
+          margem: isAdminP ? r.margem : undefined,
+          markup: isAdminP ? r.markup : undefined,
+        })),
+        totalPrecoFinalVenda: totalPrecoFinal,
+        totalCusto: isAdminP ? resultadosFinais.reduce((s, r) => s + r.custoTotal, 0) : undefined,
+        totalComissao: resultadosFinais.reduce((s, r) => s + r.valorComissao, 0),
+        totalRt: isAdminP ? resultadosFinais.reduce((s, r) => s + r.valorRt, 0) : undefined,
+        totalMargem: isAdminP ? resultadosFinais.reduce((s, r) => s + r.margem, 0) : undefined,
+        comissaoVendedor,
+        clienteTemArquiteto,
       },
     }, { status: 201 })
   }

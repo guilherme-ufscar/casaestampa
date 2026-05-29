@@ -94,6 +94,30 @@ export type AmbientePapelPDF = {
   custoInstalacao: number
 }
 
+export type AmbientePersianaPDF = {
+  nomeAmbiente: string
+  tipo: string
+  colecao: string
+  modelo: string
+  largura: number
+  altura: number
+  quantidade: number
+  m2Cobrado: number
+  acionamento: string
+  instalacao: boolean
+  bandoNome?: string | null
+  guiaLateralNome?: string | null
+  guiaBaseName?: string | null
+  motorNome?: string | null
+  controleNome?: string | null
+  precoFinalVenda: number
+}
+
+const TIPO_PDF: Record<string, string> = {
+  ROLO: 'Rolo', ROMANA: 'Romana', PAINEL_COM_HASTES: 'Painel com hastes', PAINEL_SEM_HASTES: 'Painel sem hastes',
+  HORIZONTAL_16: 'Horizontal 16mm', HORIZONTAL_25: 'Horizontal 25mm', HORIZONTAL_50: 'Horizontal 50mm',
+}
+
 export type OrcamentoPDF = {
   numero: number
   createdAt: Date | string
@@ -105,6 +129,7 @@ export type OrcamentoPDF = {
   clienteArquiteto?: string | null
   ambientes: AmbientePDF[]
   ambientesPapel?: AmbientePapelPDF[]
+  ambientesPersiana?: AmbientePersianaPDF[]
   precoFinalTotal: number
   condicoesComerciais?: string
   telefoneEmpresa?: string
@@ -204,6 +229,22 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
                 )}
               </>
             )}
+          </View>
+        ))}
+
+        {orc.ambientesPersiana && orc.ambientesPersiana.length > 0 && orc.ambientesPersiana.map((a, i) => (
+          <View key={`persiana-${i}`} style={s.ambienteCard} wrap={false}>
+            <Text style={s.ambienteNome}>{a.nomeAmbiente} — Persiana {TIPO_PDF[a.tipo] ?? a.tipo}</Text>
+            <Text style={s.linha}><Text style={s.destaque}>Modelo:</Text> {a.colecao} {a.modelo}</Text>
+            <Text style={s.linha}><Text style={s.destaque}>Medidas:</Text> {a.largura.toFixed(2)} × {a.altura.toFixed(2)} m · {a.quantidade} {a.quantidade === 1 ? 'peça' : 'peças'} · {a.m2Cobrado.toFixed(2)} m²</Text>
+            <Text style={s.linha}><Text style={s.destaque}>Acionamento:</Text> {a.acionamento === 'motorizada' ? 'Motorizado' : 'Manual'}</Text>
+            {a.bandoNome && <Text style={s.linha}><Text style={s.destaque}>Bandô:</Text> {a.bandoNome}</Text>}
+            {a.guiaLateralNome && <Text style={s.linha}><Text style={s.destaque}>Guia lateral:</Text> {a.guiaLateralNome}</Text>}
+            {a.guiaBaseName && <Text style={s.linha}><Text style={s.destaque}>Guia base:</Text> {a.guiaBaseName}</Text>}
+            {a.motorNome && <Text style={s.linha}><Text style={s.destaque}>Motor:</Text> {a.motorNome}</Text>}
+            {a.controleNome && <Text style={s.linha}><Text style={s.destaque}>Controle remoto:</Text> {a.controleNome}</Text>}
+            <Text style={s.linha}><Text style={s.destaque}>Instalação:</Text> {a.instalacao ? 'Incluída' : 'Não incluída'}</Text>
+            <Text style={s.linha}><Text style={s.destaque}>Valor do ambiente:</Text> {fmt(a.precoFinalVenda)}</Text>
           </View>
         ))}
 

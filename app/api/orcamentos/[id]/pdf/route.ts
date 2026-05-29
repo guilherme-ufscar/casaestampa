@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { renderToBuffer } from '@react-pdf/renderer'
-import OrcamentoPDFDoc, { OrcamentoPDF, AmbientePDF, AmbientePapelPDF } from '@/lib/OrcamentoPDFDoc'
+import OrcamentoPDFDoc, { OrcamentoPDF, AmbientePDF, AmbientePapelPDF, AmbientePersianaPDF } from '@/lib/OrcamentoPDFDoc'
 import React from 'react'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -33,6 +33,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       ambientesPapel: {
         include: {
           papel: true,
+        },
+      },
+      ambientesPersiana: {
+        include: {
+          persiana: true,
         },
       },
     },
@@ -72,6 +77,25 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     custoInstalacao: Number(a.custoInstalacao ?? 0),
   }))
 
+  const ambientesPersianasPDF: AmbientePersianaPDF[] = orc.ambientesPersiana.map(a => ({
+    nomeAmbiente: a.nomeAmbiente,
+    tipo: a.tipo,
+    colecao: a.colecao,
+    modelo: a.modelo,
+    largura: Number(a.largura),
+    altura: Number(a.altura),
+    quantidade: a.quantidade,
+    m2Cobrado: Number(a.m2Cobrado ?? 0),
+    acionamento: a.acionamento,
+    instalacao: a.instalacao,
+    bandoNome: a.bandoNome ?? null,
+    guiaLateralNome: a.guiaLateralNome ?? null,
+    guiaBaseName: a.guiaBaseNome ?? null,
+    motorNome: a.motorNome ?? null,
+    controleNome: a.controleRemotoNome ?? null,
+    precoFinalVenda: Number(a.precoFinalVenda ?? 0),
+  }))
+
   const orcPDF: OrcamentoPDF = {
     numero: orc.numero,
     createdAt: orc.createdAt,
@@ -83,6 +107,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     clienteArquiteto: orc.cliente?.arquiteto ?? null,
     ambientes: ambientesPDF,
     ambientesPapel: ambientesPapelPDF,
+    ambientesPersiana: ambientesPersianasPDF,
     precoFinalTotal: Number(orc.precoFinalTotal ?? 0),
     condicoesComerciais: cfg.condicoes_comerciais,
     telefoneEmpresa: cfg.telefone_empresa,

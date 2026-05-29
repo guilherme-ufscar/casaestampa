@@ -37,6 +37,42 @@ interface OrcamentoHydrated {
     instalacao?: boolean
     observacoes?: string | null
   }>
+  ambientesPersiana?: Array<{
+    nomeAmbiente: string
+    persianaId: string
+    persiana?: { id: string; fornecedor: string; tipo: string; colecao: string; modelo: string; valorM2: string | number; minM2: string | number }
+    fornecedor: string
+    tipo: string
+    colecao: string
+    modelo: string
+    largura: string | number
+    altura: string | number
+    quantidade: number
+    lado?: string | null
+    acionamento: string
+    instalacaoLocal?: string | null
+    instalacao: boolean
+    bandoId?: string | null
+    bandoNome?: string | null
+    bandoValorMetro?: string | number | null
+    bandoLado?: string | null
+    guiaLateralId?: string | null
+    guiaLateralNome?: string | null
+    guiaLateralValorMetro?: string | number | null
+    guiaLateralFator?: number | null
+    guiaBaseId?: string | null
+    guiaBaseNome?: string | null
+    guiaBaseValorMetro?: string | number | null
+    motorId?: string | null
+    motorNome?: string | null
+    motorValor?: string | number | null
+    controleRemotoId?: string | null
+    controleRemotoNome?: string | null
+    controleRemotoValor?: string | number | null
+    valorM2: string | number
+    minM2: string | number
+    observacoes?: string | null
+  }>
 }
 
 export interface ClienteOrcamento {
@@ -139,6 +175,89 @@ export const ambientePapelVazio: AmbientePapelForm = {
   observacoes: '',
 }
 
+export interface AmbientePersianaForm {
+  nomeAmbiente: string
+  persianaId: string
+  fornecedor: string
+  tipo: string
+  colecao: string
+  modelo: string
+  largura: string
+  altura: string
+  quantidade: number
+  lado: string
+  acionamento: string
+  instalacaoLocal: string
+  instalacao: boolean
+  // Bandô
+  bandoAtivo: boolean
+  bandoId: string
+  bandoNome: string
+  bandoValorMetro: number
+  bandoLado: string
+  // Guia lateral
+  guiaLateralAtivo: boolean
+  guiaLateralId: string
+  guiaLateralNome: string
+  guiaLateralValorMetro: number
+  guiaLateralFator: 1 | 2
+  // Guia base
+  guiaBaseAtivo: boolean
+  guiaBaseId: string
+  guiaBaseNome: string
+  guiaBaseValorMetro: number
+  // Motor / controle
+  motorId: string
+  motorNome: string
+  motorValor: number
+  controleRemotoId: string
+  controleRemotoNome: string
+  controleRemotoValor: number
+  // Catálogo snapshot
+  valorM2: number
+  minM2: number
+  observacoes: string
+}
+
+export const ambientePersianaVazio: AmbientePersianaForm = {
+  nomeAmbiente: '',
+  persianaId: '',
+  fornecedor: '',
+  tipo: '',
+  colecao: '',
+  modelo: '',
+  largura: '',
+  altura: '',
+  quantidade: 1,
+  lado: '',
+  acionamento: 'manual',
+  instalacaoLocal: '',
+  instalacao: true,
+  bandoAtivo: false,
+  bandoId: '',
+  bandoNome: '',
+  bandoValorMetro: 0,
+  bandoLado: '',
+  guiaLateralAtivo: false,
+  guiaLateralId: '',
+  guiaLateralNome: '',
+  guiaLateralValorMetro: 0,
+  guiaLateralFator: 1,
+  guiaBaseAtivo: false,
+  guiaBaseId: '',
+  guiaBaseNome: '',
+  guiaBaseValorMetro: 0,
+  motorId: '',
+  motorNome: '',
+  motorValor: 0,
+  controleRemotoId: '',
+  controleRemotoNome: '',
+  controleRemotoValor: 0,
+  valorM2: 0,
+  minM2: 1.5,
+  observacoes: '',
+}
+
 interface OrcamentoContextType {
   etapa: number
   setEtapa: (e: number) => void
@@ -154,6 +273,10 @@ interface OrcamentoContextType {
   setAmbientesPapel: (a: AmbientePapelForm[]) => void
   ambientePapelAtual: number
   setAmbientePapelAtual: (i: number) => void
+  ambientesPersiana: AmbientePersianaForm[]
+  setAmbientesPersiana: (a: AmbientePersianaForm[]) => void
+  ambientePersianaAtual: number
+  setAmbientePersianaAtual: (i: number) => void
   orcamentoId: string | null
   setOrcamentoId: (id: string | null) => void
   orcamentoNumero: number | null
@@ -177,6 +300,8 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
   const [ambienteAtual, setAmbienteAtual] = useState(0)
   const [ambientesPapel, setAmbientesPapel] = useState<AmbientePapelForm[]>([{ ...ambientePapelVazio }])
   const [ambientePapelAtual, setAmbientePapelAtual] = useState(0)
+  const [ambientesPersiana, setAmbientesPersiana] = useState<AmbientePersianaForm[]>([{ ...ambientePersianaVazio }])
+  const [ambientePersianaAtual, setAmbientePersianaAtual] = useState(0)
   const [orcamentoId, setOrcamentoId] = useState<string | null>(null)
   const [orcamentoNumero, setOrcamentoNumero] = useState<number | null>(null)
   const [orcamentoToken, setOrcamentoToken] = useState<string | null>(null)
@@ -193,6 +318,8 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
     setAmbienteAtual(0)
     setAmbientesPapel([{ ...ambientePapelVazio }])
     setAmbientePapelAtual(0)
+    setAmbientesPersiana([{ ...ambientePersianaVazio }])
+    setAmbientePersianaAtual(0)
     setHidratando(false)
   }
 
@@ -249,16 +376,61 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
       : [{ ...ambientePapelVazio }]
 
     const temPapel = orcamento.ambientesPapel && orcamento.ambientesPapel.length > 0
+    const temPersiana = orcamento.ambientesPersiana && orcamento.ambientesPersiana.length > 0
+
+    const ambientesPersianaHydratados: AmbientePersianaForm[] = temPersiana
+      ? orcamento.ambientesPersiana!.map(a => ({
+          ...ambientePersianaVazio,
+          nomeAmbiente: a.nomeAmbiente ?? '',
+          persianaId: a.persianaId,
+          fornecedor: a.fornecedor,
+          tipo: a.tipo,
+          colecao: a.colecao,
+          modelo: a.modelo,
+          largura: a.largura != null ? String(a.largura) : '',
+          altura: a.altura != null ? String(a.altura) : '',
+          quantidade: a.quantidade,
+          lado: a.lado ?? '',
+          acionamento: a.acionamento,
+          instalacaoLocal: a.instalacaoLocal ?? '',
+          instalacao: a.instalacao,
+          bandoAtivo: Boolean(a.bandoId),
+          bandoId: a.bandoId ?? '',
+          bandoNome: a.bandoNome ?? '',
+          bandoValorMetro: Number(a.bandoValorMetro ?? 0),
+          bandoLado: a.bandoLado ?? '',
+          guiaLateralAtivo: Boolean(a.guiaLateralId),
+          guiaLateralId: a.guiaLateralId ?? '',
+          guiaLateralNome: a.guiaLateralNome ?? '',
+          guiaLateralValorMetro: Number(a.guiaLateralValorMetro ?? 0),
+          guiaLateralFator: (a.guiaLateralFator ?? 1) as 1 | 2,
+          guiaBaseAtivo: Boolean(a.guiaBaseId),
+          guiaBaseId: a.guiaBaseId ?? '',
+          guiaBaseNome: a.guiaBaseNome ?? '',
+          guiaBaseValorMetro: Number(a.guiaBaseValorMetro ?? 0),
+          motorId: a.motorId ?? '',
+          motorNome: a.motorNome ?? '',
+          motorValor: Number(a.motorValor ?? 0),
+          controleRemotoId: a.controleRemotoId ?? '',
+          controleRemotoNome: a.controleRemotoNome ?? '',
+          controleRemotoValor: Number(a.controleRemotoValor ?? 0),
+          valorM2: Number(a.valorM2),
+          minM2: Number(a.minM2),
+          observacoes: a.observacoes ?? '',
+        }))
+      : [{ ...ambientePersianaVazio }]
 
     setOrcamentoId(orcamento.id)
     setOrcamentoNumero(orcamento.numero)
     setOrcamentoToken(orcamento.token ?? null)
     setCliente(orcamento.cliente)
-    setProduto(temPapel ? 'papel_parede' : 'cortina')
+    setProduto(temPersiana ? 'persiana' : temPapel ? 'papel_parede' : 'cortina')
     setAmbientes(ambientesHydratados)
     setAmbienteAtual(0)
     setAmbientesPapel(ambientesPapelHydratados)
     setAmbientePapelAtual(0)
+    setAmbientesPersiana(ambientesPersianaHydratados)
+    setAmbientePersianaAtual(0)
     setEtapa(2)
     setHidratando(false)
   }
@@ -276,6 +448,8 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
       ambienteAtual, setAmbienteAtual,
       ambientesPapel, setAmbientesPapel,
       ambientePapelAtual, setAmbientePapelAtual,
+      ambientesPersiana, setAmbientesPersiana,
+      ambientePersianaAtual, setAmbientePersianaAtual,
       orcamentoId, setOrcamentoId,
       orcamentoNumero, setOrcamentoNumero,
       orcamentoToken, setOrcamentoToken,

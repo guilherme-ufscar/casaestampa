@@ -119,9 +119,10 @@ model Orcamento {
   cliente  Cliente? @relation(fields: [clienteId], references: [id])
   vendedor User     @relation(fields: [vendedorId], references: [id])
 
-  ambientes      AmbienteOrcamento[]
-  ambientesPapel AmbientePapelOrcamento[]
-  logsHistorico  LogHistorico[]
+  ambientes          AmbienteOrcamento[]
+  ambientesPapel     AmbientePapelOrcamento[]
+  ambientesPersiana  AmbientePersianaOrcamento[]
+  logsHistorico      LogHistorico[]
 }
 
 model Instalador {
@@ -224,4 +225,115 @@ model AmbientePapelOrcamento {
 
   orcamento Orcamento   @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
   papel     PapelParede @relation(fields: [papelId], references: [id])
+}
+
+// ─── Persianas ────────────────────────────────────────────────────────────────
+
+model Persiana {
+  id            String   @id @default(cuid())
+  fornecedor    String   // 'GABRIEL' | 'RIOFLEX' | 'AMORIM'
+  tipo          String   // 'ROLO' | 'ROMANA' | 'PAINEL_SEM_HASTES' | 'PAINEL_COM_HASTES' | 'HORIZONTAL_16' | 'HORIZONTAL_25' | 'HORIZONTAL_50'
+  colecao       String
+  modelo        String
+  codigo        String?
+  larguraMaxima Decimal? @db.Decimal(6, 2)
+  valorM2       Decimal  @db.Decimal(10, 2)
+  minM2         Decimal  @default(1.50) @db.Decimal(5, 2)
+  observacao    String?
+  ativo         Boolean  @default(true)
+
+  ambientes AmbientePersianaOrcamento[]
+}
+
+model AcessorioPersiana {
+  id         String  @id @default(cuid())
+  fornecedor String  // 'GABRIEL' | 'RIOFLEX' | 'AMORIM'
+  tipo       String  // 'BANDO' | 'GUIA_LATERAL' | 'GUIA_BASE'
+  nome       String
+  valorMetro Decimal @db.Decimal(10, 2)
+  observacao String?
+  ativo      Boolean @default(true)
+}
+
+model MotorPersiana {
+  id         String   @id @default(cuid())
+  fornecedor String
+  nome       String
+  marca      String?
+  valor      Decimal  @db.Decimal(10, 2)
+  larguraMax Decimal? @db.Decimal(6, 2)
+  cargaMaxKg Decimal? @db.Decimal(6, 2)
+  observacao String?
+  ativo      Boolean  @default(true)
+}
+
+model ControleRemotoPersiana {
+  id         String  @id @default(cuid())
+  fornecedor String
+  nome       String
+  canais     Int?
+  valor      Decimal @db.Decimal(10, 2)
+  ativo      Boolean @default(true)
+}
+
+model AmbientePersianaOrcamento {
+  id           String @id @default(cuid())
+  orcamentoId  String
+  nomeAmbiente String
+
+  // Persiana selecionada (snapshot + FK)
+  persianaId    String
+  fornecedor    String
+  tipo          String
+  colecao       String
+  modelo        String
+  largura       Decimal @db.Decimal(6, 2)
+  altura        Decimal @db.Decimal(6, 2)
+  quantidade    Int     @default(1)
+  lado          String? // 'lado_a_lado' | 'transpassada'
+  acionamento   String  // 'manual' | 'motorizada'
+  instalacaoLocal String?  // 'teto' | 'parede' | 'dentro_vao' | 'fora_vao'
+  trilhoLargura Decimal? @db.Decimal(6, 2)
+
+  // Acessórios (IDs para referência + valores snapshot)
+  bandoId           String?
+  bandoNome         String?
+  bandoValorMetro   Decimal? @db.Decimal(10, 2)
+  bandoLado         String?
+
+  guiaLateralId           String?
+  guiaLateralNome         String?
+  guiaLateralValorMetro   Decimal? @db.Decimal(10, 2)
+  guiaLateralFator        Int?
+
+  guiaBaseId          String?
+  guiaBaseNome        String?
+  guiaBaseValorMetro  Decimal? @db.Decimal(10, 2)
+
+  motorId    String?
+  motorNome  String?
+  motorValor Decimal? @db.Decimal(10, 2)
+
+  controleRemotoId    String?
+  controleRemotoNome  String?
+  controleRemotoValor Decimal? @db.Decimal(10, 2)
+
+  // Resultado calculado
+  m2Calculado          Decimal @db.Decimal(10, 4)
+  m2Cobrado            Decimal @db.Decimal(10, 4)
+  custoPersiana        Decimal @db.Decimal(10, 2)
+  custoBando           Decimal @default(0) @db.Decimal(10, 2)
+  custoGuiaLateral     Decimal @default(0) @db.Decimal(10, 2)
+  custoGuiaBase        Decimal @default(0) @db.Decimal(10, 2)
+  custoMotor           Decimal @default(0) @db.Decimal(10, 2)
+  custoControle        Decimal @default(0) @db.Decimal(10, 2)
+  custoInstalacaoMotor Decimal @default(0) @db.Decimal(10, 2)
+  custoInstalacao      Decimal @default(0) @db.Decimal(10, 2)
+  custoTotal           Decimal @db.Decimal(10, 2)
+  precoFinalVenda      Decimal @db.Decimal(10, 2)
+  instalacao           Boolean @default(true)
+  observacoes          String?
+
+  orcamento Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  persiana  Persiana  @relation(fields: [persianaId], references: [id])
 }

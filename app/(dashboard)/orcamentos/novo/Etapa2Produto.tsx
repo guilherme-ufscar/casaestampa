@@ -15,7 +15,7 @@ const produtos = [
     id: 'persiana',
     nome: 'Persiana',
     descricao: 'Persianas horizontais e verticais em diversos materiais.',
-    disponivel: false,
+    disponivel: true,
   },
   {
     id: 'papel_parede',
@@ -106,7 +106,7 @@ export default function Etapa2Produto() {
             disabled={!produto || !produtos.find(p => p.id === produto)?.disponivel}
             className="btn-gold flex items-center gap-2 px-6 py-2.5 rounded-[10px] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Próximo — {produto === 'papel_parede' ? 'Detalhes do Papel' : 'Detalhes da Cortina'}
+            Próximo — {produto === 'papel_parede' ? 'Detalhes do Papel' : produto === 'persiana' ? 'Detalhes da Persiana' : 'Detalhes da Cortina'}
             <ChevronRight size={16} />
           </button>
         </div>
