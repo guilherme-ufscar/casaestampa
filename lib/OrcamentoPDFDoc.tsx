@@ -110,12 +110,30 @@ export type AmbientePersianaPDF = {
   guiaBaseName?: string | null
   motorNome?: string | null
   controleNome?: string | null
+  observacoes?: string | null
   precoFinalVenda: number
 }
 
 const TIPO_PDF: Record<string, string> = {
   ROLO: 'Rolo', ROMANA: 'Romana', PAINEL_COM_HASTES: 'Painel com hastes', PAINEL_SEM_HASTES: 'Painel sem hastes',
   HORIZONTAL_16: 'Horizontal 16mm', HORIZONTAL_25: 'Horizontal 25mm', HORIZONTAL_50: 'Horizontal 50mm',
+  HORIZONTAL_75: 'Horizontal 75mm', VERTICAL: 'Vertical', CELULAR: 'Celular / Vert Gliss', PLISSADA: 'Plissada',
+}
+
+export type AmbientePisoPDF = {
+  nomeAmbiente: string
+  tipoPiso: string
+  fabricante?: string | null
+  pisoModelo: string
+  areaComPerda: number
+  rodapeNome?: string | null
+  observacoes?: string | null
+  precoFinalVenda: number
+}
+
+const PISO_PACOTE: Record<string, string> = {
+  LAMINADO: 'Pacote completo com tudo incluso: piso, manta, acessórios de acabamento, rodapé, cortes de porta, instalação do piso e rodapé, todo material necessário para obra e frete.',
+  VINILICO: 'Pacote completo com tudo incluso: piso, cola, massa niveladora, preparação do piso, rodapé se tiver, instalação do piso, instalação do rodapé se tiver, acabamento, todo material necessário para obra e frete.',
 }
 
 export type OrcamentoPDF = {
@@ -130,6 +148,7 @@ export type OrcamentoPDF = {
   ambientes: AmbientePDF[]
   ambientesPapel?: AmbientePapelPDF[]
   ambientesPersiana?: AmbientePersianaPDF[]
+  ambientesPiso?: AmbientePisoPDF[]
   precoFinalTotal: number
   condicoesComerciais?: string
   telefoneEmpresa?: string
@@ -249,7 +268,21 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
             {a.motorNome && <Text style={s.linha}><Text style={s.destaque}>Motor:</Text> {a.motorNome}</Text>}
             {a.controleNome && <Text style={s.linha}><Text style={s.destaque}>Controle remoto:</Text> {a.controleNome}</Text>}
             <Text style={s.linha}><Text style={s.destaque}>Instalação:</Text> {a.instalacao ? 'Incluída' : 'Não incluída'}</Text>
+            {a.observacoes && <Text style={s.linha}><Text style={s.destaque}>Observações:</Text> {a.observacoes}</Text>}
             <Text style={s.linha}><Text style={s.destaque}>Valor do ambiente:</Text> {fmt(a.precoFinalVenda)}</Text>
+          </View>
+        ))}
+
+        {orc.ambientesPiso && orc.ambientesPiso.length > 0 && orc.ambientesPiso.map((a, i) => (
+          <View key={`piso-${i}`} style={s.ambienteCard} wrap={false}>
+            <Text style={s.ambienteNome}>{a.nomeAmbiente} — Piso {a.tipoPiso === 'VINILICO' ? 'Vinílico' : 'Laminado'}</Text>
+            {a.fabricante && <Text style={s.linha}><Text style={s.destaque}>Fabricante:</Text> {a.fabricante}</Text>}
+            <Text style={s.linha}><Text style={s.destaque}>Modelo:</Text> {a.pisoModelo}</Text>
+            <Text style={s.linha}><Text style={s.destaque}>Metragem total:</Text> {a.areaComPerda.toFixed(2)} m²</Text>
+            {a.rodapeNome && <Text style={s.linha}><Text style={s.destaque}>Rodapé:</Text> {a.rodapeNome}</Text>}
+            {a.observacoes && <Text style={s.linha}><Text style={s.destaque}>Observações:</Text> {a.observacoes}</Text>}
+            <Text style={[s.linha, { marginTop: 4 }]}>{PISO_PACOTE[a.tipoPiso] ?? PISO_PACOTE.LAMINADO}</Text>
+            <Text style={s.linha}><Text style={s.destaque}>Valor total:</Text> {fmt(a.precoFinalVenda)}</Text>
           </View>
         ))}
 

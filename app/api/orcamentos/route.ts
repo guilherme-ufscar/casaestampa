@@ -5,7 +5,20 @@ import { authOptions } from '@/lib/auth'
 import { calcularOrcamento, AmbienteInput, Configuracoes } from '@/lib/calculoCortina'
 import { calcularAmbientePapel, getFatorDimensao, ConfigsPapel } from '@/lib/calculoPapelParede'
 import { calcularAmbientePersiana, ConfigsPersiana } from '@/lib/calculoPersiana'
+import { calcularAmbientePiso, ConfigsPiso, PisoInput } from '@/lib/calculoPiso'
 import { gerarToken, tokenExpiracao } from '@/lib/token'
+
+function montarConfigsPiso(configMap: Record<string, string>, comissao: number, rt: number): ConfigsPiso {
+  return {
+    markup_piso: parseFloat(configMap.markup_piso ?? configMap.markup_padrao ?? '35'),
+    comissao_padrao: comissao,
+    rt_padrao: rt,
+    instalacao_piso_laminado_m2: parseFloat(configMap.instalacao_piso_laminado_m2 ?? '25'),
+    instalacao_piso_vinilico_m2: parseFloat(configMap.instalacao_piso_vinilico_m2 ?? '30'),
+    cola_vinilica_rendimento_m2: parseFloat(configMap.cola_vinilica_rendimento_m2 ?? '12'),
+    massa_niveladora_rendimento_m2: parseFloat(configMap.massa_niveladora_rendimento_m2 ?? '10'),
+  }
+}
 
 function ambienteValido(ambiente: AmbienteInput & { tecidoId?: string; blackoutId?: string; blackout?: { id: string } | null }) {
   return Boolean(
@@ -34,6 +47,7 @@ export async function GET() {
       ambientes: true,
       ambientesPapel: { include: { papel: true } },
       ambientesPersiana: { include: { persiana: true } },
+      ambientesPiso: true,
     },
     orderBy: { createdAt: 'desc' },
   })
@@ -47,6 +61,7 @@ export async function POST(req: NextRequest) {
 
   try {
   const body = await req.json()
+  const ambientesPiso = (body as { ambientesPiso?: (PisoInput & { dados?: unknown })[] }).ambientesPiso
   const { clienteId, ambientes, ambientesPapel, ambientesPersiana, produto } = body as {
     clienteId?: string
     produto?: string
@@ -373,6 +388,94 @@ export async function POST(req: NextRequest) {
         totalComissao: resultadosFinais.reduce((s, r) => s + r.valorComissao, 0),
         totalRt: isAdminP ? resultadosFinais.reduce((s, r) => s + r.valorRt, 0) : undefined,
         totalMargem: isAdminP ? resultadosFinais.reduce((s, r) => s + r.margem, 0) : undefined,
+        comissaoVendedor,
+        clienteTemArquiteto,
+      },
+    }, { status: 201 })
+  }
+
+  // --- Piso ---
+  if (produto === 'piso' && ambientesPiso?.length) {
+    const vendedor = await prisma.user.findUnique({ where: { id: session.user.id }, select: { comissao: true } })
+    const comissaoVendedor = vendedor?.comissao ? Number(vendedor.comissao) : parseFloat(configMap.comissao_padrao ?? '8')
+    let clienteTemArquiteto = false
+    if (clienteId) {
+      const clienteDb = await prisma.cliente.findUnique({ where: { id: clienteId }, select: { arquiteto: true } })
+      clienteTemArquiteto = Boolean(clienteDb?.arquiteto)
+    }
+    const cfgPiso = montarConfigsPiso(configMap, comissaoVendedor, clienteTemArquiteto ? parseFloat(configMap.rt_padrao ?? '5') : 0)
+
+    const resultados = ambientesPiso.map(a => calcularAmbientePiso(a as PisoInput, cfgPiso))
+    const totalPrecoFinal = resultados.reduce((s, r) => s + r.precoFinalVenda, 0)
+
+    const orcamento = await prisma.orcamento.create({
+      data: {
+        clienteId: clienteId || null,
+        vendedorId: session.user.id,
+        status: 'orcamento_enviado',
+        precoFinalTotal: totalPrecoFinal,
+        token,
+        tokenExpiresAt,
+        ambientesPiso: {
+          create: ambientesPiso.map((a, i) => {
+            const r = resultados[i]
+            return {
+              nomeAmbiente: a.nomeAmbiente,
+              tipoPiso: a.tipoPiso,
+              fabricante: a.fabricante ?? null,
+              pisoId: (a as { pisoId?: string | null }).pisoId ?? null,
+              pisoModelo: a.pisoModelo,
+              areaTotalBruta: r.areaTotalBruta,
+              areaComPerda: r.areaComPerda,
+              rodapeNome: r.rodapeNome,
+              frete: a.frete ?? 190,
+              custoTotal: r.custoTotal,
+              precoFinalVenda: r.precoFinalVenda,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              dados: ((a as any).dados ?? a) as any,
+              observacoes: a.observacoes ?? null,
+            }
+          }),
+        },
+      },
+      include: { ambientesPiso: true },
+    })
+
+    await prisma.logHistorico.create({
+      data: {
+        orcamentoId: orcamento.id,
+        usuarioId: session.user.id,
+        acao: 'orcamento_criado',
+        detalhes: { produto: 'piso', totalAmbientes: ambientesPiso.length, precoFinalTotal: totalPrecoFinal },
+      },
+    })
+
+    const isAdmin = session.user.role === 'ADMIN'
+    return NextResponse.json({
+      orcamento,
+      resultado: {
+        ambientes: resultados.map(r => ({
+          nomeAmbiente: r.nomeAmbiente,
+          quantidadeTecido: 0,
+          quantidadeBlackout: null,
+          precisaTecidoExtra: false,
+          bainhaDisponivel: 0,
+          bainhaAlerta: null,
+          precoFinalVenda: r.precoFinalVenda,
+          areaTotalBruta: r.areaTotalBruta,
+          areaComPerda: r.areaComPerda,
+          custoTotal: isAdmin ? r.custoTotal : undefined,
+          precoComMarkup: isAdmin ? r.precoComMarkup : undefined,
+          valorRt: isAdmin ? r.valorRt : undefined,
+          valorComissao: r.valorComissao,
+          margem: isAdmin ? r.margem : undefined,
+          markup: isAdmin ? r.markup : undefined,
+        })),
+        totalPrecoFinalVenda: totalPrecoFinal,
+        totalCusto: isAdmin ? resultados.reduce((s, r) => s + r.custoTotal, 0) : undefined,
+        totalComissao: resultados.reduce((s, r) => s + r.valorComissao, 0),
+        totalRt: isAdmin ? resultados.reduce((s, r) => s + r.valorRt, 0) : undefined,
+        totalMargem: isAdmin ? resultados.reduce((s, r) => s + r.margem, 0) : undefined,
         comissaoVendedor,
         clienteTemArquiteto,
       },

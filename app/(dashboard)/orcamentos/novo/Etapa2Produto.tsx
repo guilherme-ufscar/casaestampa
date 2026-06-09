@@ -23,6 +23,12 @@ const produtos = [
     descricao: 'Papéis de parede nacionais e importados com cálculo de rolos.',
     disponivel: true,
   },
+  {
+    id: 'piso',
+    nome: 'Piso',
+    descricao: 'Piso laminado e vinílico com cálculo de material, rodapé, perfis e instalação.',
+    disponivel: true,
+  },
 ]
 
 export default function Etapa2Produto() {
@@ -106,7 +112,7 @@ export default function Etapa2Produto() {
             disabled={!produto || !produtos.find(p => p.id === produto)?.disponivel}
             className="btn-gold flex items-center gap-2 px-6 py-2.5 rounded-[10px] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Próximo — {produto === 'papel_parede' ? 'Detalhes do Papel' : produto === 'persiana' ? 'Detalhes da Persiana' : 'Detalhes da Cortina'}
+            Próximo — {produto === 'papel_parede' ? 'Detalhes do Papel' : produto === 'persiana' ? 'Detalhes da Persiana' : produto === 'piso' ? 'Detalhes do Piso' : 'Detalhes da Cortina'}
             <ChevronRight size={16} />
           </button>
         </div>

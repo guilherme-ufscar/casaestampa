@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { renderToBuffer } from '@react-pdf/renderer'
-import OrcamentoPDFDoc, { OrcamentoPDF, AmbientePDF, AmbientePapelPDF, AmbientePersianaPDF } from '@/lib/OrcamentoPDFDoc'
+import OrcamentoPDFDoc, { OrcamentoPDF, AmbientePDF, AmbientePapelPDF, AmbientePersianaPDF, AmbientePisoPDF } from '@/lib/OrcamentoPDFDoc'
 import React from 'react'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -40,6 +40,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
           persiana: true,
         },
       },
+      ambientesPiso: true,
     },
   })
 
@@ -93,6 +94,18 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     guiaBaseName: a.guiaBaseNome ?? null,
     motorNome: a.motorNome ?? null,
     controleNome: a.controleRemotoNome ?? null,
+    observacoes: a.observacoes ?? null,
+    precoFinalVenda: Number(a.precoFinalVenda ?? 0),
+  }))
+
+  const ambientesPisoPDF: AmbientePisoPDF[] = orc.ambientesPiso.map(a => ({
+    nomeAmbiente: a.nomeAmbiente,
+    tipoPiso: a.tipoPiso,
+    fabricante: a.fabricante ?? null,
+    pisoModelo: a.pisoModelo,
+    areaComPerda: Number(a.areaComPerda ?? 0),
+    rodapeNome: a.rodapeNome ?? null,
+    observacoes: a.observacoes ?? null,
     precoFinalVenda: Number(a.precoFinalVenda ?? 0),
   }))
 
@@ -108,6 +121,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     ambientes: ambientesPDF,
     ambientesPapel: ambientesPapelPDF,
     ambientesPersiana: ambientesPersianasPDF,
+    ambientesPiso: ambientesPisoPDF,
     precoFinalTotal: Number(orc.precoFinalTotal ?? 0),
     condicoesComerciais: cfg.condicoes_comerciais,
     telefoneEmpresa: cfg.telefone_empresa,

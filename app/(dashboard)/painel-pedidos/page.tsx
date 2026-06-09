@@ -8,7 +8,7 @@ import { StatusBadge, STATUS_CONFIG, StatusOrcamento } from '@/components/ui/Sta
 type Pedido = {
   id: string; numero: number; status: string; precoFinalTotal: number | null
   createdAt: string
-  cliente: { nome: string; telefone?: string; endereco?: string; email?: string } | null
+  cliente: { id?: string; nome: string; telefone?: string; endereco?: string; bairro?: string; email?: string } | null
   vendedor: { id: string; nome: string }
   ambientes: { id: string; nomeAmbiente?: string; tecido?: { nome: string }; quantidadeTecido?: number | null; precoFinalVenda?: number | null }[]
 }
@@ -19,7 +19,7 @@ type PaginaData = {
 }
 
 type PedidoDetalhe = Pedido & {
-  cliente: { nome: string; telefone?: string; email?: string; endereco?: string } | null
+  cliente: { id?: string; nome: string; telefone?: string; email?: string; endereco?: string; bairro?: string } | null
   ambientes: { id: string; nomeAmbiente: string; tecido: { nome: string }; quantidadeTecido: number | null; precoFinalVenda: number | null }[]
   logsHistorico: { id: string; acao: string; createdAt: string; usuario: { nome: string } }[]
 }
@@ -260,7 +260,10 @@ export default function PainelPedidosPage() {
               <tr key={p.id} className={`border-b border-[#F8F6F2] hover:bg-[#FDF8EE] transition-colors ${i % 2 === 1 ? 'bg-brand-bg/50' : ''}`}>
                 <td className="px-4 py-3"><input type="checkbox" checked={selecionados.includes(p.id)} onChange={() => toggleSelecionado(p.id)} className="rounded" /></td>
                 <td className="px-4 py-3 font-semibold text-gold-primary">#{String(p.numero).padStart(4,'0')}</td>
-                <td className="px-4 py-3 font-medium text-text-primary">{p.cliente?.nome ?? '—'}</td>
+                <td className="px-4 py-3 font-medium text-text-primary">
+                  {p.cliente?.nome ?? '—'}
+                  {p.cliente?.bairro && <span className="block text-[11px] font-normal text-text-muted">{p.cliente.bairro}</span>}
+                </td>
                 <td className="px-4 py-3 text-text-secondary">{p.ambientes.length}</td>
                 <td className="px-4 py-3 font-semibold text-text-primary">{p.precoFinalTotal ? fmt(Number(p.precoFinalTotal)) : '—'}</td>
                 <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
@@ -291,7 +294,7 @@ export default function PainelPedidosPage() {
               <span className="text-sm font-semibold text-gold-primary">#{String(p.numero).padStart(4,'0')}</span>
               <StatusBadge status={p.status} />
             </div>
-            <p className="text-base font-semibold text-text-primary">{p.cliente?.nome ?? '—'}</p>
+            <p className="text-base font-semibold text-text-primary">{p.cliente?.nome ?? '—'}{p.cliente?.bairro ? <span className="text-xs font-normal text-text-muted"> · {p.cliente.bairro}</span> : null}</p>
             <div className="flex items-center justify-between">
               <span className="text-lg font-bold text-text-primary">{p.precoFinalTotal ? fmt(Number(p.precoFinalTotal)) : '—'}</span>
               <span className="text-xs text-text-muted">{fmtData(p.createdAt)}</span>
@@ -341,11 +344,18 @@ export default function PainelPedidosPage() {
                 </div>
                 {drawerPedido.cliente && (
                   <div className="p-4 bg-brand-bg rounded-xl space-y-1">
-                    <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">Cliente</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Cliente</p>
+                      {drawerPedido.cliente.id && (
+                        <a href={`/clientes?abrir=${drawerPedido.cliente.id}`} className="flex items-center gap-1 text-[11px] font-medium text-gold-primary hover:text-gold-dark transition-colors">
+                          <Pencil size={11} /> Editar cliente
+                        </a>
+                      )}
+                    </div>
                     <p className="text-sm font-semibold text-text-primary">{drawerPedido.cliente.nome}</p>
                     {drawerPedido.cliente.telefone && <p className="text-xs text-text-secondary">{drawerPedido.cliente.telefone}</p>}
                     {drawerPedido.cliente.email && <p className="text-xs text-text-secondary">{drawerPedido.cliente.email}</p>}
-                    {drawerPedido.cliente.endereco && <p className="text-xs text-text-muted">{drawerPedido.cliente.endereco}</p>}
+                    {(drawerPedido.cliente.endereco || drawerPedido.cliente.bairro) && <p className="text-xs text-text-muted">{[drawerPedido.cliente.endereco, drawerPedido.cliente.bairro].filter(Boolean).join(' · ')}</p>}
                   </div>
                 )}
                 <div>

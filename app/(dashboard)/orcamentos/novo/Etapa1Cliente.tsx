@@ -20,6 +20,7 @@ type ClienteAPI = {
   telefone?: string
   email?: string
   endereco?: string
+  bairro?: string
   arquiteto?: string
   arquitetosDisponiveis?: Arquiteto[]
 }
@@ -47,7 +48,8 @@ export default function Etapa1Cliente() {
   const [ignorarBusca, setIgnorarBusca] = useState(false)
   const [arquitetos, setArquitetos] = useState<Arquiteto[]>([])
   const [arquitetoModo, setArquitetoModo] = useState<'cadastro' | 'manual'>('cadastro')
-  const [form, setForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
+  const [form, setForm] = useState({ nome: '', telefone: '', email: '', endereco: '', bairro: '', arquitetoSelecionado: '', arquitetoManual: '' })
+  const [salvandoCliente, setSalvandoCliente] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -65,6 +67,7 @@ export default function Etapa1Cliente() {
       telefone: cliente.telefone,
       email: cliente.email,
       endereco: cliente.endereco,
+      bairro: cliente.bairro,
       arquiteto: cliente.arquiteto,
     }
     const arquitetoState = getArquitetoState(cliente.arquiteto, arquitetos)
@@ -77,6 +80,7 @@ export default function Etapa1Cliente() {
       telefone: cliente.telefone ?? '',
       email: cliente.email ?? '',
       endereco: cliente.endereco ?? '',
+      bairro: cliente.bairro ?? '',
       arquitetoSelecionado: arquitetoState.selecionado,
       arquitetoManual: arquitetoState.manual,
     })
@@ -137,6 +141,7 @@ export default function Etapa1Cliente() {
       telefone: clienteSelecionado.telefone,
       email: clienteSelecionado.email,
       endereco: clienteSelecionado.endereco,
+      bairro: clienteSelecionado.bairro,
       arquiteto: clienteSelecionado.arquiteto,
     })
     setEtapa(2)
@@ -147,18 +152,40 @@ export default function Etapa1Cliente() {
     setEtapa(2)
   }
 
-  function proximo() {
-    if (!form.nome || !form.telefone) return
+  async function proximo() {
+    if (!form.nome || !form.telefone || salvandoCliente) return
     const arquiteto = arquitetoModo === 'cadastro' ? form.arquitetoSelecionado : form.arquitetoManual.trim()
-    const c: ClienteOrcamento = {
+    const dados = {
       nome: form.nome,
       telefone: form.telefone,
-      email: form.email,
-      endereco: form.endereco,
+      email: form.email || undefined,
+      endereco: form.endereco || undefined,
+      bairro: form.bairro || undefined,
       arquiteto: arquiteto || undefined,
     }
-    setCliente(c)
-    setEtapa(2)
+
+    // Persiste o cliente para que o orçamento fique vinculado (cria novo ou atualiza existente)
+    setSalvandoCliente(true)
+    try {
+      const existenteId = clienteSelecionado?.id
+      const res = await fetch(existenteId ? `/api/clientes/${existenteId}` : '/api/clientes', {
+        method: existenteId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados),
+      })
+      if (res.ok) {
+        const salvo = await res.json()
+        setCliente({ id: salvo.id, ...dados })
+      } else {
+        // Mesmo sem persistir, segue com os dados preenchidos
+        setCliente({ ...(existenteId ? { id: existenteId } : {}), ...dados })
+      }
+    } catch {
+      setCliente({ ...dados })
+    } finally {
+      setSalvandoCliente(false)
+      setEtapa(2)
+    }
   }
 
   return (
@@ -254,7 +281,11 @@ export default function Etapa1Cliente() {
         </div>
         <div className="space-y-1.5">
           <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Endereço</label>
-          <input type="text" value={form.endereco} onChange={e => setForm(p => ({ ...p, endereco: e.target.value }))} placeholder="Rua, número, bairro" className="input-base" />
+          <input type="text" value={form.endereco} onChange={e => setForm(p => ({ ...p, endereco: e.target.value }))} placeholder="Rua, número" className="input-base" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Bairro</label>
+          <input type="text" value={form.bairro} onChange={e => setForm(p => ({ ...p, bairro: e.target.value }))} placeholder="Bairro" className="input-base" />
         </div>
         <div className="space-y-3 md:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -303,10 +334,10 @@ export default function Etapa1Cliente() {
       <div className="flex justify-end pt-2">
         <button
           onClick={proximo}
-          disabled={!form.nome || !form.telefone}
+          disabled={!form.nome || !form.telefone || salvandoCliente}
           className="btn-gold flex items-center gap-2 px-6 py-2.5 rounded-[10px] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Próximo — Produto
+          {salvandoCliente ? 'Salvando...' : 'Próximo — Produto'}
           <ChevronRight size={16} />
         </button>
       </div>

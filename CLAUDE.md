@@ -1,0 +1,1 @@
+Database rodando em supabase, acesso dela é postgresql://postgres.eqouuvhwbcqzerbywvos:CoderMaster20262026@aws-1-sa-east-1.pooler.supabase.com:6543/postgres

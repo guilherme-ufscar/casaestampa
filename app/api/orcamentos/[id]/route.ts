@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { calcularOrcamento, AmbienteInput, Configuracoes } from '@/lib/calculoCortina'
 import { calcularAmbientePapel, ConfigsPapel } from '@/lib/calculoPapelParede'
 import { calcularAmbientePersiana, ConfigsPersiana } from '@/lib/calculoPersiana'
+import { calcularAmbientePiso, ConfigsPiso, PisoInput } from '@/lib/calculoPiso'
 
 function ambienteValido(ambiente: AmbienteInput & { tecidoId?: string; blackoutId?: string; blackout?: { id: string } | null }) {
   return Boolean(
@@ -31,6 +32,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       },
       ambientesPapel: { include: { papel: true } },
       ambientesPersiana: { include: { persiana: true } },
+      ambientesPiso: true,
     },
   })
 
@@ -59,6 +61,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const body = await req.json()
+    const ambientesPiso = (body as { ambientesPiso?: (PisoInput & { dados?: unknown })[] }).ambientesPiso
     const { clienteId, ambientes, ambientesPapel, ambientesPersiana, produto } = body as {
       clienteId?: string
       produto?: string
@@ -156,6 +159,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           clienteId: clienteId || null,
           precoFinalTotal: totalPrecoFinal,
           ambientes: { deleteMany: {} },
+          ambientesPersiana: { deleteMany: {} },
+          ambientesPiso: { deleteMany: {} },
           ambientesPapel: {
             deleteMany: {},
             create: (ambientesPapel as Array<typeof ambientesPapel[0] & { instalacao?: boolean }>).map((a, i) => {
@@ -262,6 +267,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           precoFinalTotal: totalPrecoFinal,
           ambientes: { deleteMany: {} },
           ambientesPapel: { deleteMany: {} },
+          ambientesPiso: { deleteMany: {} },
           ambientesPersiana: {
             deleteMany: {},
             create: ambientesPersiana.map((a, i) => {
@@ -344,6 +350,89 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       })
     }
 
+    // --- Piso ---
+    if (produto === 'piso' && ambientesPiso?.length) {
+      const vendedor = await prisma.user.findUnique({ where: { id: session.user.id }, select: { comissao: true } })
+      const comissaoVendedor = vendedor?.comissao ? Number(vendedor.comissao) : parseFloat(configMap.comissao_padrao ?? '8')
+      let clienteTemArquiteto = false
+      if (clienteId) {
+        const clienteDb = await prisma.cliente.findUnique({ where: { id: clienteId }, select: { arquiteto: true } })
+        clienteTemArquiteto = Boolean(clienteDb?.arquiteto)
+      }
+      const cfgPiso: ConfigsPiso = {
+        markup_piso: parseFloat(configMap.markup_piso ?? configMap.markup_padrao ?? '35'),
+        comissao_padrao: comissaoVendedor,
+        rt_padrao: clienteTemArquiteto ? parseFloat(configMap.rt_padrao ?? '5') : 0,
+        instalacao_piso_laminado_m2: parseFloat(configMap.instalacao_piso_laminado_m2 ?? '25'),
+        instalacao_piso_vinilico_m2: parseFloat(configMap.instalacao_piso_vinilico_m2 ?? '30'),
+        cola_vinilica_rendimento_m2: parseFloat(configMap.cola_vinilica_rendimento_m2 ?? '12'),
+        massa_niveladora_rendimento_m2: parseFloat(configMap.massa_niveladora_rendimento_m2 ?? '10'),
+      }
+
+      const resultados = ambientesPiso.map(a => calcularAmbientePiso(a as PisoInput, cfgPiso))
+      const totalPrecoFinal = resultados.reduce((s, r) => s + r.precoFinalVenda, 0)
+
+      const orcamento = await prisma.orcamento.update({
+        where: { id: params.id },
+        data: {
+          clienteId: clienteId || null,
+          precoFinalTotal: totalPrecoFinal,
+          ambientes: { deleteMany: {} },
+          ambientesPapel: { deleteMany: {} },
+          ambientesPersiana: { deleteMany: {} },
+          ambientesPiso: {
+            deleteMany: {},
+            create: ambientesPiso.map((a, i) => {
+              const r = resultados[i]
+              return {
+                nomeAmbiente: a.nomeAmbiente,
+                tipoPiso: a.tipoPiso,
+                fabricante: a.fabricante ?? null,
+                pisoId: (a as { pisoId?: string | null }).pisoId ?? null,
+                pisoModelo: a.pisoModelo,
+                areaTotalBruta: r.areaTotalBruta,
+                areaComPerda: r.areaComPerda,
+                rodapeNome: r.rodapeNome,
+                frete: a.frete ?? 190,
+                custoTotal: r.custoTotal,
+                precoFinalVenda: r.precoFinalVenda,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                dados: ((a as any).dados ?? a) as any,
+                observacoes: a.observacoes ?? null,
+              }
+            }),
+          },
+        },
+        include: { ambientesPiso: true },
+      })
+
+      await prisma.logHistorico.create({
+        data: {
+          orcamentoId: orcamento.id,
+          usuarioId: session.user.id,
+          acao: 'orcamento_editado',
+          detalhes: { produto: 'piso', totalAmbientes: ambientesPiso.length, precoFinalTotal: totalPrecoFinal },
+        },
+      })
+
+      const isAdmin = session.user.role === 'ADMIN'
+      return NextResponse.json({
+        orcamento,
+        resultado: {
+          ambientes: resultados.map(r => ({
+            nomeAmbiente: r.nomeAmbiente,
+            precoFinalVenda: r.precoFinalVenda,
+            areaTotalBruta: r.areaTotalBruta,
+            areaComPerda: r.areaComPerda,
+            custoTotal: isAdmin ? r.custoTotal : undefined,
+          })),
+          totalPrecoFinalVenda: totalPrecoFinal,
+          comissaoVendedor,
+          clienteTemArquiteto,
+        },
+      })
+    }
+
     // --- Cortina ---
     if (!ambientes?.length) {
       return NextResponse.json({ error: 'Nenhum ambiente informado' }, { status: 400 })
@@ -397,6 +486,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         clienteId: clienteId || null,
         precoFinalTotal: resultado.totalPrecoFinalVenda,
         ambientesPapel: { deleteMany: {} },
+        ambientesPersiana: { deleteMany: {} },
+        ambientesPiso: { deleteMany: {} },
         ambientes: {
           deleteMany: {},
           create: ambientes.map((a, i) => {

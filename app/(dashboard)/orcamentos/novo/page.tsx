@@ -10,6 +10,7 @@ import Etapa2Produto from './Etapa2Produto'
 import Etapa3Cortina from './Etapa3Cortina'
 import Etapa3PapelParede from './Etapa3PapelParede'
 import Etapa3Persiana from './Etapa3Persiana'
+import Etapa3Piso from './Etapa3Piso'
 import RevisaoOrcamento from './RevisaoOrcamento'
 import ResultadoOrcamento from './ResultadoOrcamento'
 
@@ -62,7 +63,8 @@ function NovoOrcamentoContent() {
       {etapa === 2 && <Etapa2Produto />}
       {etapa === 3 && produto === 'papel_parede' && <Etapa3PapelParede />}
       {etapa === 3 && produto === 'persiana' && <Etapa3Persiana />}
-      {etapa === 3 && produto !== 'papel_parede' && produto !== 'persiana' && <Etapa3Cortina />}
+      {etapa === 3 && produto === 'piso' && <Etapa3Piso />}
+      {etapa === 3 && produto !== 'papel_parede' && produto !== 'persiana' && produto !== 'piso' && <Etapa3Cortina />}
       {etapa === 4 && <RevisaoOrcamento />}
       {etapa === 5 && <ResultadoOrcamento />}
     </div>

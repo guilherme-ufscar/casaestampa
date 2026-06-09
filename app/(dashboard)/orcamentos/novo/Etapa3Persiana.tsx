@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ChevronLeft, ChevronDown, Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
 import { useOrcamento, AmbientePersianaForm, ambientePersianaVazio } from '@/context/OrcamentoContext'
-import { calcularAmbientePersiana, TipoPersiana } from '@/lib/calculoPersiana'
 
 type CatalogoPersiana = {
   id: string
@@ -11,6 +10,7 @@ type CatalogoPersiana = {
   tipo: string
   colecao: string
   modelo: string
+  codigo: string | null
   valorM2: number
   minM2: number
   larguraMaxima: number | null
@@ -51,6 +51,10 @@ const TIPO_LABELS: Record<string, string> = {
   HORIZONTAL_16: 'Horizontal 16mm',
   HORIZONTAL_25: 'Horizontal 25mm',
   HORIZONTAL_50: 'Horizontal 50mm',
+  HORIZONTAL_75: 'Horizontal 75mm',
+  VERTICAL: 'Vertical',
+  CELULAR: 'Celular / Vert Gliss',
+  PLISSADA: 'Plissada',
 }
 
 const FORNECEDOR_LABELS: Record<string, string> = {
@@ -70,7 +74,7 @@ export default function Etapa3Persiana() {
   const [acessorios, setAcessorios] = useState<AcessorioPersiana[]>([])
   const [motores, setMotores] = useState<MotorPersiana[]>([])
   const [controles, setControles] = useState<ControlePersiana[]>([])
-  const [cfgInstalacao, setCfgInstalacao] = useState({ rolo: 60, romana: 60, horizontal: 60, painel: 120, motor: 120, markup: 40 })
+  const [cfgMotorInstalacao, setCfgMotorInstalacao] = useState(120)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -85,14 +89,7 @@ export default function Etapa3Persiana() {
       setAcessorios(aces.map((a: AcessorioPersiana) => ({ ...a, valorMetro: Number(a.valorMetro) })))
       setMotores(mots.map((m: MotorPersiana) => ({ ...m, valor: Number(m.valor) })))
       setControles(ctrls.map((c: ControlePersiana) => ({ ...c, valor: Number(c.valor) })))
-      setCfgInstalacao({
-        rolo: parseFloat(cfg.instalacao_persiana_rolo ?? '60'),
-        romana: parseFloat(cfg.instalacao_persiana_romana ?? '60'),
-        horizontal: parseFloat(cfg.instalacao_persiana_horizontal ?? '60'),
-        painel: parseFloat(cfg.instalacao_persiana_painel ?? '120'),
-        motor: parseFloat(cfg.instalacao_motor_persiana ?? '120'),
-        markup: parseFloat(cfg.markup_persiana ?? cfg.markup_padrao ?? '40'),
-      })
+      setCfgMotorInstalacao(parseFloat(cfg.instalacao_motor_persiana ?? '120'))
       setLoading(false)
     })
   }, [])
@@ -129,46 +126,23 @@ export default function Etapa3Persiana() {
   }
 
   function selecionarTipo(tipo: string) {
-    updateAmb({ tipo, colecao: '', modelo: '', persianaId: '', valorM2: 0, minM2: 1.5 })
+    const ehPainel = tipo === 'PAINEL_COM_HASTES' || tipo === 'PAINEL_SEM_HASTES'
+    updateAmb({
+      tipo, colecao: '', modelo: '', persianaId: '', valorM2: 0, minM2: 1.5,
+      // Painéis não têm guia lateral; painéis RioFlex não têm motorização
+      ...(ehPainel ? { guiaLateralAtivo: false } : {}),
+      ...(ehPainel && amb.fornecedor === 'RIOFLEX' ? { acionamento: 'manual', motorId: '', motorNome: '', motorValor: 0, controleRemotoId: '', controleRemotoNome: '', controleRemotoValor: 0 } : {}),
+    })
   }
+
+  // Painel não tem guia lateral; painel RioFlex não tem motorização
+  const ehPainel = amb.tipo === 'PAINEL_COM_HASTES' || amb.tipo === 'PAINEL_SEM_HASTES'
+  const semMotorizacao = ehPainel && amb.fornecedor === 'RIOFLEX'
 
   function selecionarModelo(persianaId: string) {
     const p = catalogo.find(c => c.id === persianaId)
     if (p) updateAmb({ persianaId: p.id, colecao: p.colecao, modelo: p.modelo, valorM2: p.valorM2, minM2: p.minM2 })
   }
-
-  // Live preview calc
-  const previa = useMemo(() => {
-    if (!amb.persianaId || !amb.largura || !amb.altura) return null
-    const l = parseFloat(amb.largura)
-    const h = parseFloat(amb.altura)
-    if (!Number.isFinite(l) || !Number.isFinite(h) || l <= 0 || h <= 0) return null
-    return calcularAmbientePersiana({
-      nomeAmbiente: amb.nomeAmbiente,
-      tipo: amb.tipo as TipoPersiana,
-      largura: l,
-      altura: h,
-      quantidade: amb.quantidade,
-      valorM2: amb.valorM2,
-      minM2: amb.minM2,
-      acionamento: amb.acionamento as 'manual' | 'motorizada',
-      instalacao: amb.instalacao,
-      bando: amb.bandoAtivo && amb.bandoValorMetro ? { id: amb.bandoId, nome: amb.bandoNome, valorMetro: amb.bandoValorMetro, lado: amb.bandoLado } : null,
-      guiaLateral: amb.guiaLateralAtivo && amb.guiaLateralValorMetro ? { id: amb.guiaLateralId, nome: amb.guiaLateralNome, valorMetro: amb.guiaLateralValorMetro, fator: amb.guiaLateralFator } : null,
-      guiaBase: amb.guiaBaseAtivo && amb.guiaBaseValorMetro ? { id: amb.guiaBaseId, nome: amb.guiaBaseNome, valorMetro: amb.guiaBaseValorMetro } : null,
-      motor: amb.acionamento === 'motorizada' && amb.motorValor ? { id: amb.motorId, nome: amb.motorNome, valor: amb.motorValor } : null,
-      controle: amb.acionamento === 'motorizada' && amb.controleRemotoValor ? { id: amb.controleRemotoId, nome: amb.controleRemotoNome, valor: amb.controleRemotoValor } : null,
-    }, {
-      markup_persiana: cfgInstalacao.markup,
-      comissao_padrao: 0,
-      rt_padrao: 0,
-      instalacao_persiana_rolo: cfgInstalacao.rolo,
-      instalacao_persiana_romana: cfgInstalacao.romana,
-      instalacao_persiana_horizontal: cfgInstalacao.horizontal,
-      instalacao_persiana_painel: cfgInstalacao.painel,
-      instalacao_motor_persiana: cfgInstalacao.motor,
-    })
-  }, [amb, cfgInstalacao])
 
   const podeAvancar = ambientesPersiana.every(a =>
     a.nomeAmbiente && a.persianaId && parseFloat(a.largura) > 0 && parseFloat(a.altura) > 0
@@ -263,7 +237,8 @@ export default function Etapa3Persiana() {
                 <option value="">Selecione o modelo...</option>
                 {modelosFiltrados.map(m => (
                   <option key={m.id} value={m.id}>
-                    {m.colecao} — {m.modelo} (R$ {fmt(m.valorM2)}/m²)
+                    {m.colecao} — {m.modelo}
+                    {m.codigo ? ` · Ref. ${m.codigo}` : ''}
                     {m.larguraMaxima ? ` · Larg. máx. ${m.larguraMaxima}m` : ''}
                   </option>
                 ))}
@@ -321,7 +296,7 @@ export default function Etapa3Persiana() {
         <div className="space-y-1.5">
           <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Acionamento</label>
           <div className="flex gap-3">
-            {(['manual', 'motorizada'] as const).map(op => (
+            {(semMotorizacao ? (['manual'] as const) : (['manual', 'motorizada'] as const)).map(op => (
               <button
                 key={op}
                 onClick={() => updateAmb({ acionamento: op })}
@@ -376,7 +351,7 @@ export default function Etapa3Persiana() {
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               </div>
             </div>
-            <p className="text-xs text-text-muted">Instalação da motorização: R$ {fmt(cfgInstalacao.motor)} (automático)</p>
+            <p className="text-xs text-text-muted">Instalação da motorização: R$ {fmt(cfgMotorInstalacao)} (automático)</p>
           </div>
         )}
 
@@ -421,14 +396,15 @@ export default function Etapa3Persiana() {
           )}
         </div>
 
-        {/* Guia lateral */}
+        {/* Guia lateral — vendida sempre em par (painéis não têm guia lateral) */}
+        {!ehPainel && (
         <div className="space-y-3">
           <div className="flex items-center justify-between py-2 px-3 bg-brand-input rounded-xl border border-brand-border">
             <div>
               <p className="text-sm font-medium text-text-primary">Guia Lateral</p>
-              <p className="text-xs text-text-muted">Trilho lateral de alumínio ou PVC</p>
+              <p className="text-xs text-text-muted">Par completo (sempre os dois lados)</p>
             </div>
-            <button onClick={() => updateAmb({ guiaLateralAtivo: !amb.guiaLateralAtivo })} className="text-gold-primary">
+            <button onClick={() => updateAmb({ guiaLateralAtivo: !amb.guiaLateralAtivo, guiaLateralFator: 1 })} className="text-gold-primary">
               {amb.guiaLateralAtivo ? <ToggleRight size={30} /> : <ToggleLeft size={30} className="text-text-muted" />}
             </button>
           </div>
@@ -439,31 +415,19 @@ export default function Etapa3Persiana() {
                   value={amb.guiaLateralId}
                   onChange={e => {
                     const g = acessorios.find(x => x.id === e.target.value)
-                    updateAmb({ guiaLateralId: g?.id ?? '', guiaLateralNome: g?.nome ?? '', guiaLateralValorMetro: g?.valorMetro ?? 0 })
+                    updateAmb({ guiaLateralId: g?.id ?? '', guiaLateralNome: g?.nome ?? '', guiaLateralValorMetro: g?.valorMetro ?? 0, guiaLateralFator: 1 })
                   }}
                   className="input-base appearance-none pr-8"
                 >
                   <option value="">Selecione a guia...</option>
-                  {guiasLateraisFiltradas.map(g => <option key={g.id} value={g.id}>{g.nome} — R$ {fmt(g.valorMetro)}/m</option>)}
+                  {guiasLateraisFiltradas.map(g => <option key={g.id} value={g.id}>{g.nome} — R$ {fmt(g.valorMetro)}/m (par)</option>)}
                 </select>
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
-              </div>
-              <div className="flex gap-3">
-                {([1, 2] as const).map(f => (
-                  <button
-                    key={f}
-                    onClick={() => updateAmb({ guiaLateralFator: f })}
-                    className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${
-                      amb.guiaLateralFator === f ? 'border-gold-primary bg-gold-primary/5 text-gold-dark' : 'border-brand-border text-text-secondary'
-                    }`}
-                  >
-                    {f === 1 ? 'Um lado' : 'Ambos os lados'}
-                  </button>
-                ))}
               </div>
             </div>
           )}
         </div>
+        )}
 
         {/* Guia base */}
         <div className="space-y-3">
@@ -518,45 +482,6 @@ export default function Etapa3Persiana() {
             className="input-base h-auto py-3 resize-none"
           />
         </div>
-
-        {/* Prévia de cálculo */}
-        {previa && (
-          <div className="bg-brand-bg border border-brand-border rounded-xl p-4 space-y-2">
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Prévia</p>
-            <div className="flex justify-between text-sm">
-              <span className="text-text-secondary">m² calculado</span>
-              <span className="font-medium text-text-primary">{fmt(previa.m2Calculado)} m²</span>
-            </div>
-            {previa.m2Cobrado !== previa.m2Calculado && (
-              <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">m² cobrado (mínimo)</span>
-                <span className="font-medium text-gold-dark">{fmt(previa.m2Cobrado)} m²</span>
-              </div>
-            )}
-            {previa.custoBando > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">Bandô</span>
-                <span className="font-medium text-text-primary">R$ {fmt(previa.custoBando)}</span>
-              </div>
-            )}
-            {previa.custoGuiaLateral > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">Guia lateral</span>
-                <span className="font-medium text-text-primary">R$ {fmt(previa.custoGuiaLateral)}</span>
-              </div>
-            )}
-            {previa.custoMotor > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">Motor + controle + inst.</span>
-                <span className="font-medium text-text-primary">R$ {fmt(previa.custoMotor + previa.custoControle + previa.custoInstalacaoMotor)}</span>
-              </div>
-            )}
-            <div className="pt-1 border-t border-brand-border flex justify-between text-sm">
-              <span className="text-text-secondary">Custo total</span>
-              <span className="font-semibold text-text-primary">R$ {fmt(previa.custoTotal)}</span>
-            </div>
-          </div>
-        )}
 
         {/* Ações */}
         <div className="flex items-center justify-between pt-2">

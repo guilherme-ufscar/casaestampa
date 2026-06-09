@@ -19,6 +19,7 @@ type Cliente = {
   telefone?: string
   email?: string
   endereco?: string
+  bairro?: string
   arquiteto?: string
   createdAt: string
   orcamentos: Orcamento[]
@@ -71,8 +72,8 @@ export default function ClientesPage() {
   const [arquitetos, setArquitetos] = useState<Arquiteto[]>([])
   const [editArquitetoModo, setEditArquitetoModo] = useState<'cadastro' | 'manual'>('cadastro')
   const [novoArquitetoModo, setNovoArquitetoModo] = useState<'cadastro' | 'manual'>('cadastro')
-  const [editForm, setEditForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
-  const [novoForm, setNovoForm] = useState({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
+  const [editForm, setEditForm] = useState({ nome: '', telefone: '', email: '', endereco: '', bairro: '', arquitetoSelecionado: '', arquitetoManual: '' })
+  const [novoForm, setNovoForm] = useState({ nome: '', telefone: '', email: '', endereco: '', bairro: '', arquitetoSelecionado: '', arquitetoManual: '' })
 
   const fetchClientes = useCallback(async () => {
     setLoading(true)
@@ -93,6 +94,17 @@ export default function ClientesPage() {
     fetchArquitetos()
   }, [fetchArquitetos])
 
+  // Abre o cadastro do cliente automaticamente quando vindo de ?abrir=<id> (ex: painel de pedidos)
+  useEffect(() => {
+    const abrir = new URLSearchParams(window.location.search).get('abrir')
+    if (!abrir) return
+    fetch(`/api/clientes/${abrir}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(c => { if (c) abrirDrawer(c) })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     const t = setTimeout(fetchClientes, busca ? 300 : 0)
     return () => clearTimeout(t)
@@ -108,6 +120,7 @@ export default function ClientesPage() {
       telefone: c.telefone ?? '',
       email: c.email ?? '',
       endereco: c.endereco ?? '',
+      bairro: c.bairro ?? '',
       arquitetoSelecionado: arquitetoState.selecionado,
       arquitetoManual: arquitetoState.manual,
     })
@@ -125,6 +138,7 @@ export default function ClientesPage() {
         telefone: editForm.telefone,
         email: editForm.email,
         endereco: editForm.endereco,
+        bairro: editForm.bairro,
         arquiteto,
       }),
     })
@@ -145,13 +159,14 @@ export default function ClientesPage() {
         telefone: novoForm.telefone,
         email: novoForm.email,
         endereco: novoForm.endereco,
+        bairro: novoForm.bairro,
         arquiteto,
       }),
     })
     setSaving(false)
     setNovoDrawer(false)
     setNovoArquitetoModo('cadastro')
-    setNovoForm({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
+    setNovoForm({ nome: '', telefone: '', email: '', endereco: '', bairro: '', arquitetoSelecionado: '', arquitetoManual: '' })
     fetchClientes()
   }
 
@@ -174,7 +189,7 @@ export default function ClientesPage() {
   }
 
   function novoOrcamento(c: Cliente) {
-    const param = encodeURIComponent(JSON.stringify({ id: c.id, nome: c.nome, telefone: c.telefone, email: c.email, endereco: c.endereco, arquiteto: c.arquiteto }))
+    const param = encodeURIComponent(JSON.stringify({ id: c.id, nome: c.nome, telefone: c.telefone, email: c.email, endereco: c.endereco, bairro: c.bairro, arquiteto: c.arquiteto }))
     router.push(`/orcamentos/novo?cliente=${param}`)
   }
 
@@ -192,7 +207,7 @@ export default function ClientesPage() {
         <button
           onClick={() => {
             setNovoArquitetoModo('cadastro')
-            setNovoForm({ nome: '', telefone: '', email: '', endereco: '', arquitetoSelecionado: '', arquitetoManual: '' })
+            setNovoForm({ nome: '', telefone: '', email: '', endereco: '', bairro: '', arquitetoSelecionado: '', arquitetoManual: '' })
             setNovoDrawer(true)
           }}
           className="btn-gold flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-sm font-semibold"
@@ -259,10 +274,10 @@ export default function ClientesPage() {
                       <span className="text-sm text-text-secondary truncate">{c.email}</span>
                     </div>
                   )}
-                  {c.endereco && (
+                  {(c.endereco || c.bairro) && (
                     <div className="flex items-center gap-1">
                       <MapPin size={12} className="text-text-muted shrink-0" />
-                      <span className="text-xs text-text-muted truncate">{c.endereco}</span>
+                      <span className="text-xs text-text-muted truncate">{[c.endereco, c.bairro].filter(Boolean).join(' · ')}</span>
                     </div>
                   )}
                   {c.arquiteto && (
@@ -370,6 +385,10 @@ export default function ClientesPage() {
                   <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Endereço</label>
                   <input type="text" value={editForm.endereco} onChange={e => setEditForm(p => ({ ...p, endereco: e.target.value }))} className="input-base" />
                 </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Bairro</label>
+                  <input type="text" value={editForm.bairro} onChange={e => setEditForm(p => ({ ...p, bairro: e.target.value }))} placeholder="Bairro" className="input-base" />
+                </div>
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Arquiteto / RT</label>
@@ -441,7 +460,11 @@ export default function ClientesPage() {
               </div>
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Endereço</label>
-                <input type="text" value={novoForm.endereco} onChange={e => setNovoForm(p => ({ ...p, endereco: e.target.value }))} placeholder="Rua, número, bairro" className="input-base" />
+                <input type="text" value={novoForm.endereco} onChange={e => setNovoForm(p => ({ ...p, endereco: e.target.value }))} placeholder="Rua, número" className="input-base" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Bairro</label>
+                <input type="text" value={novoForm.bairro} onChange={e => setNovoForm(p => ({ ...p, bairro: e.target.value }))} placeholder="Bairro" className="input-base" />
               </div>
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">

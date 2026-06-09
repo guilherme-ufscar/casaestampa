@@ -26,11 +26,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const body = await req.json()
-  const { nome, telefone, email, endereco, arquiteto } = body
+  const { nome, telefone, email, endereco, bairro, arquiteto } = body
 
   const cliente = await prisma.cliente.update({
     where: { id: params.id },
-    data: { nome, telefone, email, endereco, arquiteto },
+    data: { nome, telefone, email, endereco, bairro, arquiteto },
   })
 
   return NextResponse.json(cliente)

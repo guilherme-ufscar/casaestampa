@@ -73,6 +73,11 @@ interface OrcamentoHydrated {
     minM2: string | number
     observacoes?: string | null
   }>
+  ambientesPiso?: Array<{
+    nomeAmbiente: string
+    dados?: unknown
+    observacoes?: string | null
+  }>
 }
 
 export interface ClienteOrcamento {
@@ -81,6 +86,7 @@ export interface ClienteOrcamento {
   telefone?: string
   email?: string
   endereco?: string
+  bairro?: string
   arquiteto?: string
 }
 
@@ -258,6 +264,116 @@ export const ambientePersianaVazio: AmbientePersianaForm = {
   observacoes: '',
 }
 
+// ─── Pisos ──────────────────────────────────────────────────────────────────
+export interface MedicaoPisoForm {
+  largura: string
+  comprimento: string
+}
+
+export interface PerfilPisoForm {
+  categoria: string // REDUTOR | TRANSICAO | CANTONEIRA | OUTROS
+  produtoId: string
+  nome: string
+  valorPc: number
+  medidaPeca: number
+  medidas: string[]
+}
+
+export interface AcabamentoPisoForm {
+  produtoId: string
+  nome: string
+  valorMetro: number
+  medidas: string[]
+}
+
+export interface AmbientePisoForm {
+  nomeAmbiente: string
+  tipoPiso: 'LAMINADO' | 'VINILICO'
+  fabricante: string
+  pisoId: string
+  pisoModelo: string
+  pisoValorM2: number
+  medicoes: MedicaoPisoForm[]
+  // Manta (laminado)
+  mantaAtivo: boolean
+  mantaId: string
+  mantaNome: string
+  mantaValorM2: number
+  // Rodapé
+  rodapeAtivo: boolean
+  rodapeId: string
+  rodapeNome: string
+  rodapeValorPc: number
+  rodapeMedidaPeca: number
+  rodapeMedidas: string[]
+  // Perfis (laminado)
+  perfis: PerfilPisoForm[]
+  // Prego (laminado)
+  pregoAtivo: boolean
+  pregoId: string
+  pregoNome: string
+  pregoValorPct: number
+  pregoPacotes: number
+  // Cola (vinílico — automática)
+  colaId: string
+  colaNome: string
+  colaValorGalao: number
+  // Massa niveladora (vinílico)
+  massaAtivo: boolean
+  massaId: string
+  massaNome: string
+  massaValorSaco: number
+  massaRendimento: number
+  // Acabamentos (chapas — vinílico)
+  acabamentos: AcabamentoPisoForm[]
+  // Outros
+  outrosDescricao: string
+  outrosValor: string
+  instalacao: boolean
+  frete: string
+  observacoes: string
+}
+
+export const ambientePisoVazio: AmbientePisoForm = {
+  nomeAmbiente: '',
+  tipoPiso: 'LAMINADO',
+  fabricante: '',
+  pisoId: '',
+  pisoModelo: '',
+  pisoValorM2: 0,
+  medicoes: [{ largura: '', comprimento: '' }],
+  mantaAtivo: false,
+  mantaId: '',
+  mantaNome: '',
+  mantaValorM2: 0,
+  rodapeAtivo: false,
+  rodapeId: '',
+  rodapeNome: '',
+  rodapeValorPc: 0,
+  rodapeMedidaPeca: 2.1,
+  rodapeMedidas: [''],
+  perfis: [],
+  pregoAtivo: false,
+  pregoId: '',
+  pregoNome: '',
+  pregoValorPct: 0,
+  pregoPacotes: 1,
+  colaId: '',
+  colaNome: '',
+  colaValorGalao: 0,
+  massaAtivo: false,
+  massaId: '',
+  massaNome: '',
+  massaValorSaco: 0,
+  massaRendimento: 10,
+  acabamentos: [],
+  outrosDescricao: '',
+  outrosValor: '',
+  instalacao: true,
+  frete: '190',
+  observacoes: '',
+}
+
 interface OrcamentoContextType {
   etapa: number
   setEtapa: (e: number) => void
@@ -277,6 +393,10 @@ interface OrcamentoContextType {
   setAmbientesPersiana: (a: AmbientePersianaForm[]) => void
   ambientePersianaAtual: number
   setAmbientePersianaAtual: (i: number) => void
+  ambientesPiso: AmbientePisoForm[]
+  setAmbientesPiso: (a: AmbientePisoForm[]) => void
+  ambientePisoAtual: number
+  setAmbientePisoAtual: (i: number) => void
   orcamentoId: string | null
   setOrcamentoId: (id: string | null) => void
   orcamentoNumero: number | null
@@ -302,6 +422,8 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
   const [ambientePapelAtual, setAmbientePapelAtual] = useState(0)
   const [ambientesPersiana, setAmbientesPersiana] = useState<AmbientePersianaForm[]>([{ ...ambientePersianaVazio }])
   const [ambientePersianaAtual, setAmbientePersianaAtual] = useState(0)
+  const [ambientesPiso, setAmbientesPiso] = useState<AmbientePisoForm[]>([{ ...ambientePisoVazio }])
+  const [ambientePisoAtual, setAmbientePisoAtual] = useState(0)
   const [orcamentoId, setOrcamentoId] = useState<string | null>(null)
   const [orcamentoNumero, setOrcamentoNumero] = useState<number | null>(null)
   const [orcamentoToken, setOrcamentoToken] = useState<string | null>(null)
@@ -320,6 +442,8 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
     setAmbientePapelAtual(0)
     setAmbientesPersiana([{ ...ambientePersianaVazio }])
     setAmbientePersianaAtual(0)
+    setAmbientesPiso([{ ...ambientePisoVazio }])
+    setAmbientePisoAtual(0)
     setHidratando(false)
   }
 
@@ -377,6 +501,16 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
 
     const temPapel = orcamento.ambientesPapel && orcamento.ambientesPapel.length > 0
     const temPersiana = orcamento.ambientesPersiana && orcamento.ambientesPersiana.length > 0
+    const temPiso = orcamento.ambientesPiso && orcamento.ambientesPiso.length > 0
+
+    const ambientesPisoHydratados: AmbientePisoForm[] = temPiso
+      ? orcamento.ambientesPiso!.map(a => ({
+          ...ambientePisoVazio,
+          ...((a.dados && typeof a.dados === 'object') ? (a.dados as Partial<AmbientePisoForm>) : {}),
+          nomeAmbiente: a.nomeAmbiente ?? '',
+          observacoes: a.observacoes ?? '',
+        }))
+      : [{ ...ambientePisoVazio }]
 
     const ambientesPersianaHydratados: AmbientePersianaForm[] = temPersiana
       ? orcamento.ambientesPersiana!.map(a => ({
@@ -424,13 +558,15 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
     setOrcamentoNumero(orcamento.numero)
     setOrcamentoToken(orcamento.token ?? null)
     setCliente(orcamento.cliente)
-    setProduto(temPersiana ? 'persiana' : temPapel ? 'papel_parede' : 'cortina')
+    setProduto(temPiso ? 'piso' : temPersiana ? 'persiana' : temPapel ? 'papel_parede' : 'cortina')
     setAmbientes(ambientesHydratados)
     setAmbienteAtual(0)
     setAmbientesPapel(ambientesPapelHydratados)
     setAmbientePapelAtual(0)
     setAmbientesPersiana(ambientesPersianaHydratados)
     setAmbientePersianaAtual(0)
+    setAmbientesPiso(ambientesPisoHydratados)
+    setAmbientePisoAtual(0)
     setEtapa(2)
     setHidratando(false)
   }
@@ -450,6 +586,8 @@ export function OrcamentoProvider({ children }: { children: ReactNode }) {
       ambientePapelAtual, setAmbientePapelAtual,
       ambientesPersiana, setAmbientesPersiana,
       ambientePersianaAtual, setAmbientePersianaAtual,
+      ambientesPiso, setAmbientesPiso,
+      ambientePisoAtual, setAmbientePisoAtual,
       orcamentoId, setOrcamentoId,
       orcamentoNumero, setOrcamentoNumero,
       orcamentoToken, setOrcamentoToken,

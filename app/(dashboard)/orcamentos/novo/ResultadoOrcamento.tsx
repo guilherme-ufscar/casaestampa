@@ -86,6 +86,7 @@ export default function ResultadoOrcamento() {
     ambientes,
     ambientesPapel,
     ambientesPersiana,
+    ambientesPiso,
     setAmbientes,
     setAmbienteAtual,
     setEtapa,
@@ -151,6 +152,35 @@ export default function ResultadoOrcamento() {
             motor: a.acionamento === 'motorizada' && a.motorId ? { id: a.motorId, nome: a.motorNome, valor: a.motorValor } : null,
             controle: a.acionamento === 'motorizada' && a.controleRemotoId ? { id: a.controleRemotoId, nome: a.controleRemotoNome, valor: a.controleRemotoValor } : null,
             observacoes: a.observacoes || null,
+          }))
+          payload.ambientes = []
+          payload.ambientesPapel = []
+        } else if (produto === 'piso') {
+          const num = (v: string) => parseFloat(v) || 0
+          const medidasNum = (arr: string[]) => arr.map(num).filter(n => n > 0)
+          payload.ambientesPiso = ambientesPiso.map(a => ({
+            nomeAmbiente: a.nomeAmbiente,
+            tipoPiso: a.tipoPiso,
+            fabricante: a.fabricante || null,
+            pisoId: a.pisoId || null,
+            pisoModelo: a.pisoModelo,
+            pisoValorM2: a.pisoValorM2,
+            medicoes: a.medicoes
+              .filter(m => num(m.largura) > 0 && num(m.comprimento) > 0)
+              .map(m => ({ largura: num(m.largura), comprimento: num(m.comprimento) })),
+            manta: a.tipoPiso === 'LAMINADO' && a.mantaAtivo && a.mantaId ? { nome: a.mantaNome, valorM2: a.mantaValorM2 } : null,
+            rodape: a.rodapeAtivo && a.rodapeId ? { nome: a.rodapeNome, valorPc: a.rodapeValorPc, medidaPeca: a.rodapeMedidaPeca, medidas: medidasNum(a.rodapeMedidas) } : null,
+            perfis: a.tipoPiso === 'LAMINADO' ? a.perfis.filter(p => p.produtoId).map(p => ({ nome: p.nome, valorPc: p.valorPc, medidaPeca: p.medidaPeca, medidas: medidasNum(p.medidas) })) : [],
+            prego: a.tipoPiso === 'LAMINADO' && a.pregoAtivo && a.pregoId ? { nome: a.pregoNome, valorPct: a.pregoValorPct, pacotes: a.pregoPacotes } : null,
+            cola: a.tipoPiso === 'VINILICO' && a.colaId ? { nome: a.colaNome, valorGalao: a.colaValorGalao } : null,
+            massa: a.tipoPiso === 'VINILICO' && a.massaAtivo && a.massaId ? { nome: a.massaNome, valorSaco: a.massaValorSaco, rendimentoM2: a.massaRendimento } : null,
+            acabamentos: a.tipoPiso === 'VINILICO' ? a.acabamentos.filter(x => x.produtoId).map(x => ({ nome: x.nome, valorMetro: x.valorMetro, medidas: medidasNum(x.medidas) })) : [],
+            outrosDescricao: a.outrosDescricao || null,
+            outrosValor: num(a.outrosValor),
+            instalacao: a.instalacao,
+            frete: num(a.frete),
+            observacoes: a.observacoes || null,
+            dados: a,
           }))
           payload.ambientes = []
           payload.ambientesPapel = []
@@ -330,6 +360,10 @@ export default function ResultadoOrcamento() {
                 <span>m² cobrado: <strong className="text-text-primary">{((a as Record<string, unknown>).m2Cobrado as number)?.toFixed(2) ?? '—'} m²</strong></span>
                 <span>Peças: <strong className="text-text-primary">{String((a as Record<string, unknown>).quantidade ?? '—')}</strong></span>
               </>
+            ) : produto === 'piso' ? (
+              <>
+                <span>Área: <strong className="text-text-primary">{((a as Record<string, unknown>).areaComPerda as number)?.toFixed(2) ?? '—'} m²</strong> <span className="text-xs text-text-muted">(c/ 10%)</span></span>
+              </>
             ) : (
               <>
                 <span>Tecido: <strong className="text-text-primary">{a.quantidadeTecido.toFixed(2)}m</strong></span>
@@ -452,10 +486,14 @@ export default function ResultadoOrcamento() {
                 <div key={i} className="space-y-2">
                   <p className="text-xs font-semibold text-text-primary">{a.nomeAmbiente || `Ambiente ${i + 1}`}</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <span className="text-text-muted">Valor do tecido: <strong className="text-text-primary">{fmt(a.custoTecido + (a.custoBlackout || 0))}</strong></span>
-                    <span className="text-text-muted">Valor da confecção: <strong className="text-text-primary">{fmt(a.custoConfeccao)}</strong></span>
-                    <span className="text-text-muted">Valor do trilho: <strong className="text-text-primary">{fmt(a.custoTotal - a.custoTecido - a.custoBlackout - a.custoConfeccao - a.custoInstalacao)}</strong></span>
-                    <span className="text-text-muted">Valor da instalação: <strong className="text-text-primary">{fmt(a.custoInstalacao)}</strong></span>
+                    {produto === 'cortina' && (
+                      <>
+                        <span className="text-text-muted">Valor do tecido: <strong className="text-text-primary">{fmt(a.custoTecido + (a.custoBlackout || 0))}</strong></span>
+                        <span className="text-text-muted">Valor da confecção: <strong className="text-text-primary">{fmt(a.custoConfeccao)}</strong></span>
+                        <span className="text-text-muted">Valor do trilho: <strong className="text-text-primary">{fmt(a.custoTotal - a.custoTecido - a.custoBlackout - a.custoConfeccao - a.custoInstalacao)}</strong></span>
+                        <span className="text-text-muted">Valor da instalação: <strong className="text-text-primary">{fmt(a.custoInstalacao)}</strong></span>
+                      </>
+                    )}
                     <span className="text-text-muted">Custo total: <strong className="text-text-primary">{fmt(a.custoTotal)}</strong></span>
                     <span className="text-text-muted">Markup ({a.markup}%): <strong className="text-text-primary">{fmt(a.precoComMarkup)}</strong></span>
                     {res.clienteTemArquiteto && (

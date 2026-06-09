@@ -49,7 +49,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function RevisaoOrcamento() {
-  const { cliente, produto, ambientes, ambientesPapel, ambientesPersiana, setAmbienteAtual, setAmbientePapelAtual, setAmbientePersianaAtual, setEtapa } = useOrcamento()
+  const { cliente, produto, ambientes, ambientesPapel, ambientesPersiana, ambientesPiso, setAmbienteAtual, setAmbientePapelAtual, setAmbientePersianaAtual, setAmbientePisoAtual, setEtapa } = useOrcamento()
   const [configs, setConfigs] = useState<ConfigsRaw | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -64,6 +64,13 @@ export default function RevisaoOrcamento() {
     ? ambientesPersiana
         .map((a, i) => {
           const invalido = !a.persianaId || !a.nomeAmbiente || parseFloat(a.largura) <= 0 || parseFloat(a.altura) <= 0
+          return invalido ? (a.nomeAmbiente || `Ambiente ${i + 1}`) : null
+        })
+        .filter((nome): nome is string => Boolean(nome))
+    : produto === 'piso'
+    ? ambientesPiso
+        .map((a, i) => {
+          const invalido = !a.pisoId || !a.nomeAmbiente || !a.medicoes.some(m => parseFloat(m.largura) > 0 && parseFloat(m.comprimento) > 0)
           return invalido ? (a.nomeAmbiente || `Ambiente ${i + 1}`) : null
         })
         .filter((nome): nome is string => Boolean(nome))
@@ -198,14 +205,50 @@ export default function RevisaoOrcamento() {
                   <InfoRow label="Guia Lateral" value={a.guiaLateralAtivo ? (a.guiaLateralNome || 'Sim') : 'Não'} />
                   <InfoRow label="Instalação" value={a.instalacao ? 'Sim' : 'Não'} />
                   {a.acionamento === 'motorizada' && <InfoRow label="Motor" value={a.motorNome || '—'} />}
+                  {a.observacoes && <div className="col-span-2 md:col-span-3"><InfoRow label="Observações (fornecedor/instalador)" value={a.observacoes} /></div>}
                 </div>
               </div>
             ))}
           </div>
         )}
 
+        {/* Ambientes de Piso */}
+        {produto === 'piso' && (
+          <div className="space-y-4">
+            {ambientesPiso.map((a, i) => {
+              const area = a.medicoes.reduce((s, m) => {
+                const l = parseFloat(m.largura); const c = parseFloat(m.comprimento)
+                return s + (Number.isFinite(l) && Number.isFinite(c) ? l * c : 0)
+              }, 0)
+              return (
+                <div key={i} className="border border-brand-border rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 bg-brand-bg border-b border-brand-border">
+                    <div className="flex items-center gap-2">
+                      <Home size={16} className="text-gold-primary" />
+                      <span className="text-sm font-semibold text-text-primary">{a.nomeAmbiente || `Ambiente ${i + 1}`}</span>
+                    </div>
+                    <button onClick={() => { setAmbientePisoAtual(i); setEtapa(3) }} className="flex items-center gap-1 text-xs font-medium text-text-secondary hover:text-gold-primary transition-colors">
+                      <Pencil size={13} /> Editar
+                    </button>
+                  </div>
+                  <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <InfoRow label="Tipo" value={a.tipoPiso === 'LAMINADO' ? 'Laminado' : 'Vinílico'} />
+                    <InfoRow label="Fabricante" value={a.fabricante || '—'} />
+                    <InfoRow label="Modelo" value={a.pisoModelo || '—'} />
+                    <InfoRow label="Área bruta" value={`${area.toFixed(2)} m²`} />
+                    <InfoRow label="Área +10%" value={`${(area * 1.1).toFixed(2)} m²`} />
+                    <InfoRow label="Rodapé" value={a.rodapeAtivo ? (a.rodapeNome || 'Sim') : 'Não'} />
+                    <InfoRow label="Instalação" value={a.instalacao ? 'Sim' : 'Não'} />
+                    {a.observacoes && <div className="col-span-2 md:col-span-3"><InfoRow label="Observações" value={a.observacoes} /></div>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         {/* Ambientes de Cortina */}
-        {produto !== 'papel_parede' && produto !== 'persiana' && (
+        {produto !== 'papel_parede' && produto !== 'persiana' && produto !== 'piso' && (
         <div className="space-y-4">
           {ambientes.map((a, i) => {
             const resultado = cfgs && a.tecidoId && a.largura && a.altura
@@ -283,9 +326,15 @@ export default function RevisaoOrcamento() {
           <div className="flex gap-6">
             <div>
               <p className="text-[11px] text-text-muted uppercase tracking-wider">Ambientes</p>
-              <p className="text-lg font-semibold text-text-primary">{produto === 'papel_parede' ? ambientesPapel.length : produto === 'persiana' ? ambientesPersiana.length : ambientes.length}</p>
+              <p className="text-lg font-semibold text-text-primary">{produto === 'papel_parede' ? ambientesPapel.length : produto === 'persiana' ? ambientesPersiana.length : produto === 'piso' ? ambientesPiso.length : ambientes.length}</p>
             </div>
-            {produto !== 'papel_parede' && produto !== 'persiana' && (
+            {produto === 'piso' && (
+              <div>
+                <p className="text-[11px] text-text-muted uppercase tracking-wider">Área total</p>
+                <p className="text-lg font-semibold text-text-primary">{ambientesPiso.reduce((s, a) => s + a.medicoes.reduce((ss, m) => { const l = parseFloat(m.largura); const c = parseFloat(m.comprimento); return ss + (Number.isFinite(l) && Number.isFinite(c) ? l * c : 0) }, 0), 0).toFixed(2)} m²</p>
+              </div>
+            )}
+            {produto !== 'papel_parede' && produto !== 'persiana' && produto !== 'piso' && (
               <div>
                 <p className="text-[11px] text-text-muted uppercase tracking-wider">Total de tecido</p>
                 <p className="text-lg font-semibold text-text-primary">{totalMetros.toFixed(2)}m</p>

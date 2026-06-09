@@ -66,6 +66,7 @@ model Cliente {
   id        String   @id @default(cuid())
   nome      String
   endereco  String?
+  bairro    String?
   telefone  String?
   email     String?
   arquiteto String?
@@ -122,6 +123,7 @@ model Orcamento {
   ambientes          AmbienteOrcamento[]
   ambientesPapel     AmbientePapelOrcamento[]
   ambientesPersiana  AmbientePersianaOrcamento[]
+  ambientesPiso      AmbientePisoOrcamento[]
   logsHistorico      LogHistorico[]
 }
 
@@ -274,6 +276,44 @@ model ControleRemotoPersiana {
   canais     Int?
   valor      Decimal @db.Decimal(10, 2)
   ativo      Boolean @default(true)
+}
+
+// ─── Pisos (Laminado / Vinílico — Tabela BADIA) ─────────────────────────────────
+
+model ProdutoPiso {
+  id         String   @id @default(cuid())
+  categoria  String   // LAMINADO | VINILICO | MANTA | RODAPE_LAMINADO | RODAPE_VINILICO | PERFIL | COLA | MASSA | CHAPA | PREGO | OUTROS
+  fabricante String?
+  modelo     String
+  unidade    String   // M2 | PC | GALAO | SACO | METRO | PCT
+  valor      Decimal  @db.Decimal(10, 2)
+  medidaPeca Decimal? @db.Decimal(6, 2) // comprimento padrão da peça (ex: 2.10)
+  rendimento Decimal? @db.Decimal(6, 2) // m² por unidade (cola/massa)
+  observacao String?
+  ativo      Boolean  @default(true)
+
+  ambientes AmbientePisoOrcamento[]
+}
+
+model AmbientePisoOrcamento {
+  id              String   @id @default(cuid())
+  orcamentoId     String
+  nomeAmbiente    String
+  tipoPiso        String   // LAMINADO | VINILICO
+  fabricante      String?
+  pisoId          String?
+  pisoModelo      String
+  areaTotalBruta  Decimal  @db.Decimal(10, 2)
+  areaComPerda    Decimal  @db.Decimal(10, 2)
+  rodapeNome      String?
+  frete           Decimal  @default(190) @db.Decimal(10, 2)
+  custoTotal      Decimal  @db.Decimal(10, 2)
+  precoFinalVenda Decimal  @db.Decimal(10, 2)
+  dados           Json
+  observacoes     String?
+
+  orcamento Orcamento    @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  piso      ProdutoPiso? @relation(fields: [pisoId], references: [id])
 }
 
 model AmbientePersianaOrcamento {

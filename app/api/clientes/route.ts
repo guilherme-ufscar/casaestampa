@@ -53,12 +53,12 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const body = await req.json()
-  const { nome, telefone, email, endereco, arquiteto } = body
+  const { nome, telefone, email, endereco, bairro, arquiteto } = body
 
   if (!nome) return NextResponse.json({ error: 'Nome obrigatório' }, { status: 400 })
 
   const cliente = await prisma.cliente.create({
-    data: { nome, telefone, email, endereco, arquiteto },
+    data: { nome, telefone, email, endereco, bairro, arquiteto },
   })
 
   return NextResponse.json(cliente, { status: 201 })
