@@ -7,6 +7,7 @@ import { calcularAmbientePapel, getFatorDimensao, ConfigsPapel } from '@/lib/cal
 import { calcularAmbientePersiana, ConfigsPersiana } from '@/lib/calculoPersiana'
 import { calcularAmbientePiso, ConfigsPiso, PisoInput } from '@/lib/calculoPiso'
 import { gerarToken, tokenExpiracao } from '@/lib/token'
+import { notificarAdmins } from '@/lib/webpush'
 
 function montarConfigsPiso(configMap: Record<string, string>, comissao: number, rt: number): ConfigsPiso {
   return {
@@ -181,6 +182,12 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    notificarAdmins({
+      title: `Novo orçamento #${orcamento.numero}`,
+      body: `Papel de parede · ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrecoFinal)}`,
+      url: `/painel-pedidos`,
+    }).catch(() => {})
+
     const isAdmin = session.user.role === 'ADMIN'
 
     return NextResponse.json({
@@ -198,15 +205,20 @@ export async function POST(req: NextRequest) {
           quantidadeRolos: r.quantidadeRolos,
           instalacaoPapel: r.instalacao,
           custoInstalacaoPapel: r.custoInstalacao,
+          custoMaterial: isAdmin ? r.custoMaterial : undefined,
           custoTotal: isAdmin ? r.custoTotal : undefined,
+          precoComMarkup: isAdmin ? r.precoComMarkup : undefined,
           valorComissao: isAdmin ? r.valorComissao : undefined,
           valorRt: isAdmin ? r.valorRt : undefined,
+          margem: isAdmin ? r.precoComMarkup - r.custoTotal : undefined,
+          markup: isAdmin ? parseFloat(configMap.markup_papel_parede ?? configMap.markup_padrao ?? '50') : undefined,
         })),
         totalPrecoFinalVenda: totalPrecoFinal,
         ...(isAdmin ? {
           totalCusto: resultadosPapel.reduce((s, r) => s + r.custoTotal, 0),
           totalComissao: resultadosPapel.reduce((s, r) => s + r.valorComissao, 0),
           totalRt: resultadosPapel.reduce((s, r) => s + r.valorRt, 0),
+          totalMargem: resultadosPapel.reduce((s, r) => s + (r.precoComMarkup - r.custoTotal), 0),
         } : {}),
       },
     }, { status: 201 })
@@ -350,6 +362,12 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    notificarAdmins({
+      title: `Novo orçamento #${orcamento.numero}`,
+      body: `Persianas · ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrecoFinal)}`,
+      url: `/painel-pedidos`,
+    }).catch(() => {})
+
     const isAdminP = session.user.role === 'ADMIN'
 
     return NextResponse.json({
@@ -450,6 +468,12 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    notificarAdmins({
+      title: `Novo orçamento #${orcamento.numero}`,
+      body: `Piso · ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrecoFinal)}`,
+      url: `/painel-pedidos`,
+    }).catch(() => {})
+
     const isAdmin = session.user.role === 'ADMIN'
     return NextResponse.json({
       orcamento,
@@ -464,6 +488,9 @@ export async function POST(req: NextRequest) {
           precoFinalVenda: r.precoFinalVenda,
           areaTotalBruta: r.areaTotalBruta,
           areaComPerda: r.areaComPerda,
+          custoPiso: isAdmin ? r.custoPiso : undefined,
+          custoInstalacao: isAdmin ? r.custoInstalacao : undefined,
+          frete: isAdmin ? r.frete : undefined,
           custoTotal: isAdmin ? r.custoTotal : undefined,
           precoComMarkup: isAdmin ? r.precoComMarkup : undefined,
           valorRt: isAdmin ? r.valorRt : undefined,
@@ -593,6 +620,12 @@ export async function POST(req: NextRequest) {
       detalhes: { totalAmbientes: ambientes.length, precoFinalTotal: resultadoFinal.totalPrecoFinalVenda },
     },
   })
+
+  notificarAdmins({
+    title: `Novo orçamento #${orcamento.numero}`,
+    body: `Cortina · ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(resultadoFinal.totalPrecoFinalVenda)}`,
+    url: `/painel-pedidos`,
+  }).catch(() => {})
 
   const isAdmin = session.user.role === 'ADMIN'
 

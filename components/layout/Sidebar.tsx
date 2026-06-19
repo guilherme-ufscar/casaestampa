@@ -17,12 +17,16 @@ import {
   UserCog,
   Table2,
   Truck,
+  Map,
+  Calendar,
 } from 'lucide-react'
 
 const navVendedor = [
   { href: '/dashboard-vendedor', label: 'Início', icon: LayoutDashboard },
   { href: '/orcamentos/novo', label: 'Novo Orçamento', icon: PlusCircle },
   { href: '/clientes', label: 'Clientes', icon: Users },
+  { href: '/mapa', label: 'Mapa de Clientes', icon: Map },
+  { href: '/agenda', label: 'Agenda', icon: Calendar },
   { href: '/painel-pedidos', label: 'Painel de Pedidos', icon: ShoppingBag },
   { href: '/painel-pedidos?status=pronto', label: 'Instalações Agendadas', icon: CalendarCheck },
   { href: '/tabelas', label: 'Tabelas', icon: Table2 },
@@ -32,6 +36,8 @@ const navAdmin = [
   { href: '/dashboard-admin', label: 'Início', icon: LayoutDashboard },
   { href: '/orcamentos/novo', label: 'Novo Orçamento', icon: PlusCircle },
   { href: '/clientes', label: 'Clientes', icon: Users },
+  { href: '/mapa', label: 'Mapa de Clientes', icon: Map },
+  { href: '/agenda', label: 'Agenda', icon: Calendar },
   { href: '/arquitetos', label: 'Arquitetos', icon: Users },
   { href: '/painel-pedidos', label: 'Painel de Pedidos', icon: ShoppingBag },
   { href: '/painel-pedidos?status=pronto', label: 'Instalações Agendadas', icon: CalendarCheck },

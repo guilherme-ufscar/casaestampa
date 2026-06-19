@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
 import BottomNav from '@/components/layout/BottomNav'
+import PushNotificationSetup from '@/components/PushNotificationSetup'
 
 const pageTitles: Record<string, string> = {
   '/dashboard-vendedor': 'Dashboard',
@@ -15,6 +16,8 @@ const pageTitles: Record<string, string> = {
   '/tabelas': 'Tabelas',
   '/relatorios': 'Relatórios',
   '/configuracoes': 'Configurações',
+  '/mapa': 'Mapa de Clientes',
+  '/agenda': 'Agenda',
 }
 
 export default function DashboardLayout({
@@ -37,6 +40,7 @@ export default function DashboardLayout({
         </main>
       </div>
       <BottomNav />
+      <PushNotificationSetup />
     </div>
   )
 }

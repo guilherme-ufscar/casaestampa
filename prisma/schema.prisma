@@ -58,8 +58,21 @@ model User {
   ativo     Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  orcamentos    Orcamento[]
-  logsHistorico LogHistorico[]
+  orcamentos        Orcamento[]
+  logsHistorico     LogHistorico[]
+  pushSubscriptions PushSubscription[]
+  eventos           EventoAgenda[]
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Cliente {
@@ -70,6 +83,8 @@ model Cliente {
   telefone  String?
   email     String?
   arquiteto String?
+  lat       Float?
+  lng       Float?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -125,6 +140,18 @@ model Orcamento {
   ambientesPersiana  AmbientePersianaOrcamento[]
   ambientesPiso      AmbientePisoOrcamento[]
   logsHistorico      LogHistorico[]
+  fotos              FotoOrcamento[]
+}
+
+model FotoOrcamento {
+  id           String   @id @default(cuid())
+  orcamentoId  String
+  nomeAmbiente String?
+  imagem       String   @db.Text  // base64 da imagem anotada
+  observacao   String?
+  createdAt    DateTime @default(now())
+
+  orcamento Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
 }
 
 model Instalador {
@@ -134,6 +161,7 @@ model Instalador {
   ativo     Boolean @default(true)
 
   ambientes AmbienteOrcamento[]
+  eventos   EventoAgenda[]
 }
 
 model AmbienteOrcamento {
@@ -376,4 +404,22 @@ model AmbientePersianaOrcamento {
 
   orcamento Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
   persiana  Persiana  @relation(fields: [persianaId], references: [id])
+}
+
+model EventoAgenda {
+  id           String    @id @default(cuid())
+  titulo       String
+  descricao    String?
+  inicio       DateTime
+  fim          DateTime?
+  diaInteiro   Boolean   @default(false)
+  tipo         String    @default("visita") // visita, instalacao, entrega, outro
+  cor          String    @default("#C9A84C")
+  usuarioId    String    // dono do evento
+  orcamentoId  String?   // opcional
+  instaladorId String?   // se for instalação
+  createdAt    DateTime  @default(now())
+
+  usuario    User       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  instalador Instalador? @relation(fields: [instaladorId], references: [id])
 }

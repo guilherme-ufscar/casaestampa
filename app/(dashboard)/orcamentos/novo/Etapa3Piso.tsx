@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { ChevronLeft, ChevronDown, Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
 import { useOrcamento, AmbientePisoForm, ambientePisoVazio, PerfilPisoForm, AcabamentoPisoForm } from '@/context/OrcamentoContext'
 
@@ -174,24 +174,19 @@ export default function Etapa3Piso() {
             <input type="text" value={amb.nomeAmbiente} onChange={e => updateAmb({ nomeAmbiente: e.target.value })} placeholder="Ex: Sala, Quarto" className="input-base" />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Fabricante</label>
-            <input type="text" value={amb.fabricante} onChange={e => updateAmb({ fabricante: e.target.value })} placeholder="Ex: Durafloor, Eucafloor" className="input-base" />
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Cor</label>
+            <input type="text" value={amb.fabricante} onChange={e => updateAmb({ fabricante: e.target.value })} placeholder="Ex: Carvalho acinzentado" className="input-base" />
           </div>
         </div>
 
         {/* Modelo do piso */}
         <div className="space-y-1.5">
           <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Modelo do Piso</label>
-          <div className="relative">
-            <select value={amb.pisoId} onChange={e => {
-              const p = pisosFiltrados.find(x => x.id === e.target.value)
-              updateAmb({ pisoId: p?.id ?? '', pisoModelo: p?.modelo ?? '', pisoValorM2: p?.valor ?? 0 })
-            }} className="input-base appearance-none pr-8">
-              <option value="">Selecione o modelo...</option>
-              {pisosFiltrados.map(p => <option key={p.id} value={p.id}>{p.modelo}</option>)}
-            </select>
-            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
-          </div>
+          <PisoCombobox
+            produtos={pisosFiltrados}
+            valueId={amb.pisoId}
+            onChange={p => updateAmb({ pisoId: p?.id ?? '', pisoModelo: p?.modelo ?? '', pisoValorM2: p?.valor ?? 0 })}
+          />
         </div>
 
         {/* Área do piso (medições) */}
@@ -392,6 +387,89 @@ function ToggleSection({ titulo, descricao, ativo, onToggle, children }: { titul
         </button>
       </div>
       {ativo && <div className="pl-4 border-l-2 border-gold-primary/20 space-y-3">{children}</div>}
+    </div>
+  )
+}
+
+function PisoCombobox({ produtos, valueId, onChange }: {
+  produtos: ProdutoPiso[]; valueId: string; onChange: (p: ProdutoPiso | undefined) => void
+}) {
+  const [busca, setBusca] = useState('')
+  const [aberto, setAberto] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const selecionado = produtos.find(p => p.id === valueId)
+
+  const filtrados = produtos.filter(p => {
+    const q = busca.toLowerCase()
+    return p.modelo.toLowerCase().includes(q) || (p.fabricante ?? '').toLowerCase().includes(q)
+  })
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setAberto(false); setBusca('')
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  function selecionar(p: ProdutoPiso) { onChange(p); setAberto(false); setBusca('') }
+  function limpar() { onChange(undefined); setBusca(''); setAberto(true) }
+
+  return (
+    <div className="relative" ref={ref}>
+      <div
+        className="input-base flex items-center justify-between cursor-pointer gap-2"
+        onClick={() => { setAberto(o => !o); setBusca('') }}
+      >
+        {selecionado ? (
+          <span className="truncate text-sm text-text-primary">
+            {selecionado.fabricante ? <span className="text-text-muted">{selecionado.fabricante} – </span> : null}
+            {selecionado.modelo}
+          </span>
+        ) : (
+          <span className="text-text-muted text-sm">Selecione o modelo...</span>
+        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {selecionado && (
+            <button type="button" onMouseDown={e => { e.stopPropagation(); limpar() }} className="text-text-muted hover:text-red-400 text-xs px-1">✕</button>
+          )}
+          <ChevronDown size={14} className="text-text-muted" />
+        </div>
+      </div>
+
+      {aberto && (
+        <div className="absolute z-50 mt-1 w-full bg-white border border-border rounded-lg shadow-lg overflow-hidden">
+          <div className="p-2 border-b border-border">
+            <input
+              autoFocus
+              type="text"
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              placeholder="Buscar por modelo ou fabricante..."
+              className="w-full text-sm px-3 py-1.5 border border-border rounded-md outline-none focus:border-gold-primary"
+              onKeyDown={e => {
+                if (e.key === 'Escape') { setAberto(false); setBusca('') }
+                if (e.key === 'Enter' && filtrados.length === 1) selecionar(filtrados[0])
+              }}
+            />
+          </div>
+          <ul className="max-h-52 overflow-y-auto py-1">
+            {filtrados.length === 0 && <li className="px-3 py-2 text-sm text-text-muted">Nenhum modelo encontrado</li>}
+            {filtrados.map(p => (
+              <li
+                key={p.id}
+                className={`px-3 py-2 text-sm cursor-pointer hover:bg-gold-primary/8 ${p.id === valueId ? 'bg-gold-primary/12 font-medium' : ''}`}
+                onMouseDown={() => selecionar(p)}
+              >
+                {p.fabricante && <span className="text-text-muted">{p.fabricante} – </span>}
+                {p.modelo}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, ToggleLeft, ToggleRight, AlertTriangle, Ruler, Layers, Wrench, FileText, ChevronDown, Star } from 'lucide-react'
 import { useOrcamento, AmbienteForm, ambienteVazio } from '@/context/OrcamentoContext'
 import { calcularAmbiente, Configuracoes, ModeloCortina, TipoAbertura } from '@/lib/calculoCortina'
@@ -57,21 +57,94 @@ function TecidoSelect({
   onChange: (id: string, t: Tecido | undefined) => void
 }) {
   const selecionado = tecidos.find(t => t.id === value)
+  const [busca, setBusca] = useState('')
+  const [aberto, setAberto] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const filtrados = tecidos.filter(t => {
+    const q = busca.toLowerCase()
+    return nomeLimpo(t.nome).toLowerCase().includes(q)
+  })
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setAberto(false)
+        setBusca('')
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  function selecionar(t: Tecido) {
+    onChange(t.id, t)
+    setAberto(false)
+    setBusca('')
+  }
+
+  function limpar() {
+    onChange('', undefined)
+    setBusca('')
+    setAberto(true)
+  }
+
   return (
     <div className="space-y-2">
       <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
-      <div className="relative">
-        <select
-          value={value}
-          onChange={e => onChange(e.target.value, tecidos.find(t => t.id === e.target.value))}
-          className="input-base appearance-none pr-8"
+      <div className="relative" ref={containerRef}>
+        <div
+          className="input-base flex items-center justify-between cursor-pointer gap-2"
+          onClick={() => { setAberto(o => !o); setBusca('') }}
         >
-          <option value="">Selecione o tecido...</option>
-          {tecidos.map(t => (
-            <option key={t.id} value={t.id}>{t.favorito ? '★ ' : ''}{nomeLimpo(t.nome)}</option>
-          ))}
-        </select>
-        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+          {selecionado
+            ? <span className="truncate text-sm text-text-primary">{selecionado.favorito ? '★ ' : ''}{nomeLimpo(selecionado.nome)}</span>
+            : <span className="text-text-muted text-sm">Selecione o tecido...</span>
+          }
+          <div className="flex items-center gap-1 shrink-0">
+            {selecionado && (
+              <button
+                type="button"
+                onMouseDown={e => { e.stopPropagation(); limpar() }}
+                className="text-text-muted hover:text-red-400 text-xs px-1"
+              >✕</button>
+            )}
+            <ChevronDown size={14} className="text-text-muted" />
+          </div>
+        </div>
+
+        {aberto && (
+          <div className="absolute z-50 mt-1 w-full bg-white border border-border rounded-lg shadow-lg overflow-hidden">
+            <div className="p-2 border-b border-border">
+              <input
+                autoFocus
+                type="text"
+                value={busca}
+                onChange={e => setBusca(e.target.value)}
+                placeholder="Buscar por nome..."
+                className="w-full text-sm px-3 py-1.5 border border-border rounded-md outline-none focus:border-gold-primary"
+                onKeyDown={e => {
+                  if (e.key === 'Escape') { setAberto(false); setBusca('') }
+                  if (e.key === 'Enter' && filtrados.length === 1) selecionar(filtrados[0])
+                }}
+              />
+            </div>
+            <ul className="max-h-52 overflow-y-auto py-1">
+              {filtrados.length === 0 && (
+                <li className="px-3 py-2 text-sm text-text-muted">Nenhum tecido encontrado</li>
+              )}
+              {filtrados.map(t => (
+                <li
+                  key={t.id}
+                  className={`px-3 py-2 text-sm cursor-pointer hover:bg-gold-primary/8 ${t.id === value ? 'bg-gold-primary/12 font-medium' : ''}`}
+                  onMouseDown={() => selecionar(t)}
+                >
+                  {t.favorito ? '★ ' : ''}{nomeLimpo(t.nome)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
       {selecionado && (
         <div className="flex flex-wrap gap-2 mt-1">

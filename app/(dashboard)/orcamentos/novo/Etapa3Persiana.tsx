@@ -248,6 +248,20 @@ export default function Etapa3Persiana() {
           </div>
         )}
 
+        {/* Referência / Cor */}
+        {amb.persianaId && (
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Referência / Cor</label>
+            <input
+              type="text"
+              value={amb.referenciaCor}
+              onChange={e => updateAmb({ referenciaCor: e.target.value })}
+              placeholder="Ex: Screen Rústico 3160"
+              className="input-base"
+            />
+          </div>
+        )}
+
         {/* Dimensões */}
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1.5">

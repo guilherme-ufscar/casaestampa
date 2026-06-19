@@ -35,10 +35,28 @@ type ResultadoAmbientePublico = {
 }
 
 type ResultadoAdminAmbiente = ResultadoAmbientePublico & {
-  custoTecido: number
-  custoBlackout: number
-  custoConfeccao: number
-  custoInstalacao: number
+  // cortina
+  custoTecido?: number
+  custoBlackout?: number
+  custoConfeccao?: number
+  custoInstalacao?: number
+  // papel de parede
+  custoMaterial?: number
+  // persiana
+  custoDetalhes?: {
+    custoPersiana: number
+    custoBando: number
+    custoGuiaLateral: number
+    custoGuiaBase: number
+    custoMotor: number
+    custoControle: number
+    custoInstalacaoMotor: number
+    custoInstalacao: number
+  }
+  // piso
+  custoPiso?: number
+  frete?: number
+  // comum
   custoTotal: number
   precoComMarkup: number
   valorRt: number
@@ -151,6 +169,7 @@ export default function ResultadoOrcamento() {
             guiaBase: a.guiaBaseAtivo && a.guiaBaseId ? { id: a.guiaBaseId, nome: a.guiaBaseNome, valorMetro: a.guiaBaseValorMetro } : null,
             motor: a.acionamento === 'motorizada' && a.motorId ? { id: a.motorId, nome: a.motorNome, valor: a.motorValor } : null,
             controle: a.acionamento === 'motorizada' && a.controleRemotoId ? { id: a.controleRemotoId, nome: a.controleRemotoNome, valor: a.controleRemotoValor } : null,
+            referenciaCor: a.referenciaCor || null,
             observacoes: a.observacoes || null,
           }))
           payload.ambientes = []
@@ -486,22 +505,44 @@ export default function ResultadoOrcamento() {
                 <div key={i} className="space-y-2">
                   <p className="text-xs font-semibold text-text-primary">{a.nomeAmbiente || `Ambiente ${i + 1}`}</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
+                    {produto === 'papel_parede' && (
+                      <>
+                        <span className="text-text-muted">Valor do papel: <strong className="text-text-primary">{fmt(a.custoMaterial ?? 0)}</strong></span>
+                        <span className="text-text-muted">Valor da instalação: <strong className="text-text-primary">{fmt(a.custoInstalacaoPapel ?? 0)}</strong></span>
+                        <span className="text-text-muted">Custo total (sem instalação): <strong className="text-text-primary">{fmt(a.custoMaterial ?? 0)}</strong></span>
+                      </>
+                    )}
                     {produto === 'cortina' && (
                       <>
-                        <span className="text-text-muted">Valor do tecido: <strong className="text-text-primary">{fmt(a.custoTecido + (a.custoBlackout || 0))}</strong></span>
-                        <span className="text-text-muted">Valor da confecção: <strong className="text-text-primary">{fmt(a.custoConfeccao)}</strong></span>
-                        <span className="text-text-muted">Valor do trilho: <strong className="text-text-primary">{fmt(a.custoTotal - a.custoTecido - a.custoBlackout - a.custoConfeccao - a.custoInstalacao)}</strong></span>
-                        <span className="text-text-muted">Valor da instalação: <strong className="text-text-primary">{fmt(a.custoInstalacao)}</strong></span>
+                        <span className="text-text-muted">Tecido 1: <strong className="text-text-primary">{fmt(a.custoTecido ?? 0)}</strong></span>
+                        <span className="text-text-muted">Tecido 2 (blackout): <strong className="text-text-primary">{fmt(a.custoBlackout ?? 0)}</strong></span>
+                        <span className="text-text-muted">Confecção tecido 1: <strong className="text-text-primary">{fmt(a.custoConfeccao ?? 0)}</strong></span>
+                        <span className="text-text-muted">Trilho: <strong className="text-text-primary">{fmt(a.custoTotal - (a.custoTecido ?? 0) - (a.custoBlackout ?? 0) - (a.custoConfeccao ?? 0) - (a.custoInstalacao ?? 0))}</strong></span>
+                        <span className="text-text-muted">Instalação: <strong className="text-text-primary">{fmt(a.custoInstalacao ?? 0)}</strong></span>
+                      </>
+                    )}
+                    {produto === 'persiana' && a.custoDetalhes && (
+                      <>
+                        <span className="text-text-muted">Persiana: <strong className="text-text-primary">{fmt(a.custoDetalhes.custoPersiana)}</strong></span>
+                        <span className="text-text-muted">Adicionais: <strong className="text-text-primary">{fmt(a.custoDetalhes.custoBando + a.custoDetalhes.custoGuiaLateral + a.custoDetalhes.custoGuiaBase + a.custoDetalhes.custoMotor + a.custoDetalhes.custoControle + a.custoDetalhes.custoInstalacaoMotor)}</strong></span>
+                        <span className="text-text-muted">Instalação: <strong className="text-text-primary">{fmt(a.custoDetalhes.custoInstalacao)}</strong></span>
+                      </>
+                    )}
+                    {produto === 'piso' && (
+                      <>
+                        <span className="text-text-muted">Valor do material: <strong className="text-text-primary">{fmt(a.custoPiso ?? 0)}</strong></span>
+                        <span className="text-text-muted">Valor instalação: <strong className="text-text-primary">{fmt(a.custoInstalacao ?? 0)}</strong></span>
+                        <span className="text-text-muted">Frete: <strong className="text-text-primary">{fmt(a.frete ?? 0)}</strong></span>
                       </>
                     )}
                     <span className="text-text-muted">Custo total: <strong className="text-text-primary">{fmt(a.custoTotal)}</strong></span>
-                    <span className="text-text-muted">Markup ({a.markup}%): <strong className="text-text-primary">{fmt(a.precoComMarkup)}</strong></span>
+                    <span className="text-text-muted">Valor de venda: <strong className="text-text-primary">{fmt(a.precoFinalVenda)}</strong></span>
                     {res.clienteTemArquiteto && (
                       <span className="text-text-muted">RT: <strong className="text-text-primary">{fmt(a.valorRt)}</strong></span>
                     )}
                     <span className="text-text-muted">Comissão{res.comissaoVendedor ? ` (${res.comissaoVendedor}%)` : ''}: <strong className="text-text-primary">{fmt(a.valorComissao)}</strong></span>
-                    <span className="text-text-muted">Margem (à vista): <strong className="text-green-600">{fmt(a.margem)}</strong></span>
-                    <span className="text-text-muted">Margem (10x cartão): <strong className="text-green-600">{fmt(a.margem - a.precoFinalVenda * 0.1106)}</strong></span>
+                    <span className="text-text-muted">Lucro total (à vista): <strong className="text-green-600">{fmt(a.margem)}</strong></span>
+                    <span className="text-text-muted">Lucro total (10x cartão): <strong className="text-green-600">{fmt(a.margem - a.precoFinalVenda * 0.1106)}</strong></span>
                   </div>
                 </div>
               ))}

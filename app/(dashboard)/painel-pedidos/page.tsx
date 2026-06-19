@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { Search, Eye, MessageCircle, Download, Check, ChevronLeft, ChevronRight, X, Loader2, Home, Clock, FileText, Pencil, Trash2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { StatusBadge, STATUS_CONFIG, StatusOrcamento } from '@/components/ui/StatusBadge'
+import dynamic from 'next/dynamic'
+const FotosOrcamento = dynamic(() => import('@/components/FotosOrcamento'), { ssr: false })
 
 type Pedido = {
   id: string; numero: number; status: string; precoFinalTotal: number | null
@@ -49,6 +51,10 @@ export default function PainelPedidosPage() {
   const [toast, setToast] = useState('')
   const [vendedores, setVendedores] = useState<{ id: string; nome: string }[]>([])
   const [pdfModal, setPdfModal] = useState<string | null>(null)
+  const [clienteModal, setClienteModal] = useState<string | null>(null) // orcamentoId
+  const [clienteBusca, setClienteBusca] = useState('')
+  const [clientesResultado, setClientesResultado] = useState<{ id: string; nome: string; telefone?: string; bairro?: string }[]>([])
+  const [clienteLoading, setClienteLoading] = useState(false)
   const [pdfOpcoes, setPdfOpcoes] = useState({
     modelo: true,
     tecido: true,
@@ -112,6 +118,38 @@ export default function PainelPedidosPage() {
 
   function editarPedido(id: string) {
     window.open(`/orcamentos/novo?editar=${id}`, '_self')
+  }
+
+  useEffect(() => {
+    if (!clienteBusca.trim()) { setClientesResultado([]); return }
+    const t = setTimeout(async () => {
+      setClienteLoading(true)
+      const res = await fetch(`/api/clientes?q=${encodeURIComponent(clienteBusca)}&limit=10`)
+      const data = await res.json()
+      setClientesResultado(Array.isArray(data) ? data : (data.clientes ?? []))
+      setClienteLoading(false)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [clienteBusca])
+
+  async function vincularCliente(orcamentoId: string, clienteId: string) {
+    const res = await fetch(`/api/orcamentos/${orcamentoId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clienteId }),
+    })
+    if (res.ok) {
+      const { cliente } = await res.json()
+      setDrawerPedido(prev => prev ? { ...prev, cliente } : prev)
+      setData(prev => prev ? {
+        ...prev,
+        pedidos: prev.pedidos.map(p => p.id === orcamentoId ? { ...p, cliente } : p)
+      } : prev)
+      setClienteModal(null)
+      setClienteBusca('')
+      setToast('Cliente vinculado!')
+      setTimeout(() => setToast(''), 3000)
+    }
   }
 
   async function excluirPedido(id: string) {
@@ -342,22 +380,27 @@ export default function PainelPedidosPage() {
                   <StatusBadge status={drawerPedido.status} />
                   <span className="text-xs text-text-muted">Criado em {fmtData(drawerPedido.createdAt)}</span>
                 </div>
-                {drawerPedido.cliente && (
-                  <div className="p-4 bg-brand-bg rounded-xl space-y-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Cliente</p>
-                      {drawerPedido.cliente.id && (
-                        <a href={`/clientes?abrir=${drawerPedido.cliente.id}`} className="flex items-center gap-1 text-[11px] font-medium text-gold-primary hover:text-gold-dark transition-colors">
-                          <Pencil size={11} /> Editar cliente
-                        </a>
-                      )}
-                    </div>
-                    <p className="text-sm font-semibold text-text-primary">{drawerPedido.cliente.nome}</p>
-                    {drawerPedido.cliente.telefone && <p className="text-xs text-text-secondary">{drawerPedido.cliente.telefone}</p>}
-                    {drawerPedido.cliente.email && <p className="text-xs text-text-secondary">{drawerPedido.cliente.email}</p>}
-                    {(drawerPedido.cliente.endereco || drawerPedido.cliente.bairro) && <p className="text-xs text-text-muted">{[drawerPedido.cliente.endereco, drawerPedido.cliente.bairro].filter(Boolean).join(' · ')}</p>}
+                <div className="p-4 bg-brand-bg rounded-xl space-y-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Cliente</p>
+                    <button
+                      onClick={() => { setClienteModal(drawerPedido.id); setClienteBusca(''); setClientesResultado([]) }}
+                      className="flex items-center gap-1 text-[11px] font-medium text-gold-primary hover:text-gold-dark transition-colors"
+                    >
+                      <Pencil size={11} /> {drawerPedido.cliente ? 'Alterar' : 'Vincular cliente'}
+                    </button>
                   </div>
-                )}
+                  {drawerPedido.cliente ? (
+                    <>
+                      <p className="text-sm font-semibold text-text-primary">{drawerPedido.cliente.nome}</p>
+                      {drawerPedido.cliente.telefone && <p className="text-xs text-text-secondary">{drawerPedido.cliente.telefone}</p>}
+                      {drawerPedido.cliente.email && <p className="text-xs text-text-secondary">{drawerPedido.cliente.email}</p>}
+                      {(drawerPedido.cliente.endereco || drawerPedido.cliente.bairro) && <p className="text-xs text-text-muted">{[drawerPedido.cliente.endereco, drawerPedido.cliente.bairro].filter(Boolean).join(' · ')}</p>}
+                    </>
+                  ) : (
+                    <p className="text-xs text-text-muted italic">Nenhum cliente vinculado</p>
+                  )}
+                </div>
                 <div>
                   <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Ambientes</p>
                   <div className="space-y-2">
@@ -395,6 +438,10 @@ export default function PainelPedidosPage() {
                     </div>
                   </div>
                 )}
+                <div className="border-t border-brand-border pt-4">
+                  <FotosOrcamento orcamentoId={drawerPedido.id} />
+                </div>
+
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <button
                     onClick={() => setPdfModal(drawerPedido.id)}
@@ -460,6 +507,43 @@ export default function PainelPedidosPage() {
             >
               <FileText size={15} /> Gerar PDF
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal vincular cliente */}
+      {clienteModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setClienteModal(null)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-text-primary">Vincular cliente</h3>
+              <button onClick={() => setClienteModal(null)} className="p-1.5 rounded hover:bg-brand-input text-text-secondary"><X size={18} /></button>
+            </div>
+            <input
+              autoFocus
+              type="text"
+              value={clienteBusca}
+              onChange={e => setClienteBusca(e.target.value)}
+              placeholder="Buscar por nome, telefone ou bairro..."
+              className="input-base w-full"
+            />
+            <div className="space-y-1 max-h-60 overflow-y-auto">
+              {clienteLoading && <p className="text-xs text-text-muted py-2 text-center">Buscando...</p>}
+              {!clienteLoading && clienteBusca && clientesResultado.length === 0 && (
+                <p className="text-xs text-text-muted py-2 text-center">Nenhum cliente encontrado</p>
+              )}
+              {clientesResultado.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => vincularCliente(clienteModal, c.id)}
+                  className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gold-primary/8 transition-colors"
+                >
+                  <p className="text-sm font-medium text-text-primary">{c.nome}</p>
+                  {(c.telefone || c.bairro) && <p className="text-xs text-text-muted">{[c.telefone, c.bairro].filter(Boolean).join(' · ')}</p>}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

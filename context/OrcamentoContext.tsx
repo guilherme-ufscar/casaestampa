@@ -222,6 +222,7 @@ export interface AmbientePersianaForm {
   // Catálogo snapshot
   valorM2: number
   minM2: number
+  referenciaCor: string
   observacoes: string
 }
 
@@ -261,6 +262,7 @@ export const ambientePersianaVazio: AmbientePersianaForm = {
   controleRemotoValor: 0,
   valorM2: 0,
   minM2: 1.5,
+  referenciaCor: '',
   observacoes: '',
 }
 

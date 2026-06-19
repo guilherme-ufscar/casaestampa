@@ -424,9 +424,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             precoFinalVenda: r.precoFinalVenda,
             areaTotalBruta: r.areaTotalBruta,
             areaComPerda: r.areaComPerda,
+            custoPiso: isAdmin ? r.custoPiso : undefined,
+            custoInstalacao: isAdmin ? r.custoInstalacao : undefined,
+            frete: isAdmin ? r.frete : undefined,
             custoTotal: isAdmin ? r.custoTotal : undefined,
+            precoComMarkup: isAdmin ? r.precoComMarkup : undefined,
+            valorRt: isAdmin ? r.valorRt : undefined,
+            valorComissao: r.valorComissao,
+            margem: isAdmin ? r.margem : undefined,
+            markup: isAdmin ? r.markup : undefined,
           })),
           totalPrecoFinalVenda: totalPrecoFinal,
+          totalCusto: isAdmin ? resultados.reduce((s, r) => s + r.custoTotal, 0) : undefined,
+          totalComissao: resultados.reduce((s, r) => s + r.valorComissao, 0),
+          totalRt: isAdmin ? resultados.reduce((s, r) => s + r.valorRt, 0) : undefined,
+          totalMargem: isAdmin ? resultados.reduce((s, r) => s + r.margem, 0) : undefined,
           comissaoVendedor,
           clienteTemArquiteto,
         },
@@ -592,6 +604,30 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     console.error('[PUT /api/orcamentos/[id]] erro:', error)
     return NextResponse.json({ error: String(error) }, { status: 500 })
   }
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+  const body = await req.json()
+
+  const orc = await prisma.orcamento.findUnique({ where: { id: params.id } })
+  if (!orc) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
+
+  if (session.user.role === 'VENDEDOR' && orc.vendedorId !== session.user.id) {
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
+  }
+
+  const updated = await prisma.orcamento.update({
+    where: { id: params.id },
+    data: {
+      ...(body.clienteId !== undefined ? { clienteId: body.clienteId || null } : {}),
+    },
+    include: { cliente: true },
+  })
+
+  return NextResponse.json({ ok: true, cliente: updated.cliente })
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
