@@ -1,13 +1,18 @@
 import webpush from 'web-push'
 import { prisma } from '@/lib/prisma'
 
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL!,
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
+function initVapid() {
+  const email = process.env.VAPID_EMAIL
+  const pub = process.env.VAPID_PUBLIC_KEY
+  const priv = process.env.VAPID_PRIVATE_KEY
+  if (!email || !pub || !priv) return false
+  const subject = email.startsWith('mailto:') ? email : `mailto:${email}`
+  webpush.setVapidDetails(subject, pub, priv)
+  return true
+}
 
 export async function notificarAdmins(payload: { title: string; body: string; url?: string }) {
+  if (!initVapid()) return
   const subs = await prisma.pushSubscription.findMany({
     where: { user: { role: 'ADMIN' } },
   })
