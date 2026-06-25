@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
@@ -74,7 +73,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-6 py-6 border-b border-brand-border">
         {!logoError ? (
-          <Image src="/logo-casa-estampa.png" alt="Casa Estampa Interiores" width={160} height={50} className="object-contain" priority onError={() => setLogoError(true)} />
+          <img src="/logo-casa-estampa.svg" alt="Casa Estampa Interiores" width={160} height={50} className="object-contain" onError={() => setLogoError(true)} />
         ) : (
           <>
             <p className="text-gold-primary font-semibold text-lg leading-tight tracking-wide">Casa Estampa</p>
