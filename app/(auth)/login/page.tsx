@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
-import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -52,7 +51,7 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="text-center mb-8 flex flex-col items-center">
             {!logoError ? (
-              <Image src="/logo-casa-estampa.png" alt="Casa Estampa Interiores" width={180} height={56} className="object-contain" priority onError={() => setLogoError(true)} />
+              <img src="/logo-casa-estampa.svg" alt="Casa Estampa Interiores" width={180} height={56} className="object-contain" onError={() => setLogoError(true)} />
             ) : (
               <>
                 <h1 className="text-2xl font-semibold text-gold-primary tracking-wide">Casa Estampa</h1>
