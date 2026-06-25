@@ -69,8 +69,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   const ambientesPapelPDF: AmbientePapelPDF[] = orc.ambientesPapel.map(a => ({
     nomeAmbiente: a.nomeAmbiente,
-    album: a.papel.album,
-    referencia: a.referenciaDigitada || a.papel.referencia || '',
+    album: a.papel?.album ?? '(papel removido)',
+    referencia: a.referenciaDigitada || a.papel?.referencia || '',
     metrosQuadrados: Number(a.metrosQuadrados ?? 0),
     quantidadeRolos: a.quantidadeRolos ?? 0,
     precoFinalVenda: Number(a.precoFinalVenda ?? 0),
