@@ -6,6 +6,14 @@ export default withAuth(
     const token = req.nextauth.token
     const pathname = req.nextUrl.pathname
 
+    // Instalador e vendedor "só agenda" só podem acessar a agenda
+    if (token?.role === 'INSTALADOR' && !pathname.startsWith('/agenda')) {
+      return NextResponse.redirect(new URL('/agenda', req.url))
+    }
+    if (token?.soAgenda && token?.role === 'VENDEDOR' && !pathname.startsWith('/agenda')) {
+      return NextResponse.redirect(new URL('/agenda', req.url))
+    }
+
     if (pathname.startsWith('/dashboard-admin') && token?.role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/dashboard-vendedor', req.url))
     }

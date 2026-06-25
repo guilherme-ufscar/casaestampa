@@ -11,7 +11,7 @@ export async function GET() {
   }
 
   const usuarios = await prisma.user.findMany({
-    select: { id: true, nome: true, email: true, role: true, ativo: true, comissao: true, createdAt: true },
+    select: { id: true, nome: true, email: true, role: true, ativo: true, comissao: true, instaladorId: true, soAgenda: true, createdAt: true },
     orderBy: { nome: 'asc' },
   })
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  const { nome, email, senha, role, ativo, comissao } = await req.json()
+  const { nome, email, senha, role, ativo, comissao, instaladorId, soAgenda } = await req.json()
   if (!nome || !email || !senha || !role) {
     return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 })
   }
@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
 
   const hash = await bcrypt.hash(senha, 12)
   const usuario = await prisma.user.create({
-    data: { nome, email, senha: hash, role, ativo: ativo ?? true, comissao: comissao ?? null },
-    select: { id: true, nome: true, email: true, role: true, ativo: true, comissao: true, createdAt: true },
+    data: { nome, email, senha: hash, role, ativo: ativo ?? true, comissao: comissao ?? null, instaladorId: instaladorId ?? null, soAgenda: soAgenda ?? false },
+    select: { id: true, nome: true, email: true, role: true, ativo: true, comissao: true, instaladorId: true, soAgenda: true, createdAt: true },
   })
 
   return NextResponse.json({ ...usuario, comissao: usuario.comissao ? Number(usuario.comissao) : null }, { status: 201 })

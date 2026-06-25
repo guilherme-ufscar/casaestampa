@@ -9,8 +9,14 @@ import {
 import path from 'path'
 import fs from 'fs'
 
-const LOGO_FILE = path.join(process.cwd(), 'public', 'logo-casa-estampa.png')
-const LOGO_EXISTS = fs.existsSync(LOGO_FILE)
+function getLogoPath(): string | null {
+  try {
+    const p = path.join(process.cwd(), 'public', 'logo-casa-estampa.png')
+    return fs.existsSync(p) ? p : null
+  } catch {
+    return null
+  }
+}
 
 const GOLD = '#C9A84C'
 const DARK = '#1C1C1C'
@@ -162,6 +168,7 @@ export type OrcamentoPDF = {
 }
 
 export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
+  const logoPath = getLogoPath()
   const dataGeracao = new Date().toLocaleDateString('pt-BR')
   const dataOrc = new Date(orc.createdAt).toLocaleDateString('pt-BR')
   const mostrarMedidas = orc.mostrarMedidas !== false
@@ -179,8 +186,8 @@ export default function OrcamentoPDFDoc({ orc }: { orc: OrcamentoPDF }) {
       <Page size="A4" style={s.page}>
         <View style={s.header}>
           <View style={s.logoArea}>
-            {LOGO_EXISTS ? (
-              <Image style={s.logoImage} src={LOGO_FILE} />
+            {logoPath ? (
+              <Image style={s.logoImage} src={logoPath} />
             ) : (
               <>
                 <Text style={s.logoNome}>Casa Estampa</Text>

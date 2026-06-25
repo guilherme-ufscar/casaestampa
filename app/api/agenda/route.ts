@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
   const instaladorId = searchParams.get('instaladorId')
 
   const isAdmin = session.user.role === 'ADMIN'
+  const isInstalador = session.user.role === 'INSTALADOR'
   const where: Record<string, unknown> = {}
 
   if (inicio && fim) {
@@ -24,6 +25,9 @@ export async function GET(req: NextRequest) {
     // Admin pode ver todos ou filtrar por usuário/instalador
     if (usuarioId) where.usuarioId = usuarioId
     if (instaladorId) where.instaladorId = instaladorId
+  } else if (isInstalador) {
+    // Instalador vê apenas os eventos onde aparece como instalador
+    where.instaladorId = session.user.instaladorId ?? '__none__'
   } else {
     // Vendedor vê os seus eventos + pode filtrar por instalador
     if (instaladorId) {

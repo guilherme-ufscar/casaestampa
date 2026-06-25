@@ -1,20 +1,23 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { UserPlus, Pencil, Check, X, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { UserPlus, Pencil, Check, X, Loader2, ToggleLeft, ToggleRight, Trash2, Eye, EyeOff } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
-type Usuario = { id: string; nome: string; email: string; role: string; ativo: boolean; comissao: number | null; createdAt: string }
+type Usuario = { id: string; nome: string; email: string; role: string; ativo: boolean; comissao: number | null; instaladorId: string | null; soAgenda: boolean; createdAt: string }
+type InstaladorOpt = { id: string; nome: string }
 
 export default function UsuariosPage() {
   const { data: session } = useSession()
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
+  const [instaladores, setInstaladores] = useState<InstaladorOpt[]>([])
   const [loading, setLoading] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editando, setEditando] = useState<Usuario | null>(null)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ nome: '', email: '', senha: '', role: 'VENDEDOR', ativo: true, comissao: '' })
+  const [form, setForm] = useState({ nome: '', email: '', senha: '', role: 'VENDEDOR', ativo: true, comissao: '', instaladorId: '', soAgenda: false })
   const [erro, setErro] = useState('')
+  const [mostrarSenha, setMostrarSenha] = useState(false)
 
   const fetchUsuarios = useCallback(async () => {
     setLoading(true)
@@ -25,16 +28,20 @@ export default function UsuariosPage() {
 
   useEffect(() => { fetchUsuarios() }, [fetchUsuarios])
 
+  useEffect(() => {
+    fetch('/api/instaladores').then(r => r.json()).then(data => setInstaladores(Array.isArray(data) ? data : []))
+  }, [])
+
   function abrirNovo() {
     setEditando(null)
-    setForm({ nome: '', email: '', senha: '', role: 'VENDEDOR', ativo: true, comissao: '' })
+    setForm({ nome: '', email: '', senha: '', role: 'VENDEDOR', ativo: true, comissao: '', instaladorId: '', soAgenda: false })
     setErro('')
     setDrawerOpen(true)
   }
 
   function abrirEditar(u: Usuario) {
     setEditando(u)
-    setForm({ nome: u.nome, email: u.email, senha: '', role: u.role, ativo: u.ativo, comissao: u.comissao != null ? String(u.comissao) : '' })
+    setForm({ nome: u.nome, email: u.email, senha: '', role: u.role, ativo: u.ativo, comissao: u.comissao != null ? String(u.comissao) : '', instaladorId: u.instaladorId ?? '', soAgenda: u.soAgenda ?? false })
     setErro('')
     setDrawerOpen(true)
   }
@@ -49,6 +56,8 @@ export default function UsuariosPage() {
       if (form.senha) payload.senha = form.senha
       if (form.comissao) payload.comissao = parseFloat(form.comissao)
       else payload.comissao = null
+      payload.instaladorId = form.instaladorId || null
+      payload.soAgenda = form.role === 'VENDEDOR' ? form.soAgenda : false
       const url = editando ? `/api/usuarios/${editando.id}` : '/api/usuarios'
       const method = editando ? 'PUT' : 'POST'
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -62,6 +71,12 @@ export default function UsuariosPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  async function excluirUsuario(u: Usuario) {
+    if (!confirm(`Excluir "${u.nome}" permanentemente? Esta ação não pode ser desfeita.`)) return
+    await fetch(`/api/usuarios/${u.id}`, { method: 'DELETE' })
+    fetchUsuarios()
   }
 
   async function toggleAtivo(u: Usuario) {
@@ -102,8 +117,8 @@ export default function UsuariosPage() {
                 <td className="px-4 py-3 font-medium text-text-primary">{u.nome}</td>
                 <td className="px-4 py-3 text-text-secondary">{u.email}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${u.role === 'ADMIN' ? 'bg-gold-primary/10 text-gold-dark' : 'bg-blue-50 text-blue-600'}`}>
-                    {u.role === 'ADMIN' ? 'Admin' : 'Vendedor'}
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${u.role === 'ADMIN' ? 'bg-gold-primary/10 text-gold-dark' : u.role === 'INSTALADOR' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                    {u.role === 'ADMIN' ? 'Admin' : u.role === 'INSTALADOR' ? 'Instalador' : 'Vendedor'}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -115,10 +130,15 @@ export default function UsuariosPage() {
                   </button>
                 </td>
                 <td className="px-4 py-3 text-text-muted">{new Date(u.createdAt).toLocaleDateString('pt-BR')}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 flex items-center gap-1">
                   <button onClick={() => abrirEditar(u)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors">
                     <Pencil size={15} />
                   </button>
+                  {u.id !== session?.user?.id && (
+                    <button onClick={() => excluirUsuario(u)} className="p-1.5 rounded hover:bg-red-50 text-text-muted hover:text-red-500 transition-colors">
+                      <Trash2 size={15} />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -139,7 +159,6 @@ export default function UsuariosPage() {
               {[
                 { key: 'nome', label: 'Nome completo *', type: 'text' },
                 { key: 'email', label: 'Email *', type: 'email' },
-                { key: 'senha', label: editando ? 'Nova senha (deixe em branco para manter)' : 'Senha temporária *', type: 'password' },
               ].map(({ key, label, type }) => (
                 <div key={key} className="space-y-1.5">
                   <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</label>
@@ -147,12 +166,57 @@ export default function UsuariosPage() {
                 </div>
               ))}
               <div className="space-y-1.5">
+                <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">
+                  {editando ? 'Nova senha (deixe em branco para manter)' : 'Senha temporária *'}
+                </label>
+                <div className="relative">
+                  <input
+                    type={mostrarSenha ? 'text' : 'password'}
+                    value={form.senha}
+                    onChange={e => setForm(p => ({ ...p, senha: e.target.value }))}
+                    className="input-base pr-10"
+                    placeholder={editando ? '••••••••' : 'Defina uma senha'}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarSenha(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
+                  >
+                    {mostrarSenha ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
                 <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Perfil</label>
-                <select value={form.role} onChange={e => setForm(p => ({ ...p, role: e.target.value }))} className="input-base">
+                <select value={form.role} onChange={e => setForm(p => ({ ...p, role: e.target.value, instaladorId: '' }))} className="input-base">
                   <option value="VENDEDOR">Vendedor</option>
                   <option value="ADMIN">Admin</option>
+                  <option value="INSTALADOR">Instalador</option>
                 </select>
               </div>
+              {form.role === 'VENDEDOR' && (
+                <div className="flex items-center justify-between py-2 px-3 bg-brand-input rounded-xl border border-brand-border">
+                  <div>
+                    <p className="text-sm font-medium text-text-primary">Acesso restrito à agenda</p>
+                    <p className="text-xs text-text-muted">Vendedor visualiza apenas a agenda</p>
+                  </div>
+                  <button type="button" onClick={() => setForm(p => ({ ...p, soAgenda: !p.soAgenda }))} className="text-gold-primary">
+                    {form.soAgenda ? <ToggleRight size={30} /> : <ToggleLeft size={30} className="text-text-muted" />}
+                  </button>
+                </div>
+              )}
+              {form.role === 'INSTALADOR' && (
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Vincular ao Instalador *</label>
+                  <select value={form.instaladorId} onChange={e => setForm(p => ({ ...p, instaladorId: e.target.value }))} className="input-base">
+                    <option value="">Selecione um instalador...</option>
+                    {instaladores.filter(i => (i as unknown as { ativo: boolean }).ativo !== false).map(i => (
+                      <option key={i.id} value={i.id}>{i.nome}</option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-text-muted">O instalador só verá os eventos da agenda onde ele está vinculado.</p>
+                </div>
+              )}
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-medium text-text-muted uppercase tracking-wider">Comissão (%)</label>
                 <input type="number" step="0.5" min="0" max="100" value={form.comissao} onChange={e => setForm(p => ({ ...p, comissao: e.target.value }))} placeholder="Ex: 8" className="input-base" />

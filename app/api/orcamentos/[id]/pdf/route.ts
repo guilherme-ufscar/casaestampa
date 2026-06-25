@@ -59,7 +59,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     tipoAbertura: a.tipoAbertura,
     tipoAberturaBlackout: a.tipoAberturaBlackout ?? a.tipoAbertura,
     bainhaDesejada: a.bainhaDesejada ? Number(a.bainhaDesejada) : null,
-    tecidoNome: a.tecido.nome,
+    tecidoNome: a.tecido?.nome ?? '(tecido removido)',
     quantidadeTecido: Number(a.quantidadeTecido ?? 0),
     blackoutNome: a.blackout?.nome ?? null,
     quantidadeBlackout: a.quantidadeBlackout ? Number(a.quantidadeBlackout) : null,

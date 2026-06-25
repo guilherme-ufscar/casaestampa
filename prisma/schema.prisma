@@ -9,6 +9,7 @@ datasource db {
 enum Role {
   VENDEDOR
   ADMIN
+  INSTALADOR
 }
 
 enum StatusOrcamento {
@@ -49,19 +50,22 @@ enum TipoTecido {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  nome      String
-  email     String   @unique
-  senha     String
-  role      Role     @default(VENDEDOR)
-  comissao  Decimal? @db.Decimal(5, 2)
-  ativo     Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  nome         String
+  email        String   @unique
+  senha        String
+  role         Role     @default(VENDEDOR)
+  comissao     Decimal? @db.Decimal(5, 2)
+  ativo        Boolean  @default(true)
+  instaladorId String?
+  soAgenda     Boolean  @default(false)
+  createdAt    DateTime @default(now())
 
   orcamentos        Orcamento[]
   logsHistorico     LogHistorico[]
   pushSubscriptions PushSubscription[]
   eventos           EventoAgenda[]
+  instalador        Instalador?        @relation(fields: [instaladorId], references: [id])
 }
 
 model PushSubscription {
@@ -160,6 +164,7 @@ model Instalador {
   telefone  String?
   ativo     Boolean @default(true)
 
+  usuarios  User[]
   ambientes AmbienteOrcamento[]
   eventos   EventoAgenda[]
 }

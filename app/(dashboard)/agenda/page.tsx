@@ -32,6 +32,7 @@ function isMesmodia(a: Date, b: Date) { return a.getFullYear()===b.getFullYear()
 export default function AgendaPage() {
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN'
+  const isInstalador = session?.user?.role === 'INSTALADOR' || session?.user?.soAgenda === true
 
   const [hoje] = useState(new Date())
   const [mesAtual, setMesAtual] = useState(new Date(hoje.getFullYear(), hoje.getMonth(), 1))
@@ -43,6 +44,7 @@ export default function AgendaPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [filtroUsuario, setFiltroUsuario] = useState('')
   const [filtroInstalador, setFiltroInstalador] = useState('')
+  const [erroSalvar, setErroSalvar] = useState('')
 
   const [form, setForm] = useState({
     titulo: '', descricao: '', inicio: '', fim: '', diaInteiro: false,
@@ -87,7 +89,8 @@ export default function AgendaPage() {
   }
 
   async function salvar() {
-    if (!form.titulo || !form.inicio) return
+    if (!form.titulo || !form.inicio) { setErroSalvar('Título e data são obrigatórios'); return }
+    setErroSalvar('')
     const tipo = TIPOS.find(t => t.value === form.tipo)
     const cor = tipo?.cor ?? form.cor
     const res = await fetch('/api/agenda', {
@@ -96,6 +99,10 @@ export default function AgendaPage() {
       body: JSON.stringify({ ...form, cor }),
     })
     if (res.ok) { await fetchEventos(); setModal(false) }
+    else {
+      const data = await res.json().catch(() => null)
+      setErroSalvar(data?.error ?? 'Erro ao salvar evento')
+    }
   }
 
   async function excluir(id: string) {
@@ -141,9 +148,11 @@ export default function AgendaPage() {
               </select>
             </>
           )}
-          <button onClick={() => abrirModal()} className="btn-gold flex items-center gap-2 px-4 py-2 rounded-[10px] text-sm font-semibold">
-            <Plus size={15} /> Novo evento
-          </button>
+          {!isInstalador && (
+            <button onClick={() => abrirModal()} className="btn-gold flex items-center gap-2 px-4 py-2 rounded-[10px] text-sm font-semibold">
+              <Plus size={15} /> Novo evento
+            </button>
+          )}
         </div>
       </div>
 
@@ -209,7 +218,7 @@ export default function AgendaPage() {
               <p className="text-sm font-semibold text-text-primary">
                 {diaSelecionado ? fmtData(diaSelecionado.toISOString()) : 'Selecione um dia'}
               </p>
-              {diaSelecionado && (
+              {diaSelecionado && !isInstalador && (
                 <button onClick={() => abrirModal(diaSelecionado)} className="text-xs text-gold-primary hover:text-gold-dark flex items-center gap-1">
                   <Plus size={12} /> Evento
                 </button>
@@ -252,9 +261,11 @@ export default function AgendaPage() {
                   <div className="w-3 h-3 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: eventoSelecionado.cor }} />
                   <p className="text-sm font-semibold text-text-primary">{eventoSelecionado.titulo}</p>
                 </div>
-                <button onClick={() => excluir(eventoSelecionado.id)} className="p-1 text-text-muted hover:text-red-500 transition-colors shrink-0">
-                  <Trash2 size={14} />
-                </button>
+                {!isInstalador && (
+                  <button onClick={() => excluir(eventoSelecionado.id)} className="p-1 text-text-muted hover:text-red-500 transition-colors shrink-0">
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
               {eventoSelecionado.descricao && <p className="text-xs text-text-secondary">{eventoSelecionado.descricao}</p>}
               <div className="space-y-1.5 text-xs text-text-muted">
@@ -341,8 +352,9 @@ export default function AgendaPage() {
               />
             </div>
 
+            {erroSalvar && <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">{erroSalvar}</p>}
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setModal(false)} className="flex-1 py-2.5 rounded-[10px] border border-brand-border text-sm font-medium text-text-secondary hover:bg-brand-input transition-colors">
+              <button onClick={() => { setModal(false); setErroSalvar('') }} className="flex-1 py-2.5 rounded-[10px] border border-brand-border text-sm font-medium text-text-secondary hover:bg-brand-input transition-colors">
                 Cancelar
               </button>
               <button onClick={salvar} className="flex-1 btn-gold py-2.5 rounded-[10px] text-sm font-semibold">

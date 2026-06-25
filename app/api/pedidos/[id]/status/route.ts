@@ -17,6 +17,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
   }
 
+  // Somente admin pode aprovar um orçamento
+  if (status === 'aprovado' && session.user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Somente o administrador pode aprovar orçamentos' }, { status: 403 })
+  }
+
   const [updated] = await prisma.$transaction([
     prisma.orcamento.update({ where: { id: params.id }, data: { status } }),
     prisma.logHistorico.create({

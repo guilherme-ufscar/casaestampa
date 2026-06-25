@@ -32,6 +32,10 @@ const navVendedor = [
   { href: '/tabelas', label: 'Tabelas', icon: Table2 },
 ]
 
+const navInstalador = [
+  { href: '/agenda', label: 'Minha Agenda', icon: Calendar },
+]
+
 const navAdmin = [
   { href: '/dashboard-admin', label: 'Início', icon: LayoutDashboard },
   { href: '/orcamentos/novo', label: 'Novo Orçamento', icon: PlusCircle },
@@ -55,7 +59,9 @@ export default function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN'
-  const navItems = isAdmin ? navAdmin : navVendedor
+  const isInstalador = session?.user?.role === 'INSTALADOR'
+  const soAgenda = session?.user?.soAgenda === true
+  const navItems = isAdmin ? navAdmin : (isInstalador || soAgenda) ? navInstalador : navVendedor
   const [logoError, setLogoError] = useState(false)
 
   function isActive(href: string) {

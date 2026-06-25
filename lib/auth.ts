@@ -28,6 +28,8 @@ export const authOptions: NextAuthOptions = {
           name: user.nome,
           email: user.email,
           role: user.role,
+          instaladorId: user.instaladorId ?? null,
+          soAgenda: user.soAgenda,
         }
       },
     }),
@@ -36,7 +38,9 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.role = (user as { id: string; role: string }).role
+        token.role = (user as { id: string; role: string; instaladorId?: string | null; soAgenda?: boolean }).role
+        token.instaladorId = (user as { instaladorId?: string | null }).instaladorId ?? null
+        token.soAgenda = (user as { soAgenda?: boolean }).soAgenda ?? false
       }
       return token
     },
@@ -44,6 +48,8 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user.id = token.id as string
         session.user.role = token.role as string
+        session.user.instaladorId = token.instaladorId as string | null | undefined
+        session.user.soAgenda = token.soAgenda as boolean | undefined
       }
       return session
     },

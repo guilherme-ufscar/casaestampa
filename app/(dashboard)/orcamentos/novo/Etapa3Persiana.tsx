@@ -374,9 +374,17 @@ export default function Etapa3Persiana() {
           <div className="flex items-center justify-between py-2 px-3 bg-brand-input rounded-xl border border-brand-border">
             <div>
               <p className="text-sm font-medium text-text-primary">Bandô</p>
-              <p className="text-xs text-text-muted">Cobertura da estrutura superior</p>
+              <p className="text-xs text-text-muted">
+                {bandosFiltrados.length === 0 && amb.fornecedor
+                  ? `Sem bandôs cadastrados para ${amb.fornecedor}`
+                  : 'Cobertura da estrutura superior'}
+              </p>
             </div>
-            <button onClick={() => updateAmb({ bandoAtivo: !amb.bandoAtivo })} className="text-gold-primary">
+            <button
+              onClick={() => bandosFiltrados.length > 0 && updateAmb({ bandoAtivo: !amb.bandoAtivo })}
+              disabled={bandosFiltrados.length === 0}
+              className="text-gold-primary disabled:opacity-30 disabled:cursor-not-allowed"
+            >
               {amb.bandoAtivo ? <ToggleRight size={30} /> : <ToggleLeft size={30} className="text-text-muted" />}
             </button>
           </div>
