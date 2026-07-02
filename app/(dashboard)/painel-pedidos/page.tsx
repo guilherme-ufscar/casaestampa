@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Search, Eye, MessageCircle, Download, Check, ChevronLeft, ChevronRight, X, Loader2, Home, Clock, FileText, Pencil, Trash2 } from 'lucide-react'
+import { Search, Eye, MessageCircle, Download, Check, ChevronLeft, ChevronRight, X, Loader2, Home, Clock, FileText, Pencil, Trash2, ThumbsUp } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { StatusBadge, STATUS_CONFIG, StatusOrcamento } from '@/components/ui/StatusBadge'
 import dynamic from 'next/dynamic'
@@ -309,6 +309,15 @@ export default function PainelPedidosPage() {
                 <td className="px-4 py-3 text-text-muted">{fmtData(p.createdAt)}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1 justify-end">
+                    {isAdmin && p.status === 'aguardando_aprovacao' && (
+                      <button
+                        onClick={() => alterarStatus(p.id, 'aprovado')}
+                        title="Aprovar orçamento"
+                        className="p-1.5 rounded bg-green-50 hover:bg-green-100 text-green-600 transition-colors"
+                      >
+                        <ThumbsUp size={15} />
+                      </button>
+                    )}
                     <button onClick={() => abrirDrawer(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Eye size={15} /></button>
                     <button onClick={() => editarPedido(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><Pencil size={15} /></button>
                     <button onClick={() => setPdfModal(p.id)} className="p-1.5 rounded hover:bg-brand-input text-text-muted hover:text-gold-primary transition-colors"><FileText size={15} /></button>
@@ -376,9 +385,20 @@ export default function PainelPedidosPage() {
               <div className="flex-1 flex items-center justify-center"><Loader2 size={24} className="animate-spin text-gold-primary" /></div>
             ) : drawerPedido && (
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <StatusBadge status={drawerPedido.status} />
                   <span className="text-xs text-text-muted">Criado em {fmtData(drawerPedido.createdAt)}</span>
+                  {isAdmin && drawerPedido.status === 'aguardando_aprovacao' && (
+                    <button
+                      onClick={() => {
+                        alterarStatus(drawerPedido.id, 'aprovado')
+                        setDrawerPedido(prev => prev ? { ...prev, status: 'aprovado' } : prev)
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors"
+                    >
+                      <ThumbsUp size={12} /> Aprovar Orçamento
+                    </button>
+                  )}
                 </div>
                 <div className="p-4 bg-brand-bg rounded-xl space-y-1">
                   <div className="flex items-center justify-between mb-2">

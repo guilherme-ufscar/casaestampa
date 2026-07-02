@@ -55,6 +55,14 @@ type ResultadoAdminAmbiente = ResultadoAmbientePublico & {
   }
   // piso
   custoPiso?: number
+  custoManta?: number
+  custoRodape?: number
+  custoPerfis?: number
+  custoPrego?: number
+  custoCola?: number
+  custoMassa?: number
+  custoAcabamentos?: number
+  custoOutros?: number
   frete?: number
   // comum
   custoTotal: number
@@ -530,9 +538,17 @@ export default function ResultadoOrcamento() {
                     )}
                     {produto === 'piso' && (
                       <>
-                        <span className="text-text-muted">Valor do material: <strong className="text-text-primary">{fmt(a.custoPiso ?? 0)}</strong></span>
-                        <span className="text-text-muted">Valor instalação: <strong className="text-text-primary">{fmt(a.custoInstalacao ?? 0)}</strong></span>
-                        <span className="text-text-muted">Frete: <strong className="text-text-primary">{fmt(a.frete ?? 0)}</strong></span>
+                        {(a.custoPiso ?? 0) > 0 && <span className="text-text-muted">Piso: <strong className="text-text-primary">{fmt(a.custoPiso ?? 0)}</strong></span>}
+                        {(a.custoManta ?? 0) > 0 && <span className="text-text-muted">Manta: <strong className="text-text-primary">{fmt(a.custoManta ?? 0)}</strong></span>}
+                        {(a.custoRodape ?? 0) > 0 && <span className="text-text-muted">Rodapé: <strong className="text-text-primary">{fmt(a.custoRodape ?? 0)}</strong></span>}
+                        {(a.custoPerfis ?? 0) > 0 && <span className="text-text-muted">Perfis: <strong className="text-text-primary">{fmt(a.custoPerfis ?? 0)}</strong></span>}
+                        {(a.custoPrego ?? 0) > 0 && <span className="text-text-muted">Prego: <strong className="text-text-primary">{fmt(a.custoPrego ?? 0)}</strong></span>}
+                        {(a.custoCola ?? 0) > 0 && <span className="text-text-muted">Cola: <strong className="text-text-primary">{fmt(a.custoCola ?? 0)}</strong></span>}
+                        {(a.custoMassa ?? 0) > 0 && <span className="text-text-muted">Massa niveladora: <strong className="text-text-primary">{fmt(a.custoMassa ?? 0)}</strong></span>}
+                        {(a.custoAcabamentos ?? 0) > 0 && <span className="text-text-muted">Acabamentos: <strong className="text-text-primary">{fmt(a.custoAcabamentos ?? 0)}</strong></span>}
+                        {(a.custoOutros ?? 0) > 0 && <span className="text-text-muted">Outros: <strong className="text-text-primary">{fmt(a.custoOutros ?? 0)}</strong></span>}
+                        {(a.custoInstalacao ?? 0) > 0 && <span className="text-text-muted">Instalação: <strong className="text-text-primary">{fmt(a.custoInstalacao ?? 0)}</strong></span>}
+                        {(a.frete ?? 0) > 0 && <span className="text-text-muted">Frete: <strong className="text-text-primary">{fmt(a.frete ?? 0)}</strong></span>}
                       </>
                     )}
                     <span className="text-text-muted">Custo total: <strong className="text-text-primary">{fmt(a.custoTotal)}</strong></span>

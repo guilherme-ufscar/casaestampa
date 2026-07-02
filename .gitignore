@@ -28,6 +28,10 @@ yarn-error.log*
 # local env files
 .env
 .env*.local
+.env.docker
+
+# planilhas de dados de clientes (PII)
+Cadastro de Clientes*.xlsx
 
 # vercel
 .vercel

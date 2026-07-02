@@ -1,35 +1,52 @@
-﻿version: "3.8"
-
 services:
   postgres:
     image: postgres:15-alpine
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: casaestampa
-      POSTGRES_PASSWORD: casaestampa
-      POSTGRES_DB: casaestampa
+    env_file:
+      - .env.docker
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U casaestampa"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
+
+  migrate:
+    build:
+      context: .
+      target: builder
+    command: sh -c "npx prisma db push --accept-data-loss && npx ts-node prisma/seed.ts && node scripts/importar-clientes.mjs"
+    env_file:
+      - .env.docker
+    environment:
+      TS_NODE_COMPILER_OPTIONS: '{"module":"CommonJS"}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
 
   nextjs:
     build: .
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      DATABASE_URL: postgresql://casaestampa:casaestampa@postgres:5432/casaestampa
-      NEXTAUTH_SECRET: change-this-secret-in-production
-      NEXTAUTH_URL: http://localhost:3000
+    env_file:
+      - .env.docker
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
 
 volumes:
   postgres_data:
