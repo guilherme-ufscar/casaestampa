@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { listarArquitetos } from '@/lib/arquitetosStore'
+import { geocodificar } from '@/lib/geocodificar'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const [cliente, arquitetos] = await Promise.all([
@@ -29,23 +30,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const { nome, telefone, email, endereco, bairro, arquiteto } = body
 
   // Geocodificar se endereço mudou
-  let lat: number | null | undefined
-  let lng: number | null | undefined
+  let coords: { lat: number; lng: number } | null = null
   const anterior = await prisma.cliente.findUnique({ where: { id: params.id }, select: { endereco: true } })
   if (endereco && endereco !== anterior?.endereco) {
-    const query = [endereco, bairro, 'Brasil'].filter(Boolean).join(', ')
-    try {
-      const geo = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`, {
-        headers: { 'User-Agent': 'CasaEstampa/1.0' },
-      })
-      const geoData = await geo.json()
-      if (geoData?.[0]) { lat = parseFloat(geoData[0].lat); lng = parseFloat(geoData[0].lon) }
-    } catch {}
+    coords = await geocodificar(endereco, bairro)
   }
 
   const cliente = await prisma.cliente.update({
     where: { id: params.id },
-    data: { nome, telefone, email, endereco, bairro, arquiteto, ...(lat !== undefined ? { lat, lng } : {}) },
+    data: { nome, telefone, email, endereco, bairro, arquiteto, ...(coords ?? {}) },
   })
 
   return NextResponse.json(cliente)

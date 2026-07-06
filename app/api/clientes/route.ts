@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { listarArquitetos } from '@/lib/arquitetosStore'
+import { geocodificar } from '@/lib/geocodificar'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -57,8 +58,10 @@ export async function POST(req: NextRequest) {
 
   if (!nome) return NextResponse.json({ error: 'Nome obrigatório' }, { status: 400 })
 
+  const coords = endereco ? await geocodificar(endereco, bairro) : null
+
   const cliente = await prisma.cliente.create({
-    data: { nome, telefone, email, endereco, bairro, arquiteto },
+    data: { nome, telefone, email, endereco, bairro, arquiteto, ...(coords ?? {}) },
   })
 
   return NextResponse.json(cliente, { status: 201 })
