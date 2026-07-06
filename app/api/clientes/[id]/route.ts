@@ -11,7 +11,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       where: { id: params.id },
       include: {
         orcamentos: {
-          include: { vendedor: { select: { nome: true } } },
+          include: {
+            vendedor: { select: { nome: true } },
+            instalador: { select: { nome: true } },
+            ambientes: { select: { instalador: { select: { nome: true } } } },
+          },
           orderBy: { createdAt: 'desc' },
         },
       },
