@@ -73,7 +73,13 @@ function prepararValor(v) {
 }
 
 for (const tabela of TABELAS) {
-  const { rows } = await source.query(`SELECT * FROM "${tabela}"`)
+  let rows
+  try {
+    ;({ rows } = await source.query(`SELECT * FROM "${tabela}"`))
+  } catch (err) {
+    console.log(`${tabela}: não existe na origem, pulando (${err.message})`)
+    continue
+  }
   if (rows.length === 0) {
     console.log(`${tabela}: 0 registros na origem`)
     continue
