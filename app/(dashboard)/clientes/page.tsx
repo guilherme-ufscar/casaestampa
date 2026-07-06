@@ -4,7 +4,18 @@ import { useState, useEffect, useCallback } from 'react'
 import { Search, UserPlus, MapPin, Phone, Mail, User, X, Pencil, Loader2, Check, FileText, Plus, FileDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-type Orcamento = { id: string; precoFinalTotal: number | null; status: string; createdAt: string }
+type Orcamento = {
+  id: string
+  precoFinalTotal: number | null
+  status: string
+  createdAt: string
+  origemHistorico?: boolean
+  servicoHistorico?: string | null
+  descricaoHistorico?: string | null
+  indicacaoHistorica?: string | null
+  instaladorNomeOriginal?: string | null
+  instalador?: { nome: string } | null
+}
 type Arquiteto = {
   id: string
   nome: string
@@ -352,15 +363,32 @@ export default function ClientesPage() {
                   <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Histórico de Orçamentos</p>
                   <div className="space-y-2">
                     {drawerCliente.orcamentos.map(o => (
-                      <div key={o.id} className="flex items-center justify-between py-2 border-b border-brand-border last:border-0">
-                        <div>
-                          <p className="text-sm font-medium text-text-primary">Orçamento</p>
-                          <p className="text-xs text-text-muted">{new Date(o.createdAt).toLocaleDateString('pt-BR')}</p>
+                      <div key={o.id} className="py-2 border-b border-brand-border last:border-0">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-text-primary">
+                              {o.origemHistorico ? (o.servicoHistorico ?? 'Atendimento') : 'Orçamento'}
+                            </p>
+                            <p className="text-xs text-text-muted">{new Date(o.createdAt).toLocaleDateString('pt-BR')}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-text-primary">{o.precoFinalTotal ? fmt(Number(o.precoFinalTotal)) : '—'}</p>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-input text-text-muted">
+                              {o.origemHistorico ? 'histórico' : o.status.replace(/_/g, ' ')}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-text-primary">{o.precoFinalTotal ? fmt(Number(o.precoFinalTotal)) : '—'}</p>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-input text-text-muted">{o.status.replace(/_/g, ' ')}</span>
-                        </div>
+                        {o.origemHistorico && (
+                          <div className="mt-1 text-xs text-text-secondary space-y-0.5">
+                            {o.descricaoHistorico && <p>{o.descricaoHistorico}</p>}
+                            <div className="flex flex-wrap gap-x-3 text-[11px] text-text-muted">
+                              {(o.instalador?.nome ?? o.instaladorNomeOriginal) && (
+                                <span>Instalador: {o.instalador?.nome ?? o.instaladorNomeOriginal}</span>
+                              )}
+                              {o.indicacaoHistorica && <span>Indicação: {o.indicacaoHistorica}</span>}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

@@ -136,8 +136,19 @@ model Orcamento {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  cliente  Cliente? @relation(fields: [clienteId], references: [id])
-  vendedor User     @relation(fields: [vendedorId], references: [id])
+  // Campos de orçamentos fantasmas (importados da planilha antiga, antes do sistema).
+  origemHistorico     Boolean @default(false)
+  numeroHistorico     Int?
+  servicoHistorico    String?
+  descricaoHistorico  String?
+  instaladorId        String?
+  instaladorNomeOriginal String?
+  vendedorNomeOriginal   String?
+  indicacaoHistorica     String?
+
+  cliente    Cliente?    @relation(fields: [clienteId], references: [id])
+  vendedor   User        @relation(fields: [vendedorId], references: [id])
+  instalador Instalador? @relation(fields: [instaladorId], references: [id])
 
   ambientes          AmbienteOrcamento[]
   ambientesPapel     AmbientePapelOrcamento[]
@@ -164,9 +175,10 @@ model Instalador {
   telefone  String?
   ativo     Boolean @default(true)
 
-  usuarios  User[]
-  ambientes AmbienteOrcamento[]
-  eventos   EventoAgenda[]
+  usuarios   User[]
+  ambientes  AmbienteOrcamento[]
+  eventos    EventoAgenda[]
+  orcamentos Orcamento[]
 }
 
 model AmbienteOrcamento {

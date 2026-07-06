@@ -40,6 +40,11 @@ type OrcamentoFicha = {
   precoFinalTotal: number | null
   vendedorNome: string
   ambientes: { nomeAmbiente: string; modeloCortina: string; instaladorNome?: string | null }[]
+  origemHistorico?: boolean
+  servicoHistorico?: string | null
+  descricaoHistorico?: string | null
+  instaladorHistoricoNome?: string | null
+  indicacaoHistorica?: string | null
 }
 
 type ClienteFicha = {
@@ -87,16 +92,27 @@ export default function ClienteFichaPDFDoc({ cliente }: { cliente: ClienteFicha 
         ) : (
           cliente.orcamentos.map((orcamento, index) => (
             <View key={index} style={s.card} wrap={false}>
-              <Text style={s.cardTitle}>Orçamento #{String(orcamento.numero).padStart(4, '0')}</Text>
+              <Text style={s.cardTitle}>
+                {orcamento.origemHistorico ? 'Atendimento (histórico)' : `Orçamento #${String(orcamento.numero).padStart(4, '0')}`}
+              </Text>
               <Text style={s.text}>Data: {new Date(orcamento.createdAt).toLocaleDateString('pt-BR')}</Text>
-              <Text style={s.text}>Status: {orcamento.status.replace(/_/g, ' ')}</Text>
+              {!orcamento.origemHistorico && <Text style={s.text}>Status: {orcamento.status.replace(/_/g, ' ')}</Text>}
               <Text style={s.text}>Vendedor: {orcamento.vendedorNome}</Text>
               <Text style={s.text}>Valor: {orcamento.precoFinalTotal != null ? fmt(orcamento.precoFinalTotal) : '—'}</Text>
-              {orcamento.ambientes.map((ambiente, ambienteIndex) => (
-                <Text key={ambienteIndex} style={s.text}>
-                  • {ambiente.nomeAmbiente} — {ambiente.modeloCortina.replace(/_/g, ' ')}{ambiente.instaladorNome ? ` — Instalador: ${ambiente.instaladorNome}` : ''}
-                </Text>
-              ))}
+              {orcamento.origemHistorico ? (
+                <>
+                  {orcamento.servicoHistorico && <Text style={s.text}>Serviço: {orcamento.servicoHistorico}</Text>}
+                  {orcamento.descricaoHistorico && <Text style={s.text}>Descrição: {orcamento.descricaoHistorico}</Text>}
+                  {orcamento.instaladorHistoricoNome && <Text style={s.text}>Instalador: {orcamento.instaladorHistoricoNome}</Text>}
+                  {orcamento.indicacaoHistorica && <Text style={s.text}>Indicação: {orcamento.indicacaoHistorica}</Text>}
+                </>
+              ) : (
+                orcamento.ambientes.map((ambiente, ambienteIndex) => (
+                  <Text key={ambienteIndex} style={s.text}>
+                    • {ambiente.nomeAmbiente} — {ambiente.modeloCortina.replace(/_/g, ' ')}{ambiente.instaladorNome ? ` — Instalador: ${ambiente.instaladorNome}` : ''}
+                  </Text>
+                ))
+              )}
             </View>
           ))
         )}

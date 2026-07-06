@@ -33,7 +33,18 @@ export async function GET(req: NextRequest) {
       where,
       include: {
         orcamentos: {
-          select: { id: true, precoFinalTotal: true, status: true, createdAt: true },
+          select: {
+            id: true,
+            precoFinalTotal: true,
+            status: true,
+            createdAt: true,
+            origemHistorico: true,
+            servicoHistorico: true,
+            descricaoHistorico: true,
+            indicacaoHistorica: true,
+            instaladorNomeOriginal: true,
+            instalador: { select: { nome: true } },
+          },
           orderBy: { createdAt: 'desc' },
         },
       },

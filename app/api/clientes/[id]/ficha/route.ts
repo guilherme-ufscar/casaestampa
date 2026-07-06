@@ -16,6 +16,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       orcamentos: {
         include: {
           vendedor: { select: { nome: true } },
+          instalador: { select: { nome: true } },
           ambientes: { include: { instalador: { select: { nome: true } } } },
         },
         orderBy: { createdAt: 'desc' },
@@ -44,6 +45,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
           modeloCortina: ambiente.modeloCortina,
           instaladorNome: ambiente.instalador?.nome ?? null,
         })),
+        origemHistorico: orcamento.origemHistorico,
+        servicoHistorico: orcamento.servicoHistorico,
+        descricaoHistorico: orcamento.descricaoHistorico,
+        instaladorHistoricoNome: orcamento.instalador?.nome ?? orcamento.instaladorNomeOriginal,
+        indicacaoHistorica: orcamento.indicacaoHistorica,
       })),
     },
   })
