@@ -32,6 +32,7 @@ yarn-error.log*
 
 # planilhas de dados de clientes (PII)
 Cadastro de Clientes*.xlsx
+!Cadastro de Clientes (1).xlsx
 
 # vercel
 .vercel

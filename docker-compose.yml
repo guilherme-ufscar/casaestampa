@@ -20,7 +20,7 @@ services:
     build:
       context: .
       target: builder
-    command: sh -c "npx prisma db push --accept-data-loss && npx ts-node prisma/seed.ts && node scripts/importar-clientes.mjs"
+    command: sh -c "npx prisma db push --accept-data-loss && npx ts-node prisma/seed.ts && node scripts/importar-clientes.mjs && node scripts/importar-orcamentos-historico.mjs"
     env_file:
       - .env.docker
     environment:

@@ -160,6 +160,7 @@ function resolverVendedor(nomeOriginal) {
 console.log(`Vendedor fallback: ${historicoUserId}${claudiaId ? ` | Claudia: ${claudiaId}` : ''}`)
 
 let criados = 0
+let existentes = 0
 let semCliente = 0
 let erros = 0
 
@@ -178,6 +179,16 @@ for (const row of rows) {
       continue
     }
     const clienteId = clienteRes.rows[0].id
+    const numeroHistorico = row['NUMERO'] != null ? Number(row['NUMERO']) : null
+
+    const jaImportado = await client.query(
+      `SELECT 1 FROM "Orcamento" WHERE "origemHistorico" = true AND "clienteId" = $1 AND "numeroHistorico" = $2 LIMIT 1`,
+      [clienteId, numeroHistorico]
+    )
+    if (jaImportado.rowCount > 0) {
+      existentes++
+      continue
+    }
 
     const servico = norm(row['SERVIÇO'])
     const instaladorTexto = norm(row['INSTALADOR'])
@@ -199,7 +210,7 @@ for (const row of rows) {
         vendedorId,
         numeroVenda(row['VENDA']),
         data,
-        row['NUMERO'] != null ? Number(row['NUMERO']) : null,
+        numeroHistorico,
         servico,
         norm(row['DESCRIÇÃO']),
         instaladorId,
@@ -219,6 +230,6 @@ await client.query(
   `SELECT setval(pg_get_serial_sequence('"Orcamento"', 'numero'), COALESCE((SELECT MAX(numero) FROM "Orcamento"), 1))`
 )
 
-console.log(`Concluído! ${criados} orçamentos fantasmas criados, ${semCliente} sem cliente correspondente, ${erros} erros.`)
+console.log(`Concluído! ${criados} orçamentos fantasmas criados, ${existentes} já existiam, ${semCliente} sem cliente correspondente, ${erros} erros.`)
 console.log(`Instaladores no total após import: ${instaladores.length}`)
 await client.end()
