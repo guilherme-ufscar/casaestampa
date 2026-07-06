@@ -14,7 +14,10 @@ type Orcamento = {
   descricaoHistorico?: string | null
   indicacaoHistorica?: string | null
   instaladorNomeOriginal?: string | null
+  vendedorNomeOriginal?: string | null
   instalador?: { nome: string } | null
+  vendedor?: { nome: string } | null
+  ambientes?: { instalador: { nome: string } | null }[]
 }
 type Arquiteto = {
   id: string
@@ -350,6 +353,7 @@ export default function ClientesPage() {
                 <div>
                   <h3 className="text-base font-semibold text-text-primary">{drawerCliente.nome}</h3>
                   <p className="text-xs text-text-muted">Cliente desde {new Date(drawerCliente.createdAt).toLocaleDateString('pt-BR')}</p>
+                  {drawerCliente.arquiteto && <p className="text-xs text-text-muted">Arquiteto/RT: {drawerCliente.arquiteto}</p>}
                 </div>
               </div>
               <button onClick={() => setDrawerCliente(null)} className="p-1.5 rounded hover:bg-brand-input text-text-secondary">
@@ -362,35 +366,43 @@ export default function ClientesPage() {
                 <div className="px-6 py-4 border-b border-brand-border">
                   <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Histórico de Orçamentos</p>
                   <div className="space-y-2">
-                    {drawerCliente.orcamentos.map(o => (
-                      <div key={o.id} className="py-2 border-b border-brand-border last:border-0">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-text-primary">
-                              {o.origemHistorico ? (o.servicoHistorico ?? 'Atendimento') : 'Orçamento'}
-                            </p>
-                            <p className="text-xs text-text-muted">{new Date(o.createdAt).toLocaleDateString('pt-BR')}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-semibold text-text-primary">{o.precoFinalTotal ? fmt(Number(o.precoFinalTotal)) : '—'}</p>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-input text-text-muted">
-                              {o.origemHistorico ? 'histórico' : o.status.replace(/_/g, ' ')}
-                            </span>
-                          </div>
-                        </div>
-                        {o.origemHistorico && (
-                          <div className="mt-1 text-xs text-text-secondary space-y-0.5">
-                            {o.descricaoHistorico && <p>{o.descricaoHistorico}</p>}
-                            <div className="flex flex-wrap gap-x-3 text-[11px] text-text-muted">
-                              {(o.instalador?.nome ?? o.instaladorNomeOriginal) && (
-                                <span>Instalador: {o.instalador?.nome ?? o.instaladorNomeOriginal}</span>
-                              )}
-                              {o.indicacaoHistorica && <span>Indicação: {o.indicacaoHistorica}</span>}
+                    {drawerCliente.orcamentos.map(o => {
+                      const instaladorNome = o.origemHistorico
+                        ? (o.instalador?.nome ?? o.instaladorNomeOriginal)
+                        : Array.from(new Set((o.ambientes ?? []).map(a => a.instalador?.nome).filter(Boolean))).join(', ') || null
+                      const vendedorNome = o.origemHistorico ? o.vendedorNomeOriginal : o.vendedor?.nome
+                      const clicavel = !o.origemHistorico
+                      return (
+                        <div
+                          key={o.id}
+                          onClick={clicavel ? () => router.push(`/orcamentos/novo?editar=${o.id}`) : undefined}
+                          className={`py-2 border-b border-brand-border last:border-0 ${clicavel ? 'cursor-pointer hover:bg-brand-input/60 rounded px-2 -mx-2 transition-colors' : ''}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-text-primary">
+                                {o.origemHistorico ? (o.servicoHistorico ?? 'Atendimento') : 'Orçamento'}
+                              </p>
+                              <p className="text-xs text-text-muted">{new Date(o.createdAt).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-text-primary">{o.precoFinalTotal ? fmt(Number(o.precoFinalTotal)) : '—'}</p>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-input text-text-muted">
+                                {o.origemHistorico ? 'histórico' : o.status.replace(/_/g, ' ')}
+                              </span>
                             </div>
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          <div className="mt-1 text-xs text-text-secondary space-y-0.5">
+                            {o.origemHistorico && o.descricaoHistorico && <p>{o.descricaoHistorico}</p>}
+                            <div className="flex flex-wrap gap-x-3 text-[11px] text-text-muted">
+                              {vendedorNome && <span>Vendedor: {vendedorNome}</span>}
+                              {instaladorNome && <span>Instalador: {instaladorNome}</span>}
+                              {o.origemHistorico && o.indicacaoHistorica && <span>Indicação: {o.indicacaoHistorica}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
