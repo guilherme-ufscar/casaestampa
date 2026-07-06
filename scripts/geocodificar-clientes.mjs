@@ -75,6 +75,7 @@ for (const [i, c] of clientes.entries()) {
     ok++
   } else {
     falhou++
+    console.log(`  FALHOU: "${c.endereco}" / bairro="${c.bairro ?? ''}"`)
   }
   if ((i + 1) % 25 === 0) console.log(`  ${i + 1}/${clientes.length} processados (${ok} ok, ${falhou} falharam)`)
   await new Promise((r) => setTimeout(r, 1100))
